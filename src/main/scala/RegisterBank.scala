@@ -1,18 +1,23 @@
 import chisel3._
 import chisel3.util._
 
+class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
+  val dataIn      = Output(UInt(bitWidth.W))
+  val dataOut     = Input(UInt(bitWidth.W))
+  val address     = Output(UInt(log2Ceil(bitWidth + 1).W))
+  val writeEnable = Output(Bool())
+}
+
 class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
-    val dataIn      = Input(UInt(regWidth.W))
-    val dataOut     = Output(UInt(regWidth.W))
-    val address     = Input(UInt(log2Ceil(regWidth + 1).W))
-    val writeEnable = Input(Bool())
+    val regPort = Flipped(new RegisterBankPort(regWidth))
   })
+
   val regs = Mem(numRegs, UInt(regWidth.W))
   regs.write(0.U, 0.U) // Register x0 is always 0
 
-  io.dataOut := regs.read(io.address)
-  when(io.writeEnable && io.address =/= 0.U) {
-    regs.write(io.address, io.dataIn)
+  io.regPort.dataOut := regs.read(io.regPort.address)
+  when(io.regPort.writeEnable && io.regPort.address =/= 0.U) {
+    regs.write(io.regPort.address, io.regPort.dataIn)
   }
 }

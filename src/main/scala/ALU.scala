@@ -1,21 +1,24 @@
 import chisel3._
 import chisel3.util._
 
-import Instructions._
+import Instruction._
 
-class ALU(width: Int = 32) extends Module {
+class ALUPort(bitWidth: Int = 32) extends Bundle {
+  val op = Output(Instruction())
+  val a  = Output(UInt(bitWidth.W))
+  val b  = Output(UInt(bitWidth.W))
+  val x  = Input(UInt(bitWidth.W))
+}
+class ALU(bitWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
-    val op = Input(Instructions())
-    val a  = Input(UInt(width.W))
-    val b  = Input(UInt(width.W))
-    val x  = Output(UInt(width.W))
+    val ALUPort = Flipped(new ALUPort(bitWidth))
   })
 
-  val op = io.op
-  val a  = io.a
-  val b  = io.b
+  val op = io.ALUPort.op
+  val a  = io.ALUPort.a
+  val b  = io.ALUPort.b
 
-  val out   = WireDefault(UInt(width.W), 0.U)
+  val out   = WireDefault(UInt(bitWidth.W), 0.U)
   val shamt = b(4, 0).asUInt() // For RV32I the shift amount is 5 bits wide
   // val shamt = b(5, 0).asUInt() // For RV64I the shift amount is 6 bits wide
 
@@ -36,5 +39,5 @@ class ALU(width: Int = 32) extends Module {
     is(SLTU)(out := a < b)
   }
 
-  io.x := out
+  io.ALUPort.x := out
 }

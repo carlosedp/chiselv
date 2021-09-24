@@ -5,7 +5,7 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-import Instructions._
+import Instruction._
 
 class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   val one        = BigInt(1)
@@ -34,12 +34,12 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
 
   def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
-    dut.io.op.poke(op)
-    dut.io.a.poke((i & 0xffffffffL).U)
-    dut.io.b.poke((j & 0xffffffffL).U)
+    dut.io.ALUPort.op.poke(op)
+    dut.io.ALUPort.a.poke((i & 0xffffffffL).U)
+    dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
     dut.clock.step()
     // println(s"Output is ${dut.io.x.peek()}")
-    dut.io.x.expect(out.U)
+    dut.io.ALUPort.x.expect(out.U)
   }
   def testCycle(dut: ALU, op: Type) =
     for (i <- cases) {

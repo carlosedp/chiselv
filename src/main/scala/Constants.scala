@@ -1,6 +1,6 @@
 import chisel3.experimental.ChiselEnum
 
-object Instructions extends ChiselEnum {
+object Instruction extends ChiselEnum {
   val
   // RV32I
   ADD, ADDI, SUB, LUI, AUIPC,                  // Arithmetic
@@ -15,4 +15,8 @@ object Instructions extends ChiselEnum {
   LB, LH, LBU, LHU, LW,                        // Loads
   SB, SH, SW                                   // Stores
   = Value
+}
+
+object InstructionType extends ChiselEnum {
+  val IN_ERR, INST_R, INST_I, INST_S, INST_B, INST_U, INST_J, INST_Z = Value
 }
