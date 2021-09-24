@@ -8,12 +8,11 @@ class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
     val address     = Input(UInt(log2Ceil(regWidth + 1).W))
     val writeEnable = Input(Bool())
   })
+  val regs = Mem(numRegs, UInt(regWidth.W))
+  regs.write(0.U, 0.U) // Register x0 is always 0
 
-  val regs = Reg(Vec(numRegs, UInt(regWidth.W)))
-  regs(0) := 0.U // Register x0 is always 0
-
-  io.dataOut := regs(io.address)
+  io.dataOut := regs.read(io.address)
   when(io.writeEnable && io.address =/= 0.U) {
-    regs(io.address) := io.dataIn
+    regs.write(io.address, io.dataIn)
   }
 }
