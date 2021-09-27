@@ -1,11 +1,10 @@
+import Instruction._
 import chisel3._
 import chiseltest._
 import org.scalatest._
 
 import flatspec._
 import matchers._
-
-import Instruction._
 
 class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   val one        = BigInt(1)
