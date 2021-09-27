@@ -26,7 +26,7 @@ lazy val chiselv = (project in file("."))
 val defaultVersions = Map(
   "chisel3"          -> "3.5-SNAPSHOT",
   "chiseltest"       -> "0.5-SNAPSHOT",
-  "scalatest"        -> "3.2.9",
+  "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
   "scalautils"       -> "0.5.0"
 )
@@ -44,7 +44,7 @@ addCommandAlias("rel", "reload")
 addCommandAlias("fmt", "all scalafmtSbt scalafmtAll;all compile:scalafix test:scalafix")
 addCommandAlias("fix", "all Compile / scalafixAll Test / scalafixAll")
 addCommandAlias("lint", "fmt;fix")
-addCommandAlias("deps", "reload plugins; dependencyUpdates; reload return; dependencyUpdates")
+addCommandAlias("deps", "dependencyUpdates")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
