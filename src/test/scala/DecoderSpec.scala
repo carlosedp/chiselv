@@ -7,6 +7,7 @@ import flatspec._
 import matchers._
 
 class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+
   "Decoder" should "Decode an ADD instruction (type R)" in {
     test(new Decoder()) { c =>
       //  Template: "b0000000??????????000?????0110011"
@@ -24,13 +25,13 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   it should "Decode an ANDI instruction (type I)" in {
     test(new Decoder()) { c =>
       //  Template: b?????????????????111?????0010011
-      c.io.DecoderPort.op.poke("b11110000111111000111001110010011".U)
+      c.io.DecoderPort.op.poke("b11111111111111000111001110010011".U)
       c.clock.step()
       c.io.DecoderPort.inst.expect(ANDI)
       c.io.DecoderPort.rd.peek().litValue() should be(7)
       c.io.DecoderPort.rs1.peek().litValue() should be(24)
       c.io.DecoderPort.rs2.peek().litValue() should be(0)
-      c.io.DecoderPort.imm.peek().litValue() should be(3855)
+      c.io.DecoderPort.imm.peek().litValue().toLong.toBinaryString should be("11111111111111111111111111111111")
       c.io.DecoderPort.toALU.expect(true.B)
       c.io.DecoderPort.branch.expect(false.B)
     }
@@ -44,7 +45,9 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       c.io.DecoderPort.rd.peek().litValue() should be(0)
       c.io.DecoderPort.rs1.peek().litValue() should be(21)
       c.io.DecoderPort.rs2.peek().litValue() should be(10)
-      c.io.DecoderPort.imm.peek().litValue() should be(4015) // 0xfaf
+      c.io.DecoderPort.imm.peek().litValue().toLong.toBinaryString should be(
+        "11111111111111111111111110101111"
+      )
       c.io.DecoderPort.toALU.expect(false.B)
       c.io.DecoderPort.branch.expect(false.B)
     }
@@ -52,13 +55,14 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   it should "Decode an BEQ instruction (type B)" in {
     test(new Decoder()) { c =>
       //  Template: b?????????????????000?????1100011
-      c.io.DecoderPort.op.poke("b11111110101010101000111111100011".U)
+      // 11111111111111111111 1 010101 0101 0
+      c.io.DecoderPort.op.poke("b10101010101010101000010111100011".U)
       c.clock.step()
       c.io.DecoderPort.inst.expect(BEQ)
       c.io.DecoderPort.rd.peek().litValue() should be(0)
       c.io.DecoderPort.rs1.peek().litValue() should be(21)
       c.io.DecoderPort.rs2.peek().litValue() should be(10)
-      c.io.DecoderPort.imm.peek().litValue() should be(8190)
+      c.io.DecoderPort.imm.peek().litValue().toLong.toBinaryString should be("11111111111111111111101010101010")
       c.io.DecoderPort.toALU.expect(false.B)
       c.io.DecoderPort.branch.expect(true.B)
     }
@@ -80,13 +84,14 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   it should "Decode an JAL instruction (type J)" in {
     test(new Decoder()) { c =>
       //  Template: b?????????????????????????1101111
-      c.io.DecoderPort.op.poke("b10101010101010101010101011101111".U)
+      // 11111111111 1 01010101 0 1010101010 0
+      c.io.DecoderPort.op.poke("b11010101010001010101101011101111".U)
       c.clock.step()
       c.io.DecoderPort.inst.expect(JAL)
       c.io.DecoderPort.rd.peek().litValue() should be(21)
       c.io.DecoderPort.rs1.peek().litValue() should be(0)
       c.io.DecoderPort.rs2.peek().litValue() should be(0)
-      c.io.DecoderPort.imm.peek().litValue() should be(1745578L)
+      c.io.DecoderPort.imm.peek().litValue().toLong.toBinaryString should be("11111111111101010101010101010100")
       c.io.DecoderPort.toALU.expect(false.B)
       c.io.DecoderPort.branch.expect(false.B)
     }

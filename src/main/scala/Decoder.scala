@@ -133,27 +133,12 @@ class Decoder(bitWidth: Int = 32) extends Module {
    */
   def ImmGenerator(regType: InstructionType.Type, inst: UInt): UInt = regType match {
     case INST_R => 0.U
-    case INST_I => inst(31, 20)
-    case INST_S => Cat(inst(31, 25), inst(11, 7))
-    case INST_B =>
-      Cat(
-        inst(31),
-        inst(7),
-        inst(30, 25),
-        inst(11, 8),
-        0.U(1.W)
-      )
-    case INST_U => Cat(inst(31, 12), 0.U(12.W))
-    case INST_J =>
-      Cat(
-        inst(31),
-        inst(19, 12),
-        inst(20),
-        inst(30, 25),
-        inst(24, 21),
-        0.U(1.W)
-      )
-    case INST_Z => inst(19, 15).zext.asUInt()
+    case INST_I => Cat(Fill(20, inst(31)), inst(31, 20))
+    case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7))
+    case INST_B => Cat(Fill(19, inst(31)), inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W))
+    case INST_U => Cat(inst(31, 12), Fill(12, 0.U))
+    case INST_J => Cat(Fill(11, inst(31)), inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21), 0.U(1.W))
+    case INST_Z => Cat(Fill(27, 0.U), inst(19, 15)) // for csri
     case _      => 0.U
   }
 }
