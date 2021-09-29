@@ -65,3 +65,4 @@ generated
 docs/generated
 test_run_dir
 tmp
+./MemoryTestFile.hex

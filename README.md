@@ -25,6 +25,8 @@
 This project is a learning exercise for both writing a RISC-V core and also
 better understand [Chisel](https://www.chisel-lang.org/), an HDL language based on Scala.
 
+Currently the target is to have a RV32I core.
+
 ## Planned features
 
 * Add a standard bus like Wishbone
