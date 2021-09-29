@@ -22,6 +22,8 @@
                         `--`
 ```
 
+[![Scala CI](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml/badge.svg)](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml)
+
 This project is a learning exercise for both writing a RISC-V core and also
 better understand [Chisel](https://www.chisel-lang.org/), an HDL language based on Scala.
 
