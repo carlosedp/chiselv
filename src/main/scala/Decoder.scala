@@ -4,19 +4,19 @@ import chisel3._
 import chisel3.util.{BitPat, _}
 
 class DecoderPort(bitWidth: Int = 32) extends Bundle {
-  val op     = Output(UInt(bitWidth.W)) // Op is the 32 bit instruction read received for decoding
-  val inst   = Input(Instruction())     // Instruction is the decoded instruction
-  val rd     = Input(UInt(5.W))         // Rd is the 5 bit destiny register
-  val rs1    = Input(UInt(5.W))         // Rs1 is the 5 bit source register 1
-  val rs2    = Input(UInt(5.W))         // Rs2 is the 5 bit source register 2
-  val imm    = Input(UInt(bitWidth.W))  // Imm is the 32 bit immediate
-  val toALU  = Input(Bool())            // ToALU is a flag to indicate if the instruction is to be executed in the ALU
-  val branch = Input(Bool())            // Branch is a flag to indicate if the instruction should jump and link. Update PC
+  val op     = Input(UInt(bitWidth.W))  // Op is the 32 bit instruction read received for decoding
+  val inst   = Output(Instruction())    // Instruction is the decoded instruction
+  val rd     = Output(UInt(5.W))        // Rd is the 5 bit destiny register
+  val rs1    = Output(UInt(5.W))        // Rs1 is the 5 bit source register 1
+  val rs2    = Output(UInt(5.W))        // Rs2 is the 5 bit source register 2
+  val imm    = Output(UInt(bitWidth.W)) // Imm is the 32 bit immediate
+  val toALU  = Output(Bool())           // ToALU is a flag to indicate if the instruction is to be executed in the ALU
+  val branch = Output(Bool())           // Branch is a flag to indicate if the instruction should jump and link. Update PC
 }
 
 class Decoder(bitWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
-    val DecoderPort = Flipped(new DecoderPort(bitWidth))
+    val DecoderPort = new DecoderPort(bitWidth)
   })
 
   val signals =
