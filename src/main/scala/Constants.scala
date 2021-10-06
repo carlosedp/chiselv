@@ -13,7 +13,8 @@ object Instruction extends ChiselEnum {
   ECALL, EBREAK,                               // Environment
   CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI, // CSR
   LB, LH, LBU, LHU, LW,                        // Loads
-  SB, SH, SW                                   // Stores
+  SB, SH, SW,                                  // Stores
+  EQ, NEQ                                      // Not instructions but auxiliaries
   = Value
 }
 

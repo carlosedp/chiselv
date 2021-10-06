@@ -23,19 +23,31 @@ class ALU(bitWidth: Int = 32) extends Module {
 
   switch(op) {
     // Arithmetic
-    is(ADD)(out := a + b)
-    is(SUB)(out := a - b)
+    is(ADD)(out  := a + b)
+    is(ADDI)(out := a + b)
+    is(SUB)(out  := a - b)
     // Shifts
-    is(SRA)(out := (a.asSInt >> shamt).asUInt) // Signed
-    is(SRL)(out := a >> shamt)
-    is(SLL)(out := a << shamt)
+    is(SRA)(out  := (a.asSInt >> shamt).asUInt) // Signed
+    is(SRAI)(out := (a.asSInt >> shamt).asUInt) // Signed
+    is(SRL)(out  := a >> shamt)
+    is(SRLI)(out := a >> shamt)
+    is(SLL)(out  := a << shamt)
+    is(SLLI)(out := a << shamt)
     // Logical
-    is(AND)(out := a & b)
-    is(OR)(out := a | b)
-    is(XOR)(out := a ^ b)
+    is(AND)(out  := a & b)
+    is(ANDI)(out := a & b)
+    is(OR)(out   := a | b)
+    is(ORI)(out  := a | b)
+    is(XOR)(out  := a ^ b)
+    is(XORI)(out := a ^ b)
     // Compare
-    is(SLT)(out := (a.asSInt < b.asSInt).asUInt) // Signed
-    is(SLTU)(out := a < b)
+    is(SLT)(out   := (a.asSInt < b.asSInt).asUInt) // Signed
+    is(SLTI)(out  := (a.asSInt < b.asSInt).asUInt) // Signed
+    is(SLTU)(out  := a < b)
+    is(SLTIU)(out := a < b)
+    // Auxiliary
+    is(EQ)(out  := a === b)
+    is(NEQ)(out := a =/= b)
   }
 
   io.ALUPort.x := out
