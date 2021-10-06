@@ -16,37 +16,9 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       BigInt(scala.util.Random.nextInt())
     )
 
-  def aluHelper(a: BigInt, b: BigInt, op: Type): BigInt =
-    op match {
-      case ADD  => a + b & 0xffffffffL
-      case SUB  => a - b
-      case AND  => a & b
-      case OR   => a | b
-      case XOR  => a ^ b
-      case SRA  => (a.toInt >> (b.toInt & 0x1f))
-      case SRL  => a.toInt >>> b.toInt
-      case SLL  => a.toInt << b.toInt
-      case SLT  => (if (a.toInt < b.toInt) 1 else 0)
-      case SLTU => (if ((a.toInt & 0xffffffffL) < (b.toInt & 0xffffffffL)) 1 else 0)
-      case _    => 0 // Never happens
-    }
+  behavior of "ALU"
 
-  def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
-    // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
-    dut.io.ALUPort.op.poke(op)
-    dut.io.ALUPort.a.poke((i & 0xffffffffL).U)
-    dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
-    dut.clock.step()
-    // println(s"Output is ${dut.io.x.peek()}")
-    dut.io.ALUPort.x.expect(out.U)
-  }
-  def testCycle(dut: ALU, op: Type) =
-    for (i <- cases) {
-      for (j <- cases) {
-        testDut(i, j, (aluHelper(i, j, op) & 0xffffffffL), op, dut)
-      }
-    }
-  "ALU" should "ADD" in {
+  it should "ADD" in {
     test(new ALU()) { c =>
       testCycle(c, ADD)
     }
@@ -96,4 +68,59 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       testCycle(c, SLTU)
     }
   }
+  it should "EQ" in {
+    test(new ALU()) { c =>
+      testCycle(c, EQ)
+    }
+  }
+  it should "NEQ" in {
+    test(new ALU()) { c =>
+      testCycle(c, NEQ)
+    }
+  }
+  it should "GT" in {
+    test(new ALU()) { c =>
+      testCycle(c, GT)
+    }
+  }
+  it should "GTU" in {
+    test(new ALU()) { c =>
+      testCycle(c, GTU)
+    }
+  }
+  // --------------------- Test Helpers ---------------------
+  def aluHelper(a: BigInt, b: BigInt, op: Type): BigInt =
+    op match {
+      case ADD  => a + b & 0xffffffffL
+      case SUB  => a - b
+      case AND  => a & b
+      case OR   => a | b
+      case XOR  => a ^ b
+      case SRA  => (a.toInt >> (b.toInt & 0x1f))
+      case SRL  => a.toInt >>> b.toInt
+      case SLL  => a.toInt << b.toInt
+      case SLT  => (if (a.toInt < b.toInt) 1 else 0)
+      case SLTU => (if ((a.toInt & 0xffffffffL) < (b.toInt & 0xffffffffL)) 1 else 0)
+      case EQ   => (if ((a.toInt & 0xffffffffL) == (b.toInt & 0xffffffffL)) 1 else 0)
+      case NEQ  => (if ((a.toInt & 0xffffffffL) != (b.toInt & 0xffffffffL)) 1 else 0)
+      case GT   => (if ((a.toInt & 0xffffffffL) > (b.toInt & 0xffffffffL)) 1 else 0)
+      case GTU  => (if (a.toInt > b.toInt) 1 else 0)
+      case _    => 0 // Never happens
+    }
+
+  def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
+    // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
+    dut.io.ALUPort.op.poke(op)
+    dut.io.ALUPort.a.poke((i & 0xffffffffL).U)
+    dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
+    dut.clock.step()
+    // println(s"Output is ${dut.io.ALUPort.x.peek()}")
+    dut.io.ALUPort.x.expect(out.U)
+  }
+  def testCycle(dut: ALU, op: Type) =
+    for (i <- cases) {
+      for (j <- cases) {
+        testDut(i, j, (aluHelper(i, j, op) & 0xffffffffL), op, dut)
+      }
+    }
 }
