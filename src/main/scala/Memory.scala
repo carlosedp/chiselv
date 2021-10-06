@@ -14,7 +14,7 @@ class DualPort(val bitWidth: Int, val words: Int) extends Bundle {
 class DualPortRAM(
   bitWidth: Int = 32,
   sizeBytes: Int = 1,
-  memoryFile: String = ""
+  memoryFile: String = "",
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {

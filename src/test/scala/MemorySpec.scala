@@ -1,8 +1,10 @@
 import chisel3._
+
 import chiseltest._
 import org.scalatest._
-import treadle.ClockInfoAnnotation
-import treadle.executable.ClockInfo
+
+import java.io.File
+import java.io.PrintWriter
 
 import flatspec._
 import matchers._
@@ -10,7 +12,7 @@ import matchers._
 class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   val filename = "MemorySpecTestFile.hex"
   // Create memory test file with 32bit address space
-  reflect.io.File(filename).writeAll("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n")
+  new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
 
   "Memory" should "write and read from address" in {
     test(new DualPortRAM(32, 1 * 1024)) { c =>
@@ -34,9 +36,7 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     }
   }
   it should "load from file and read multiple addresses" in {
-    test(new DualPortRAM(32, 1 * 1024, filename)).withAnnotations(
-      Seq(VerilatorBackendAnnotation, WriteFstAnnotation, ClockInfoAnnotation(Seq(ClockInfo(period = 2))))
-    ) { c =>
+    test(new DualPortRAM(32, 1 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.dualPort.readAddr.poke(0.U)
       c.io.dualPort.writeAddr.poke(0.U)
       c.clock.step()
@@ -59,6 +59,6 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
       c.clock.step()
       c.io.dualPort.readData.expect(1234.U)
     }
-    reflect.io.File(filename).delete()
+    new File(filename).delete()
   }
 }
