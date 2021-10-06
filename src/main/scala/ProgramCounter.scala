@@ -16,7 +16,7 @@ class ProgramCounter(regWidth: Int = 32, entryPoint: Long = 0) extends Module {
 
   when(io.pcPort.writeEnable) {
     pc := Mux(io.pcPort.writeAdd, pc + io.pcPort.dataIn, io.pcPort.dataIn)
-  }.elsewhen(io.pcPort.countEnable)(pc := pc + 1.U)
+  }.elsewhen(io.pcPort.countEnable)(pc := pc + 4.U)
 
   io.pcPort.dataOut := pc
 }

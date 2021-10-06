@@ -35,8 +35,8 @@ class DualPortRAM(
     loadMemoryFromFileInline(mem, memoryFile)
   }
 
-  io.dualPort.readData := mem.read(io.dualPort.readAddr)
+  io.dualPort.readData := mem.read(io.dualPort.readAddr >> 2)
   when(io.dualPort.writeEnable === true.B) {
-    mem.write(io.dualPort.writeAddr, io.dualPort.writeData)
+    mem.write(io.dualPort.writeAddr >> 2, io.dualPort.writeData)
   }
 }

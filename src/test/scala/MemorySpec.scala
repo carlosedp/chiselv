@@ -36,18 +36,19 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     }
   }
   it should "load from file and read multiple addresses" in {
-    test(new DualPortRAM(32, 1 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    test(new DualPortRAM(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.dualPort.readAddr.poke(0.U)
       c.io.dualPort.writeAddr.poke(0.U)
       c.clock.step()
       c.io.dualPort.readData.expect("h00010203".U)
-      c.io.dualPort.readAddr.poke(1.U)
+      c.io.dualPort.readAddr.poke(4.U)
       c.clock.step()
       c.io.dualPort.readData.expect("h08090A0B".U)
-      c.io.dualPort.readAddr.poke(2.U)
+      c.io.dualPort.readAddr.poke(8.U)
       c.clock.step()
       c.io.dualPort.readData.expect("hDEADBEEF".U)
-      c.io.dualPort.readAddr.poke(3.U)
+      c.io.dualPort.readAddr.poke(12.U)
+      c.clock.step()
       c.clock.step()
       c.io.dualPort.readData.expect("h07060504".U)
       c.io.dualPort.readAddr.poke(1.U)
