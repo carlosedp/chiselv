@@ -7,8 +7,9 @@ import flatspec._
 import matchers._
 
 class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+  behavior of "Decoder"
 
-  "Decoder" should "Decode an ADD instruction (type R)" in {
+  it should "Decode an ADD instruction (type R)" in {
     test(new Decoder()) { c =>
       //  Template: "b0000000??????????000?????0110011"
       val genInst = InstructionHelper(ADD, 1, 2, 3, 0)
@@ -65,7 +66,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       validateResult(c, JAL, 21, 0, 0, -699052, false.B, false.B)
     }
   }
-
+  // --------------------- Test Helpers ---------------------
   def validateResult(
     c: Decoder,
     inst: Instruction.Type,

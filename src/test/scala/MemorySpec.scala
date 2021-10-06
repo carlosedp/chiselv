@@ -10,11 +10,9 @@ import flatspec._
 import matchers._
 
 class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  val filename = "MemorySpecTestFile.hex"
-  // Create memory test file with 32bit address space
-  new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
+  behavior of "Memory"
 
-  "Memory" should "write and read from address" in {
+  it should "write and read from address" in {
     test(new DualPortRAM(32, 1 * 1024)) { c =>
       c.io.dualPort.writeAddr.poke(0.U)
       c.io.dualPort.readAddr.poke(0.U)
@@ -36,6 +34,10 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     }
   }
   it should "load from file and read multiple addresses" in {
+    val filename = "MemorySpecTestFile.hex"
+    // Create memory test file with 32bit address space
+    new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
+
     test(new DualPortRAM(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.dualPort.readAddr.poke(0.U)
       c.io.dualPort.writeAddr.poke(0.U)

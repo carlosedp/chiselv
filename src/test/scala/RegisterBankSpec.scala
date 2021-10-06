@@ -6,7 +6,9 @@ import flatspec._
 import matchers._
 
 class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  "RegisterBank" should "have x0 equal to 0" in {
+  behavior of "RegisterBank"
+
+  it should "have x0 equal to 0" in {
     test(new RegisterBank()) { c =>
       c.io.regPort.rs1_addr.poke(0.U)
       c.io.regPort.rs1.expect(0.S)

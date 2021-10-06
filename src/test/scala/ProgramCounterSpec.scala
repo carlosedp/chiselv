@@ -6,7 +6,9 @@ import flatspec._
 import matchers._
 
 class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  "ProgramCounter" should "initialize to 0" in {
+  behavior of "ProgramCounter"
+
+  it should "initialize to 0" in {
     test(new ProgramCounter()) { c =>
       c.io.pcPort.dataOut.expect(0.U)
     }
@@ -27,13 +29,16 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       c.io.pcPort.dataOut.peek().litValue() should be(BigInt("baddcafe", 16))
     }
   }
-  it should "add 32 to PC" in {
+  it should "add 32 to PC ending up in 40" in {
     test(new ProgramCounter()) { c =>
       c.io.pcPort.writeEnable.poke(true.B)
+      c.io.pcPort.dataIn.poke(8.U)
+      c.clock.step()
+      c.io.pcPort.dataOut.peek().litValue() should be(8)
       c.io.pcPort.writeAdd.poke(true.B)
       c.io.pcPort.dataIn.poke(32.U)
       c.clock.step()
-      c.io.pcPort.dataOut.peek().litValue() should be(32)
+      c.io.pcPort.dataOut.peek().litValue() should be(40)
     }
   }
 }
