@@ -11,12 +11,12 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       c.io.pcPort.dataOut.expect(0.U)
     }
   }
-  it should "walk 4 bytes" in {
+  it should "walk 1 word" in {
     test(new ProgramCounter()) { c =>
       c.io.pcPort.countEnable.poke(true.B)
       c.io.pcPort.dataOut.peek().litValue() should be(0)
       c.clock.step()
-      c.io.pcPort.dataOut.peek().litValue() should be(4)
+      c.io.pcPort.dataOut.peek().litValue() should be(1)
     }
   }
   it should "jump to 0xbaddcafe (write)" in {
@@ -33,7 +33,7 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       c.io.pcPort.writeAdd.poke(true.B)
       c.io.pcPort.dataIn.poke(32.U)
       c.clock.step()
-      c.io.pcPort.dataOut.peek().litValue() should be(28)
+      c.io.pcPort.dataOut.peek().litValue() should be(32)
     }
   }
 }
