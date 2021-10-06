@@ -17,6 +17,9 @@ test: chisel_tests
 fmt: ## Formats code using scalafmt and scalafix
 	sbt lint
 
+gcc: ## Builds gcc sample code
+	make -C gcc
+
 check-board-vars:
 	@test -n "$(BOARD)" || (echo "Set BOARD variable to one of the supported boards: " ; cat pmod1.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; exit 1)
 
