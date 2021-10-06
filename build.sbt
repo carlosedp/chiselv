@@ -1,9 +1,9 @@
 // See README.md for license details.
 
 ThisBuild / organization := "com.carlosedp"
-ThisBuild / description := "ChiselV is a RISC-V core written in Chisel"
-ThisBuild / homepage := Some(url("https://carlosedp.com"))
-ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+ThisBuild / description  := "ChiselV is a RISC-V core written in Chisel"
+ThisBuild / homepage     := Some(url("https://carlosedp.com"))
+ThisBuild / licenses     := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 ThisBuild / scmInfo := Some(
   ScmInfo(url("https://github.com/carlosedp/"), "git@github.com:carlosedp/.git")
 )
@@ -11,15 +11,15 @@ ThisBuild / developers := List(
   Developer("carlosedp", "Carlos Eduardo de Paula", "carlosedp@gmail.com", url("https://github.com/carlosedp"))
 )
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
-Global / semanticdbEnabled := true
-Global / semanticdbVersion := "4.4.28" //scalafixSemanticdb.revision // Force version due to compatibility issues
-Global / onChangedBuildSource := ReloadOnSourceChanges
+Global / semanticdbEnabled                                 := true
+Global / semanticdbVersion                                 := "4.4.28" //scalafixSemanticdb.revision // Force version due to compatibility issues
+Global / onChangedBuildSource                              := ReloadOnSourceChanges
 
 lazy val chiselv = (project in file("."))
   .settings(
-    name := "chiselv",
-    version := "0.0.1",
-    scalaVersion := "2.13.6"
+    name         := "chiselv",
+    version      := "0.0.1",
+    scalaVersion := "2.13.6",
   )
 
 // Default library versions
@@ -28,8 +28,9 @@ val defaultVersions = Map(
   "chiseltest"       -> "0.5-SNAPSHOT",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
-  "scalautils"       -> "0.5.0"
+  "scalautils"       -> "0.5.0",
 )
+
 // Import libraries
 libraryDependencies += "edu.berkeley.cs"                   %% "chisel3"          % defaultVersions("chisel3")
 libraryDependencies += "edu.berkeley.cs"                   %% "chiseltest"       % defaultVersions("chiseltest")
@@ -41,14 +42,14 @@ addCompilerPlugin("edu.berkeley.cs"                         % "chisel3-plugin"  
 // Aliases
 addCommandAlias("com", "all compile test:compile")
 addCommandAlias("rel", "reload")
-addCommandAlias("fmt", "all scalafmtSbt scalafmtAll;all compile:scalafix test:scalafix")
-addCommandAlias("fix", "all Compile / scalafixAll Test / scalafixAll")
+addCommandAlias("fmt", "all scalafmtSbt scalafmtAll;all Compile / scalafix; Test / scalafix")
+addCommandAlias("fix", "all Compile / scalafixAll; Test / scalafixAll")
 addCommandAlias("lint", "fmt;fix")
 addCommandAlias("deps", "dependencyUpdates")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("releases")
+  Resolver.sonatypeRepo("releases"),
 )
 
 scalacOptions ++= Seq(
@@ -59,5 +60,5 @@ scalacOptions ++= Seq(
   "-Xcheckinit",
   "-Xfatal-warnings",
   "-Ywarn-dead-code",
-  "-Ywarn-unused"
+  "-Ywarn-unused",
 )
