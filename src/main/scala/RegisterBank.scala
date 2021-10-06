@@ -2,9 +2,12 @@ import chisel3._
 import chisel3.util._
 
 class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
-  val dataIn      = Input(UInt(bitWidth.W))
-  val dataOut     = Output(UInt(bitWidth.W))
-  val address     = Input(UInt(log2Ceil(bitWidth + 1).W))
+  val rs1         = Output(SInt(bitWidth.W))
+  val rs2         = Output(SInt(bitWidth.W))
+  val rs1_addr    = Input(UInt(log2Ceil(bitWidth + 1).W))
+  val rs2_addr    = Input(UInt(log2Ceil(bitWidth + 1).W))
+  val regwr_addr  = Input(UInt(log2Ceil(bitWidth + 1).W))
+  val regwr_data  = Input(SInt(bitWidth.W))
   val writeEnable = Input(Bool())
 }
 
@@ -13,11 +16,12 @@ class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
     val regPort = new RegisterBankPort(regWidth)
   })
 
-  val regs = Mem(numRegs, UInt(regWidth.W))
-  regs.write(0.U, 0.U) // Register x0 is always 0
+  val regs = RegInit(VecInit(Seq.fill(numRegs)(0.S(regWidth.W))))
+  regs(0) := 0.S // Register x0 is always 0
 
-  io.regPort.dataOut := regs.read(io.regPort.address)
-  when(io.regPort.writeEnable && io.regPort.address =/= 0.U) {
-    regs.write(io.regPort.address, io.regPort.dataIn)
+  io.regPort.rs1 := regs(io.regPort.rs1_addr)
+  io.regPort.rs2 := regs(io.regPort.rs2_addr)
+  when(io.regPort.writeEnable && io.regPort.regwr_addr =/= 0.U) {
+    regs(io.regPort.regwr_addr) := io.regPort.regwr_data
   }
 }
