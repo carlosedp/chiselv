@@ -14,7 +14,7 @@ object Instruction extends ChiselEnum {
   CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI, // CSR
   LB, LH, LBU, LHU, LW,                        // Loads
   SB, SH, SW,                                  // Stores
-  EQ, NEQ, GT, GTU                             // Not instructions but auxiliaries
+  EQ, NEQ, GTE, GTEU                           // Not instructions but auxiliaries
   = Value
 }
 

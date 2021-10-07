@@ -80,12 +80,12 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   }
   it should "GT" in {
     test(new ALU()) { c =>
-      testCycle(c, GT)
+      testCycle(c, GTE)
     }
   }
   it should "GTU" in {
     test(new ALU()) { c =>
-      testCycle(c, GTU)
+      testCycle(c, GTEU)
     }
   }
   // --------------------- Test Helpers ---------------------
@@ -103,8 +103,8 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       case SLTU => (if ((a.toInt & 0xffffffffL) < (b.toInt & 0xffffffffL)) 1 else 0)
       case EQ   => (if ((a.toInt & 0xffffffffL) == (b.toInt & 0xffffffffL)) 1 else 0)
       case NEQ  => (if ((a.toInt & 0xffffffffL) != (b.toInt & 0xffffffffL)) 1 else 0)
-      case GT   => (if ((a.toInt & 0xffffffffL) > (b.toInt & 0xffffffffL)) 1 else 0)
-      case GTU  => (if (a.toInt > b.toInt) 1 else 0)
+      case GTE  => (if ((a.toInt & 0xffffffffL) >= (b.toInt & 0xffffffffL)) 1 else 0)
+      case GTEU => (if (a.toInt >= b.toInt) 1 else 0)
       case _    => 0 // Never happens
     }
 
