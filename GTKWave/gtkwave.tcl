@@ -9,10 +9,10 @@
 
 # Customize this section as needed
 ## Add TOPLevel clock and reset signals
-set top [list CPU.clock CPU.reset ]
+set top [list TOP.CPU.clock TOP.CPU.reset ]
 
 ## This adds the signals based on a list of {"signal_name_filter" Color}
-set signals_to_add {{"CPU.stateReg" Orange} {"PC.io_pcPort" Green} {"memory.io_dualPort" Red} {"decoder.io_DecoderPort" Violet} {"CPU.registerBank.io_regPort" Yellow} {"CPU.registerBank.regs_" Yellow} {"CPU.ALU.io_ALUPort" Orange}}
+set signals_to_add {{"PC.io_pcPort" Green} {"memory.io_dualPort" Red} {"decoder.io_DecoderPort" Violet} {"CPU.ALU.io_ALUPort" Orange} {"CPU.registerBank.io_regPort" Yellow} {"CPU.registerBank.regs_" Yellow}}
 
 ## For mapping values, add the translate files and the signals to map file
 # Format file as: "signal_value mapped_value" (one per line)
