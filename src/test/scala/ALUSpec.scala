@@ -110,7 +110,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
 
   def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
-    dut.io.ALUPort.op.poke(op)
+    dut.io.ALUPort.inst.poke(op)
     dut.io.ALUPort.a.poke((i & 0xffffffffL).U)
     dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
     dut.clock.step()

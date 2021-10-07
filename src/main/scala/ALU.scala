@@ -3,17 +3,17 @@ import chisel3._
 import chisel3.util._
 
 class ALUPort(bitWidth: Int = 32) extends Bundle {
-  val op = Input(Instruction())
-  val a  = Input(UInt(bitWidth.W))
-  val b  = Input(UInt(bitWidth.W))
-  val x  = Output(UInt(bitWidth.W))
+  val inst = Input(Instruction())
+  val a    = Input(UInt(bitWidth.W))
+  val b    = Input(UInt(bitWidth.W))
+  val x    = Output(UInt(bitWidth.W))
 }
 class ALU(bitWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
     val ALUPort = new ALUPort(bitWidth)
   })
 
-  val op = io.ALUPort.op
+  val op = io.ALUPort.inst
   val a  = io.ALUPort.a
   val b  = io.ALUPort.b
 
