@@ -72,9 +72,9 @@ class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: 
       is(BEQ)(ALU.io.ALUPort.inst  := EQ)
       is(BNE)(ALU.io.ALUPort.inst  := NEQ)
       is(BLT)(ALU.io.ALUPort.inst  := SLT)
-      is(BGE)(ALU.io.ALUPort.inst  := GT)
+      is(BGE)(ALU.io.ALUPort.inst  := GTE)
       is(BLTU)(ALU.io.ALUPort.inst := SLTU)
-      is(BGEU)(ALU.io.ALUPort.inst := GTU)
+      is(BGEU)(ALU.io.ALUPort.inst := GTEU)
     }
     when(ALU.io.ALUPort.x === 1.U) {
       PC.io.pcPort.writeEnable := true.B
@@ -82,4 +82,31 @@ class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: 
       PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm
     }
   }
+  // Jump Operations
+  when(decoder.io.DecoderPort.jump) {
+    when(decoder.io.DecoderPort.inst === JAL) {
+      // Write next instruction address to rd
+      registerBank.io.regPort.writeEnable := true.B
+      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+      registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + 4.U).asSInt()
+      // Set PC to jump address
+      PC.io.pcPort.writeEnable := true.B
+      PC.io.pcPort.writeAdd    := true.B
+      PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm
+    }
+    when(decoder.io.DecoderPort.inst === JALR) {
+      // Write next instruction address to rd
+      registerBank.io.regPort.writeEnable := true.B
+      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+      registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + 4.U).asSInt()
+      // Set PC to jump address
+      PC.io.pcPort.writeEnable         := true.B
+      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
+      PC.io.pcPort.dataIn := Cat(
+        (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm.asSInt()).asUInt()(31, 1),
+        0.U,
+      )
+    }
+  }
+
 }

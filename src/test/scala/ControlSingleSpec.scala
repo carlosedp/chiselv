@@ -1,4 +1,3 @@
-// import chisel3._
 import chiseltest._
 import org.scalatest._
 import treadle.ClockInfoAnnotation
@@ -9,8 +8,8 @@ import java.io.{File, PrintWriter}
 import flatspec._
 import matchers._
 
-class ControlSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "Control"
+class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+  behavior of "ControlSingle"
 
   it should "load simple instructions" in {
     // Create memory test file with 32bit address space
@@ -39,11 +38,7 @@ class ControlSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       )
     ) { c =>
       c.clock.setTimeout(0)
-      // BoringUtils.addSource(clock_uint.asBool, "clock_bore")
-
-      c.clock.step(1)
-
-      c.clock.step(100)
+      c.clock.step(50)
     }
   }
   it should "load program and should have value 25 in mem address 100" in {
@@ -56,7 +51,7 @@ class ControlSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       )
     ) { c =>
       c.clock.setTimeout(0)
-      c.clock.step(100)
+      c.clock.step(50)
     }
   }
 }
