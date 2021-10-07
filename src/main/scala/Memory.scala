@@ -15,6 +15,7 @@ class DualPortRAM(
   bitWidth: Int = 32,
   sizeBytes: Int = 1,
   memoryFile: String = "",
+  is_instruction_mem: Boolean = false,
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {
@@ -29,14 +30,17 @@ class DualPortRAM(
   // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
   annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
 
-  val mem = SyncReadMem(words, UInt(bitWidth.W))
+  val mem          = Mem(words, UInt(bitWidth.W))
+  val readAddress  = if (is_instruction_mem) io.dualPort.readAddr >> 2 else io.dualPort.readAddr
+  val writeAddress = if (is_instruction_mem) io.dualPort.writeAddr >> 2 else io.dualPort.writeAddr
+
   if (memoryFile.trim().nonEmpty) {
     println(s"  Load memory file: " + memoryFile)
     loadMemoryFromFileInline(mem, memoryFile)
   }
 
-  io.dualPort.readData := mem.read(io.dualPort.readAddr >> 2)
+  io.dualPort.readData := mem.read(readAddress)
   when(io.dualPort.writeEnable === true.B) {
-    mem.write(io.dualPort.writeAddr >> 2, io.dualPort.writeData)
+    mem.write(writeAddress, io.dualPort.writeData)
   }
 }
