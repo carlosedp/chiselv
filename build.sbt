@@ -5,7 +5,7 @@ ThisBuild / description  := "ChiselV is a RISC-V core written in Chisel"
 ThisBuild / homepage     := Some(url("https://carlosedp.com"))
 ThisBuild / licenses     := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 ThisBuild / scmInfo := Some(
-  ScmInfo(url("https://github.com/carlosedp/"), "git@github.com:carlosedp/.git")
+  ScmInfo(url("https://github.com/carlosedp/chiselv"), "git@github.com:carlosedp/chiselv.git")
 )
 ThisBuild / developers := List(
   Developer("carlosedp", "Carlos Eduardo de Paula", "carlosedp@gmail.com", url("https://github.com/carlosedp"))
@@ -24,8 +24,8 @@ lazy val chiselv = (project in file("."))
 
 // Default library versions
 val defaultVersions = Map(
-  "chisel3"          -> "3.5-SNAPSHOT",
-  "chiseltest"       -> "0.5-SNAPSHOT",
+  "chisel3"          -> "3.5.0-RC1",
+  "chiseltest"       -> "0.5.0-RC1",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
   "scalautils"       -> "0.5.0",
