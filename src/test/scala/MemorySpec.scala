@@ -1,10 +1,8 @@
 import chisel3._
-
 import chiseltest._
 import org.scalatest._
 
-import java.io.File
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 
 import flatspec._
 import matchers._

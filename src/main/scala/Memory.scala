@@ -31,6 +31,7 @@ class DualPortRAM(
   annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
 
   val mem          = Mem(words, UInt(bitWidth.W))
+  val dedupBlock   = WireInit(mem.hashCode.U) // Prevents deduping this memory module
   val readAddress  = if (is_instruction_mem) io.dualPort.readAddr >> 2 else io.dualPort.readAddr
   val writeAddress = if (is_instruction_mem) io.dualPort.writeAddr >> 2 else io.dualPort.writeAddr
 
