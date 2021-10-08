@@ -19,7 +19,8 @@ class DualPortRAM(
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {
-    val dualPort = new DualPort(bitWidth, words)
+    val address_size = if (is_instruction_mem) words << 2 else words
+    val dualPort     = new DualPort(bitWidth, address_size)
   })
   println(s"Dual-port Memory Parameters:")
   println(s"  Words: $words")
@@ -30,8 +31,9 @@ class DualPortRAM(
   // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
   annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
 
-  val mem          = Mem(words, UInt(bitWidth.W))
-  val dedupBlock   = WireInit(mem.hashCode.U) // Prevents deduping this memory module
+  val mem        = Mem(words, UInt(bitWidth.W))
+  val dedupBlock = WireInit(mem.hashCode.U) // Prevents deduping this memory module
+  // Divide memory address by 4 to get the word due to pc+4 addressing
   val readAddress  = if (is_instruction_mem) io.dualPort.readAddr >> 2 else io.dualPort.readAddr
   val writeAddress = if (is_instruction_mem) io.dualPort.writeAddr >> 2 else io.dualPort.writeAddr
 
