@@ -33,8 +33,8 @@ val defaultVersions = Map(
 
 // Import libraries
 libraryDependencies += "edu.berkeley.cs"                   %% "chisel3"          % defaultVersions("chisel3")
-libraryDependencies += "edu.berkeley.cs"                   %% "chiseltest"       % defaultVersions("chiseltest")
-libraryDependencies += "org.scalatest"                     %% "scalatest"        % defaultVersions("scalatest")
+libraryDependencies += "edu.berkeley.cs"                   %% "chiseltest"       % defaultVersions("chiseltest") % "test"
+libraryDependencies += "org.scalatest"                     %% "scalatest"        % defaultVersions("scalatest")  % "test"
 libraryDependencies += "com.carlosedp"                     %% "scalautils"       % defaultVersions("scalautils")
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % defaultVersions("organize-imports")
 addCompilerPlugin("edu.berkeley.cs"                         % "chisel3-plugin"   % defaultVersions("chisel3") cross CrossVersion.full)

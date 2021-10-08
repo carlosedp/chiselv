@@ -1,12 +1,17 @@
 import chiseltest._
 import org.scalatest._
-import treadle.ClockInfoAnnotation
-import treadle.executable.ClockInfo
 
 import java.io.{File, PrintWriter}
 
 import flatspec._
 import matchers._
+
+// Extend the Control module to add the observer for sub-module signals
+class ControlSingleWrapper(bitWidth: Int, memorySize: Int, memoryFile: String)
+  extends ControlSingle(bitWidth, memorySize, memoryFile)
+  with Observer {
+  val registers = observe(registerBank.regs)
+}
 
 class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "ControlSingle"
@@ -16,7 +21,7 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     // Instructions are: addi x1 x0 32 ,lui x2 0xc0000000, lbu x3 0(x1), jal x0, -16
     val filename = "CPUSpecMemoryTestFile.hex"
     new PrintWriter(new File(filename)) { write("02000093\r\nc0000137\r\n0000c183\r\nff1ff06f\r\n"); close }
-    test(new ControlSingle(32, 4 * 1024, filename)).withAnnotations(
+    test(new ControlSingleWrapper(32, 1 * 1024, filename)).withAnnotations(
       Seq(
         VerilatorBackendAnnotation,
         WriteVcdAnnotation,
@@ -30,24 +35,26 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
 
   it should "load instructions from file to write to all registers with ADDI" in {
     val filename = "./gcc/test_alu.mem"
-    test(new ControlSingle(32, 4 * 1024, filename)).withAnnotations(
+    test(new ControlSingleWrapper(32, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
-        ClockInfoAnnotation(Seq(ClockInfo(period = 2))),
       )
     ) { c =>
       c.clock.setTimeout(0)
-      c.clock.step(50)
+      val results = List.fill(8)(List(0, 1000, 3000, 2000)).flatten
+      for ((i, r) <- (0 until 31 zip results)) {
+        c.registers(i).peek().litValue() should be(r)
+        c.clock.step(1)
+      }
     }
   }
   it should "load program and should have value 25 in mem address 100" in {
     val filename = "./gcc/riscvtest.mem"
-    test(new ControlSingle(32, 4 * 1024, filename)).withAnnotations(
+    test(new ControlSingleWrapper(32, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
-        ClockInfoAnnotation(Seq(ClockInfo(period = 2))),
       )
     ) { c =>
       c.clock.setTimeout(0)

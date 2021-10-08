@@ -4,8 +4,6 @@ import chisel3.util._
 
 class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: String = "") extends Module {
 
-  val io = IO(new Bundle {})
-
   // Instantiate the modules
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
