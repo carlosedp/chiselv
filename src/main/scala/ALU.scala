@@ -48,8 +48,8 @@ class ALU(bitWidth: Int = 32) extends Module {
     // Auxiliary
     is(EQ)(out   := Mux(a === b, 1.U, 0.U))
     is(NEQ)(out  := Mux(a =/= b, 1.U, 0.U))
-    is(GTE)(out  := Mux(a >= b, 1.U, 0.U))
-    is(GTEU)(out := (Mux((a.asSInt >= b.asSInt), 1.U, 0.U))) // Signed
+    is(GTE)(out  := Mux(a.asSInt >= b.asSInt, 1.U, 0.U))
+    is(GTEU)(out := (Mux((a >= b), 1.U, 0.U)))
   }
 
   io.ALUPort.x := out
