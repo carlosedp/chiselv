@@ -17,34 +17,26 @@ class ALU(bitWidth: Int = 32) extends Module {
   val a  = io.ALUPort.a
   val b  = io.ALUPort.b
 
-  val out   = WireDefault(UInt(bitWidth.W), 0.U)
-  val shamt = b(4, 0).asUInt() // For RV32I the shift amount is 5 bits wide
-  // val shamt = b(5, 0).asUInt() // For RV64I the shift amount is 6 bits wide
+  val out = WireDefault(UInt(bitWidth.W), 0.U)
+
+  val shamt = b(4, 0).asUInt() // For RV32I the shift amount is 5 bits
+  // val shamt = b(5, 0).asUInt() // For RV64I the shift amount is 6 bits
 
   switch(op) {
     // Arithmetic
-    is(ADD)(out  := a + b)
-    is(ADDI)(out := a + b)
-    is(SUB)(out  := a - b)
+    is(ADD)(out := a + b)
+    is(SUB)(out := a - b)
     // Shifts
-    is(SRA)(out  := (a.asSInt >> shamt).asUInt) // Signed
-    is(SRAI)(out := (a.asSInt >> shamt).asUInt) // Signed
-    is(SRL)(out  := a >> shamt)
-    is(SRLI)(out := a >> shamt)
-    is(SLL)(out  := a << shamt)
-    is(SLLI)(out := a << shamt)
+    is(SRA)(out := (a.asSInt >> shamt).asUInt) // Signed
+    is(SRL)(out := a >> shamt)
+    is(SLL)(out := a << shamt)
     // Logical
-    is(AND)(out  := a & b)
-    is(ANDI)(out := a & b)
-    is(OR)(out   := a | b)
-    is(ORI)(out  := a | b)
-    is(XOR)(out  := a ^ b)
-    is(XORI)(out := a ^ b)
+    is(AND)(out := a & b)
+    is(OR)(out  := a | b)
+    is(XOR)(out := a ^ b)
     // Compare
-    is(SLT)(out   := (Mux((a.asSInt < b.asSInt), 1.U, 0.U))) // Signed
-    is(SLTI)(out  := (Mux((a.asSInt < b.asSInt), 1.U, 0.U))) // Signed
-    is(SLTU)(out  := Mux(a < b, 1.U, 0.U))
-    is(SLTIU)(out := Mux(a < b, 1.U, 0.U))
+    is(SLT)(out  := (Mux((a.asSInt < b.asSInt), 1.U, 0.U))) // Signed
+    is(SLTU)(out := Mux(a < b, 1.U, 0.U))
     // Auxiliary
     is(EQ)(out   := Mux(a === b, 1.U, 0.U))
     is(NEQ)(out  := Mux(a =/= b, 1.U, 0.U))

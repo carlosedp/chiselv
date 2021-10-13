@@ -23,7 +23,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       val genInst = InstructionHelper(ANDI, 7, 24, 0, -1)
       c.io.DecoderPort.op.poke(genInst.U)
       c.clock.step()
-      validateResult(c, ANDI, 7, 24, 0, -1, true.B, false.B)
+      validateResult(c, AND, 7, 24, 0, -1, true.B, false.B)
     }
   }
   it should "Decode an SB instruction (type S)" in {
