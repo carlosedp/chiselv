@@ -15,18 +15,20 @@ class DualPortRAM(
   bitWidth: Int = 32,
   sizeBytes: Int = 1,
   memoryFile: String = "",
-  is_instruction_mem: Boolean = false,
+  debugMsg: Boolean = false,
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {
-    val address_size = if (is_instruction_mem) words << 2 else words
+    val address_size = sizeBytes
     val dualPort     = new DualPort(bitWidth, address_size)
   })
-  println(s"Dual-port Memory Parameters:")
-  println(s"  Words: $words")
-  println(s"  Size: " + words * bitWidth + " bytes")
-  println(s"  Bit width: $bitWidth bit")
-  println(s"  Addr Width: " + io.dualPort.readAddr.getWidth + " bit")
+  if (debugMsg) {
+    println(s"Dual-port Memory Parameters:")
+    println(s"  Words: $words")
+    println(s"  Size: " + words * bitWidth + " bytes")
+    println(s"  Bit width: $bitWidth bit")
+    println(s"  Addr Width: " + io.dualPort.readAddr.getWidth + " bit")
+  }
 
   // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
   annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
@@ -34,8 +36,8 @@ class DualPortRAM(
   val mem        = Mem(words, UInt(bitWidth.W))
   val dedupBlock = WireInit(mem.hashCode.U) // Prevents deduping this memory module
   // Divide memory address by 4 to get the word due to pc+4 addressing
-  val readAddress  = if (is_instruction_mem) io.dualPort.readAddr >> 2 else io.dualPort.readAddr
-  val writeAddress = if (is_instruction_mem) io.dualPort.writeAddr >> 2 else io.dualPort.writeAddr
+  val readAddress  = io.dualPort.readAddr >> 2
+  val writeAddress = io.dualPort.writeAddr >> 2
 
   if (memoryFile.trim().nonEmpty) {
     println(s"  Load memory file: " + memoryFile)

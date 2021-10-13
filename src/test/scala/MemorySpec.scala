@@ -36,7 +36,7 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     // Create memory test file with 32bit address space
     new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
 
-    test(new DualPortRAM(32, 16 * 1024, filename, true)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    test(new DualPortRAM(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.dualPort.readAddr.poke(0.U)
       c.io.dualPort.writeAddr.poke(0.U)
       c.clock.step()
@@ -48,37 +48,6 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
       c.clock.step()
       c.io.dualPort.readData.expect("hDEADBEEF".U)
       c.io.dualPort.readAddr.poke(12.U)
-      c.clock.step()
-      c.clock.step()
-      c.io.dualPort.readData.expect("h07060504".U)
-      c.io.dualPort.readAddr.poke(1.U)
-      c.clock.step()
-      c.io.dualPort.writeAddr.poke(1.U)
-      c.io.dualPort.writeEnable.poke(true.B)
-      c.io.dualPort.writeData.poke(1234.U)
-      c.io.dualPort.readAddr.poke(1.U)
-      c.clock.step()
-      c.io.dualPort.readData.expect(1234.U)
-    }
-    new File(filename).delete()
-  }
-  it should "load from file and read multiple addresses in data memory (indexed in words)" in {
-    val filename = "MemorySpecTestFile.hex"
-    // Create memory test file with 32bit address space
-    new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
-
-    test(new DualPortRAM(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      c.io.dualPort.readAddr.poke(0.U)
-      c.io.dualPort.writeAddr.poke(0.U)
-      c.clock.step()
-      c.io.dualPort.readData.expect("h00010203".U)
-      c.io.dualPort.readAddr.poke(1.U)
-      c.clock.step()
-      c.io.dualPort.readData.expect("h08090A0B".U)
-      c.io.dualPort.readAddr.poke(2.U)
-      c.clock.step()
-      c.io.dualPort.readData.expect("hDEADBEEF".U)
-      c.io.dualPort.readAddr.poke(3.U)
       c.clock.step()
       c.clock.step()
       c.io.dualPort.readData.expect("h07060504".U)
