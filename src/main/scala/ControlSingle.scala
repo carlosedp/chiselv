@@ -2,7 +2,12 @@ import Instruction._
 import chisel3._
 import chisel3.util._
 
-class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: String = "") extends Module {
+class ControlSingle(
+  bitWidth: Int = 32,
+  instructionMemorySize: Int = 1 * 1024,
+  dataMemorySize: Int = 1 * 1024,
+  memoryFile: String = "",
+) extends Module {
 
   // Instantiate the modules
   val registerBank = Module(new RegisterBank(bitWidth))
@@ -16,7 +21,7 @@ class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: 
   val PC = Module(new ProgramCounter(bitWidth))
   PC.io.pcPort.countEnable := false.B
   PC.io.pcPort.writeEnable := false.B
-  PC.io.pcPort.dataIn      := 0.U
+  PC.io.pcPort.dataIn      := DontCare
   PC.io.pcPort.writeAdd    := false.B
   dontTouch(PC.io.pcPort)
 
@@ -30,17 +35,24 @@ class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: 
   decoder.io.DecoderPort.op := DontCare
   dontTouch(decoder.io.DecoderPort)
 
-  val memory = Module(new DualPortRAM(bitWidth, memorySize, memoryFile, true))
-  memory.io.dualPort.readAddr    := DontCare
-  memory.io.dualPort.writeAddr   := DontCare
-  memory.io.dualPort.writeEnable := false.B
-  memory.io.dualPort.writeData   := 0.U
-  dontTouch(memory.io.dualPort)
+  val instructionMemory = Module(new DualPortRAM(bitWidth, instructionMemorySize, memoryFile))
+  instructionMemory.io.dualPort.readAddr    := DontCare
+  instructionMemory.io.dualPort.writeAddr   := DontCare
+  instructionMemory.io.dualPort.writeEnable := false.B
+  instructionMemory.io.dualPort.writeData   := 0.U
+  dontTouch(instructionMemory.io.dualPort)
 
-  //-- CPU Control --//
-  PC.io.pcPort.countEnable    := true.B
-  memory.io.dualPort.readAddr := PC.io.pcPort.dataOut
-  decoder.io.DecoderPort.op   := memory.io.dualPort.readData
+  val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize))
+  dataMemory.io.dualPort.readAddr    := DontCare
+  dataMemory.io.dualPort.writeAddr   := DontCare
+  dataMemory.io.dualPort.writeEnable := false.B
+  dataMemory.io.dualPort.writeData   := 0.U
+  dontTouch(dataMemory.io.dualPort)
+
+  // --- CPU Control --- //
+  PC.io.pcPort.countEnable               := true.B
+  instructionMemory.io.dualPort.readAddr := PC.io.pcPort.dataOut
+  decoder.io.DecoderPort.op              := instructionMemory.io.dualPort.readData
 
   // ALU Operations
   when(decoder.io.DecoderPort.toALU) {
@@ -106,5 +118,44 @@ class ControlSingle(bitWidth: Int = 32, memorySize: Int = 1 * 1024, memoryFile: 
       )
     }
   }
+  // LUI
+  when(decoder.io.DecoderPort.inst === LUI) {
+    registerBank.io.regPort.writeEnable := true.B
+    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+    registerBank.io.regPort.regwr_data  := decoder.io.DecoderPort.imm.asSInt()
+  }
+  // AUIPC
+  when(decoder.io.DecoderPort.inst === AUIPC) {
+    registerBank.io.regPort.writeEnable := true.B
+    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+    registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + decoder.io.DecoderPort.imm).asSInt()
+  }
 
+  // Stores
+  val memoryOffset = 0x8000_0000L.U
+  when(decoder.io.DecoderPort.is_store) {
+    when(decoder.io.DecoderPort.inst === SW) {
+      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
+      registerBank.io.regPort.rs2_addr := decoder.io.DecoderPort.rs2
+
+      dataMemory.io.dualPort.writeEnable := true.B
+      dataMemory.io.dualPort.writeAddr :=
+        registerBank.io.regPort.rs1.asUInt() +
+          decoder.io.DecoderPort.imm + memoryOffset
+      dataMemory.io.dualPort.writeData := registerBank.io.regPort.rs2.asUInt()
+    }
+  }
+  // Loads
+  when(decoder.io.DecoderPort.is_load) {
+    when(decoder.io.DecoderPort.inst === LW) {
+      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
+      dataMemory.io.dualPort.readAddr :=
+        registerBank.io.regPort.rs1.asUInt() +
+          decoder.io.DecoderPort.imm + memoryOffset
+
+      registerBank.io.regPort.writeEnable := true.B
+      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+      registerBank.io.regPort.regwr_data  := dataMemory.io.dualPort.readData.asSInt()
+    }
+  }
 }
