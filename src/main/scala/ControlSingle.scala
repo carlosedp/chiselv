@@ -122,13 +122,16 @@ class ControlSingle(
   when(decoder.io.DecoderPort.inst === LUI) {
     registerBank.io.regPort.writeEnable := true.B
     registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-    registerBank.io.regPort.regwr_data  := decoder.io.DecoderPort.imm.asSInt()
+    registerBank.io.regPort.regwr_data  := Cat(decoder.io.DecoderPort.imm(31, 12), Fill(12, 0.U)).asSInt()
   }
   // AUIPC
   when(decoder.io.DecoderPort.inst === AUIPC) {
     registerBank.io.regPort.writeEnable := true.B
     registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-    registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + decoder.io.DecoderPort.imm).asSInt()
+    registerBank.io.regPort.regwr_data := (PC.io.pcPort.dataOut + Cat(
+      decoder.io.DecoderPort.imm(31, 12),
+      Fill(12, 0.U),
+    )).asSInt()
   }
 
   // Stores

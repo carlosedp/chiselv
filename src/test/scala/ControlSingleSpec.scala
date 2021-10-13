@@ -1,3 +1,4 @@
+import chisel3._
 import chiseltest._
 import org.scalatest._
 
@@ -53,6 +54,45 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       }
     }
   }
+
+  it should "validate LUI instruction" in {
+    val filename = "CPUSpecMemoryTestFileLUI.hex"
+    /// lui x2, 0xc0000000
+    new PrintWriter(new File(filename)) { write("C0000137\r\n"); close }
+    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        WriteVcdAnnotation,
+        VerilatorBackendAnnotation,
+      )
+    ) { c =>
+      c.clock.setTimeout(0)
+      c.registers(2).expect(0x00000000L.S)
+      c.clock.step(1)
+      c.registers(2).expect(0xc0000000L.S)
+    }
+    new File(filename).delete()
+  }
+
+  it should "validate AUIPC instruction" in {
+    val filename = "CPUSpecMemoryTestFileLUI.hex"
+    /// lui x2, 0xc0000000
+    new PrintWriter(new File(filename)) { write("00001117\r\n00001197\r\n"); close }
+    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        WriteVcdAnnotation,
+        VerilatorBackendAnnotation,
+      )
+    ) { c =>
+      c.clock.setTimeout(0)
+      c.registers(2).expect(0x00000000L.S)
+      c.clock.step(1)
+      c.registers(2).expect(0x00001000L.S)
+      c.clock.step(1)
+      c.registers(3).expect(0x00001004L.S)
+    }
+    new File(filename).delete()
+  }
+
   it should "load program and end with 25 (0x19) in mem address 100 (0x64)" in {
     val filename = "./gcc/riscvtest.mem"
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
