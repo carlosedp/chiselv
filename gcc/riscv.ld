@@ -7,10 +7,10 @@ __stack_size    = 0x800;    /* required amount of stack */
 MEMORY
 {
     ROM         (rwx) : ORIGIN = 0x00000000, LENGTH = 0x10000
-    RAM         (rwx) : ORIGIN = 0x00010000, LENGTH = 0x08000
+    RAM         (rwx) : ORIGIN = 0x80000000, LENGTH = 0x10000
     RESERVED    (rwx) : ORIGIN = 0x00018000, LENGTH = 0xF0000
     EXCEPTION   (rwx) : ORIGIN = 0x05EF0DE0, LENGTH = 0x00400
-    IO          (rw)  : ORIGIN = 0xF0000000, LENGTH = 0x00010
+    IO          (rw)  : ORIGIN = 0x30000000, LENGTH = 0x00010
 }
 SECTIONS
 {

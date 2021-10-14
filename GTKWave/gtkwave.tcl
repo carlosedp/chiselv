@@ -32,7 +32,7 @@ set sigs [list]
 
 # Customize view settings
 gtkwave::nop
-gtkwave::/Edit/Set_Trace_Max_Hier 0
+gtkwave::/Edit/Set_Trace_Max_Hier 1
 gtkwave::/View/Show_Filled_High_Values 1
 gtkwave::/View/Show_Wave_Highlight 1
 gtkwave::/View/Show_Mouseover 1
