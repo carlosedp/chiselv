@@ -42,12 +42,12 @@ class ControlSingle(
   instructionMemory.io.dualPort.writeData   := 0.U
   dontTouch(instructionMemory.io.dualPort)
 
-  val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize))
-  dataMemory.io.dualPort.readAddr    := DontCare
-  dataMemory.io.dualPort.writeAddr   := DontCare
-  dataMemory.io.dualPort.writeEnable := false.B
-  dataMemory.io.dualPort.writeData   := 0.U
-  dontTouch(dataMemory.io.dualPort)
+  val memoryIOManager = Module(new MemoryIOManager(bitWidth, 50000000, dataMemorySize))
+  memoryIOManager.io.MemoryIOPort.readAddr    := DontCare
+  memoryIOManager.io.MemoryIOPort.writeAddr   := DontCare
+  memoryIOManager.io.MemoryIOPort.writeEnable := false.B
+  memoryIOManager.io.MemoryIOPort.writeData   := 0.U
+  dontTouch(memoryIOManager.io.MemoryIOPort)
 
   // --- CPU Control --- //
   PC.io.pcPort.countEnable               := true.B
@@ -153,28 +153,69 @@ class ControlSingle(
   // Stores
   val memoryOffset = 0x8000_0000L.U
   when(decoder.io.DecoderPort.is_store) {
+    // Set register and memory addresses, write enable the data memory
+    registerBank.io.regPort.rs1_addr            := decoder.io.DecoderPort.rs1
+    registerBank.io.regPort.rs2_addr            := decoder.io.DecoderPort.rs2
+    memoryIOManager.io.MemoryIOPort.writeEnable := true.B
+    val memAddr = registerBank.io.regPort.rs1.asUInt() +
+      decoder.io.DecoderPort.imm + memoryOffset
+    memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
+    memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
+    // Store Word
     when(decoder.io.DecoderPort.inst === SW) {
-      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
-      registerBank.io.regPort.rs2_addr := decoder.io.DecoderPort.rs2
-
-      dataMemory.io.dualPort.writeEnable := true.B
-      dataMemory.io.dualPort.writeAddr :=
-        registerBank.io.regPort.rs1.asUInt() +
-          decoder.io.DecoderPort.imm + memoryOffset
-      dataMemory.io.dualPort.writeData := registerBank.io.regPort.rs2.asUInt()
+      memoryIOManager.io.MemoryIOPort.writeData := registerBank.io.regPort.rs2.asUInt()
+    }
+    // Store Halfword
+    when(decoder.io.DecoderPort.inst === SH) {
+      memoryIOManager.io.MemoryIOPort.writeData := Cat(
+        memoryIOManager.io.MemoryIOPort.readData(31, 16),
+        registerBank.io.regPort.rs2(15, 0).asUInt(),
+      )
+    }
+    // Store Byte
+    when(decoder.io.DecoderPort.inst === SB) {
+      memoryIOManager.io.MemoryIOPort.writeData := Cat(
+        memoryIOManager.io.MemoryIOPort.readData(31, 8),
+        registerBank.io.regPort.rs2(7, 0).asUInt(),
+      )
     }
   }
   // Loads
   when(decoder.io.DecoderPort.is_load) {
-    when(decoder.io.DecoderPort.inst === LW) {
-      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
-      dataMemory.io.dualPort.readAddr :=
-        registerBank.io.regPort.rs1.asUInt() +
-          decoder.io.DecoderPort.imm + memoryOffset
+    // Set register and memory addresses, write enable the register bank
+    registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
+    val memAddr = registerBank.io.regPort.rs1.asUInt() +
+      decoder.io.DecoderPort.imm + memoryOffset
+    memoryIOManager.io.MemoryIOPort.readAddr := memAddr
 
-      registerBank.io.regPort.writeEnable := true.B
-      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-      registerBank.io.regPort.regwr_data  := dataMemory.io.dualPort.readData.asSInt()
+    registerBank.io.regPort.writeEnable := true.B
+    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
+    // Load Word
+    when(decoder.io.DecoderPort.inst === LW) {
+      registerBank.io.regPort.regwr_data := memoryIOManager.io.MemoryIOPort.readData.asSInt()
+    }
+    // Load Halfword
+    when(decoder.io.DecoderPort.inst === LH) {
+      registerBank.io.regPort.regwr_data := Cat(
+        Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
+        memoryIOManager.io.MemoryIOPort.readData(15, 0),
+      ).asSInt
+
+    }
+    // Load Halfword Unsigned
+    when(decoder.io.DecoderPort.inst === LHU) {
+      registerBank.io.regPort.regwr_data := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
+    }
+    // Load Byte
+    when(decoder.io.DecoderPort.inst === LB) {
+      registerBank.io.regPort.regwr_data := Cat(
+        Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
+        memoryIOManager.io.MemoryIOPort.readData(7, 0),
+      ).asSInt
+    }
+    // Load Byte Unsigned
+    when(decoder.io.DecoderPort.inst === LBU) {
+      registerBank.io.regPort.regwr_data := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
     }
   }
 }
