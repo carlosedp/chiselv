@@ -69,3 +69,4 @@ tmp
 *.bin
 *.elf
 *.o
+/*.hex
