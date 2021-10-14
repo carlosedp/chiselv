@@ -22,80 +22,80 @@ import chisel3._
  * 0x8001_0000 - 0xFFFF_FFFF: Reserved
  */
 
-class MemoryIOPort(bitWidth: Int = 32) extends Bundle {
-  val address     = Input(UInt(bitWidth.W))
-  val dataIn      = Input(UInt(bitWidth.W))
-  val dataOut     = Output(UInt(bitWidth.W))
-  val op          = Input(UInt(1.W)) // 0: read, 1: write
-  val writeEnable = Input(Bool())
-}
-
 class SerialIOPort() extends Bundle {
   val tx = Output(UInt(1.W))
   val rx = Input(UInt(1.W))
 }
 
-class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long) extends Module {
+class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024) extends Module {
   val io = IO(new Bundle {
-    val MemoryIOPort = new MemoryIOPort(bitWidth)
+    val MemoryIOPort = new DualPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     // val UART0Port    = new SerialIOPort()
     // val GPIO0Port    = new SerialIOPort()
   })
 
-  val op      = io.MemoryIOPort.op
-  val dataOut = Reg(UInt(bitWidth.W))
-  val address = io.MemoryIOPort.address
+  val dataOut      = WireInit(0.U(bitWidth.W))
+  val readAddress  = io.MemoryIOPort.readAddr
+  val writeAddress = io.MemoryIOPort.writeAddr
 
   /* --- Syscon --- */
-  when(address(31, 12) === 0x0000_1L.U) {
-    when(op === 0.U) { // Read
-      // Dummy output
-      when(address(11, 0) === 0x0L.U) { // (0x0000_1000)
-        dataOut := 0xbaad_cafeL.U
-      }
-      // Clock frequency
-      when(address(11, 0) === 0x8L.U) { // (0x0000_1008)
-        dataOut := clockFreq.asUInt(bitWidth.W)
-      }
-      // Has UART0
-      when(address(11, 0) === 0x10L.U) { // (0x0000_1010)
-        dataOut := 0.U
-      }
-      // Has GPIO0
-      when(address(11, 0) === 0x18L.U) { // (0x0000_1018)
-        dataOut := 0.U
-      }
-      // Has PWM0
-      when(address(11, 0) === 0x20L.U) { // (0x0000_1020)
-        dataOut := 0.U
-      }
+  when(readAddress(31, 12) === 0x0000_1L.U) {
+    // Dummy output
+    when(readAddress(11, 0) === 0x0L.U) { // (0x0000_1000)
+      dataOut := 0xbaad_cafeL.U
+    }
+    // Clock frequency
+    when(readAddress(11, 0) === 0x8L.U) { // (0x0000_1008)
+      dataOut := clockFreq.asUInt(bitWidth.W)
+    }
+    // Has UART0
+    when(readAddress(11, 0) === 0x10L.U) { // (0x0000_1010)
+      dataOut := 0.U
+    }
+    // Has GPIO0
+    when(readAddress(11, 0) === 0x18L.U) { // (0x0000_1018)
+      dataOut := 0.U
+    }
+    // Has PWM0
+    when(readAddress(11, 0) === 0x20L.U) { // (0x0000_1020)
+      dataOut := 0.U
     }
   }
+
   /* --- UART0 --- */
-  when(address(31, 12) === 0x3000_0L.U) {}
+  when(readAddress(31, 12) === 0x3000_0L.U || writeAddress(31, 12) === 0x3000_0L.U) {
+    dataOut := 0.U
+  }
+
   /* --- GPIO0 --- */
-  when(address(31, 12) === 0x3000_1L.U) {}
+  when(readAddress(31, 12) === 0x3000_1L.U || writeAddress(31, 12) === 0x3000_1L.U) {
+    dataOut := 0.U
+  }
+
   /* --- PWM0 --- */
-  when(address(31, 12) === 0x3000_2L.U) {}
+  when(readAddress(31, 12) === 0x3000_2L.U || writeAddress(31, 12) === 0x3000_2L.U) {
+    dataOut := 0.U
+  }
 
   /* --- Data Memory --- */
-  val memory = Module(new DualPortRAM(bitWidth, 64 * 1024))
+  val memory = Module(new DualPortRAM(bitWidth, sizeBytes))
   dontTouch(memory.io.dualPort)
   val addressOffset = 0x8000_0000L.U
-  memory.io.dualPort.writeEnable := false.B
+  memory.io.dualPort.writeEnable := io.MemoryIOPort.writeEnable
   memory.io.dualPort.writeData   := DontCare
   memory.io.dualPort.readAddr    := 0.U
   memory.io.dualPort.writeAddr   := 0.U
 
-  when(address(31, 16) === 0x8000L.U) {
-    memory.io.dualPort.readAddr := address - addressOffset
-    when(op === 1.U) { // Write
-      memory.io.dualPort.writeEnable := true.B
-      memory.io.dualPort.writeAddr   := address - addressOffset
-      memory.io.dualPort.writeData   := io.MemoryIOPort.dataIn
+  memory.io.dualPort.readAddr  := readAddress - addressOffset
+  memory.io.dualPort.writeAddr := writeAddress - addressOffset
+  when(readAddress(31, 16) === 0x8000L.U || writeAddress(31, 16) === 0x8000L.U) {
+
+    when(io.MemoryIOPort.writeEnable) {
+      memory.io.dualPort.writeEnable := io.MemoryIOPort.writeEnable
+      memory.io.dualPort.writeData   := io.MemoryIOPort.writeData
     }
     dataOut := memory.io.dualPort.readData
   }
 
-  io.MemoryIOPort.dataOut := dataOut
+  io.MemoryIOPort.readData := dataOut
 }

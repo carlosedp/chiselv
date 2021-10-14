@@ -6,7 +6,9 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class MemoryIOManagerWrapper(bitWidth: Int, cpuFreq: Long) extends MemoryIOManager(bitWidth, cpuFreq) with Observer {
+class MemoryIOManagerWrapper(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1)
+  extends MemoryIOManager(bitWidth, clockFreq, sizeBytes)
+  with Observer {
   val memPort = observe(memory.io.dualPort)
 }
 
@@ -15,38 +17,34 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
 
   it should "read dummy value from Syscon 0x0" in {
     test(new MemoryIOManager(32, 50000000)) { c =>
-      c.io.MemoryIOPort.op.poke(0.U)
-      c.io.MemoryIOPort.address.poke(0x0000_1000.U)
+      c.io.MemoryIOPort.readAddr.poke(0x0000_1000.U)
       c.clock.step()
-      c.io.MemoryIOPort.dataOut.expect(0xbaad_cafeL.U)
+      c.io.MemoryIOPort.readData.expect(0xbaad_cafeL.U)
     }
   }
   it should "read clock speed from Syscon" in {
     test(new MemoryIOManager(32, 50000000)) { c =>
-      c.io.MemoryIOPort.op.poke(0.U)
-      c.io.MemoryIOPort.address.poke(0x0000_1008.U)
+      c.io.MemoryIOPort.readAddr.poke(0x0000_1008.U)
       c.clock.step()
-      c.io.MemoryIOPort.dataOut.expect(50000000.U)
+      c.io.MemoryIOPort.readData.expect(50000000.U)
     }
   }
   it should "check if UART0 is available in Syscon" in {
     test(new MemoryIOManager(32, 50000000)) { c =>
-      c.io.MemoryIOPort.op.poke(0.U)
-      c.io.MemoryIOPort.address.poke(0x0000_1010.U)
+      c.io.MemoryIOPort.readAddr.poke(0x0000_1010.U)
       c.clock.step()
-      c.io.MemoryIOPort.dataOut.expect(0.U)
+      c.io.MemoryIOPort.readData.expect(0.U)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {
     test(new MemoryIOManager(32, 50000000)) { c =>
-      c.io.MemoryIOPort.op.poke(0.U)
-      c.io.MemoryIOPort.address.poke(0x0000_1018.U)
+      c.io.MemoryIOPort.readAddr.poke(0x0000_1018.U)
       c.clock.step()
-      c.io.MemoryIOPort.dataOut.expect(0.U)
+      c.io.MemoryIOPort.readData.expect(0.U)
     }
   }
   it should "write data and follow with a read in same address" in {
-    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+    test(new MemoryIOManager(32, 50000000, 64 * 1024)).withAnnotations(
       Seq(
         VerilatorBackendAnnotation,
         WriteVcdAnnotation,
@@ -57,13 +55,13 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
       val values        = Seq(0.U, 1.U, 0x0000_cafeL.U, 0xbaad_cafeL.U, 0xffff_ffffL.U)
       addresses.foreach { address =>
         values.foreach { value =>
-          c.io.MemoryIOPort.op.poke(1.U)
-          c.io.MemoryIOPort.address.poke((addressOffset + address).U)
-          c.io.MemoryIOPort.dataIn.poke(value)
+          c.io.MemoryIOPort.writeEnable.poke(true.B)
+          c.io.MemoryIOPort.writeAddr.poke((addressOffset + address).U)
+          c.io.MemoryIOPort.writeData.poke(value)
           c.clock.step()
-          c.io.MemoryIOPort.op.poke(0.U)
+          c.io.MemoryIOPort.readAddr.poke((addressOffset + address).U)
           c.clock.step()
-          c.io.MemoryIOPort.dataOut.expect(value)
+          c.io.MemoryIOPort.readData.expect(value)
         }
       }
       c.clock.step(10)
