@@ -59,8 +59,24 @@ class ControlSingle(
     registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
     registerBank.io.regPort.rs2_addr := decoder.io.DecoderPort.rs2
 
-    ALU.io.ALUPort.inst := decoder.io.DecoderPort.inst
-    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt()
+    // Use the correct ALU operation on Immediate instructions
+    val inst = decoder.io.DecoderPort.inst
+    ALU.io.ALUPort.inst := MuxCase(
+      decoder.io.DecoderPort.inst,
+      Seq(
+        (inst === ADDI)  -> ADD,
+        (inst === SRAI)  -> SRA,
+        (inst === SRLI)  -> SRL,
+        (inst === SLLI)  -> SLL,
+        (inst === ANDI)  -> AND,
+        (inst === ORI)   -> OR,
+        (inst === XORI)  -> XOR,
+        (inst === SLTI)  -> SLT,
+        (inst === SLTIU) -> SLTU,
+      ),
+    )
+
+    ALU.io.ALUPort.a := registerBank.io.regPort.rs1.asUInt()
     ALU.io.ALUPort.b := Mux(
       decoder.io.DecoderPort.use_imm,
       decoder.io.DecoderPort.imm.asUInt(),
