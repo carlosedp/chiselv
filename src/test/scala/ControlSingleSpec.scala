@@ -8,15 +8,15 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class ControlSingleWrapper(bitWidth: Int, instructionMemorySize: Int, dataMemorySize: Int, memoryFile: String)
-  extends ControlSingle(bitWidth, instructionMemorySize, dataMemorySize, memoryFile)
+class ControlSingleWrapper(bitWidth: Int, instructionMemorySize: Int, memorySize: Int, memoryFile: String)
+  extends ControlSingle(bitWidth, instructionMemorySize, memorySize, memoryFile)
   with Observer {
-  val registers        = observe(registerBank.regs)
-  val pc               = observe(PC.pc)
-  val dataMemWriteAddr = observe(memoryIOManager.memory.io.dualPort.writeAddr)
-  val dataMemWriteData = observe(memoryIOManager.memory.io.dualPort.writeData)
-  val dataMemReadAddr  = observe(memoryIOManager.memory.io.dualPort.readAddr)
-  val dataMemReadData  = observe(memoryIOManager.memory.io.dualPort.readData)
+  val registers    = observe(registerBank.regs)
+  val pc           = observe(PC.pc)
+  val memWriteAddr = observe(memoryIOManager.io.MemoryIOPort.writeAddr)
+  val memWriteData = observe(memoryIOManager.io.MemoryIOPort.writeData)
+  val memReadAddr  = observe(memoryIOManager.io.MemoryIOPort.readAddr)
+  val memReadData  = observe(memoryIOManager.io.MemoryIOPort.readData)
 }
 
 class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
@@ -135,7 +135,7 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
 
   it should "validate AUIPC instruction" in {
     val filename = "CPUSpecMemoryTestFileAUIPC.hex"
-    /// lui x2, 0xc0000000
+    // auipc x2, 4096 | auipc x3, 4096
     new PrintWriter(new File(filename)) { write("00001117\r\n00001197\r\n"); close }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.clock.setTimeout(0)
@@ -150,52 +150,52 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
 
   it should "validate SW instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 | sw x1, 20(x0)
+    // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sw x1, 20(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
-    new PrintWriter(new File(filename)) { write("f0f0f0b7\r\n0f008093\r\n00102a23\r\n"); close }
+    new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00102a23\r\n"); close }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0x80f0f000.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0x80f0f0f0.S)
       c.clock.step(1)
       // Check memory address 0x14 (20)
-      c.dataMemWriteAddr.expect(0x14.U)
-      c.dataMemWriteData.expect(0xf0f0f0f0L.U)
+      c.memWriteAddr.expect(0x14.U)
+      c.memWriteData.expect(0x80f0f0f0L.U)
       new File(filename).delete()
     }
   }
 
   it should "validate SH instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 | sh x1, 20(x0) | sh x1, 22(x0)
+    // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sh x1, 20(x0) | sh x1, 22(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
-    new PrintWriter(new File(filename)) { write("f0f0f0b7\r\n0f008093\r\n00101a23\r\n00101b23\r\n"); close }
+    new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00101a23\r\n00101b23\r\n"); close }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0x80f0f000.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0x80f0f0f0.S)
       // Check memory address 0x14 (20)
-      c.dataMemWriteAddr.expect(0x14.U)
-      c.dataMemWriteData.expect(0xf0f0L.U)
+      c.memWriteAddr.expect(0x14.U)
+      c.memWriteData.expect(0xf0f0L.U)
       c.clock.step(1)
       // Check memory address 0x16 (22)
-      c.dataMemWriteAddr.expect(0x16.U)
-      c.dataMemWriteData.expect(0xf0f0L.U)
+      c.memWriteAddr.expect(0x16.U)
+      c.memWriteData.expect(0xf0f0L.U)
       new File(filename).delete()
     }
   }
 
   it should "validate SB instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 | sb x1, 32(x0) | sb x1, 33(x0) | sb x1, 34(x0) | sb x1, 35(x0)
+    // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sb x1, 32(x0) | sb x1, 33(x0) | sb x1, 34(x0) | sb x1, 35(x0)
     val filename = "CPUSpecMemoryTestFileSB.hex"
     new PrintWriter(new File(filename)) {
       write("""
-      f0f0f0b7
+      80f0f0b7
       0f008093
       02100023
       021000a3
@@ -206,24 +206,24 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0x80f0f000.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0x80f0f0f0.S)
       // Check memory address 0x20 (32)
-      c.dataMemWriteAddr.expect(0x20.U)
-      c.dataMemWriteData.expect(0xf0.U)
+      c.memWriteAddr.expect(0x20.U)
+      c.memWriteData.expect(0xf0.U)
       c.clock.step(1)
       // Check memory address 0x21 (33)
-      c.dataMemWriteAddr.expect(0x21.U)
-      c.dataMemWriteData.expect(0xf0.U)
+      c.memWriteAddr.expect(0x21.U)
+      c.memWriteData.expect(0xf0.U)
       c.clock.step(1)
       // Check memory address 0x22 (34)
-      c.dataMemWriteAddr.expect(0x22.U)
-      c.dataMemWriteData.expect(0xf0.U)
+      c.memWriteAddr.expect(0x22.U)
+      c.memWriteData.expect(0xf0.U)
       c.clock.step(1)
       // Check memory address 0x23 (35)
-      c.dataMemWriteAddr.expect(0x23.U)
-      c.dataMemWriteData.expect(0xf0.U)
+      c.memWriteAddr.expect(0x23.U)
+      c.memWriteData.expect(0xf0.U)
       c.clock.step(1)
 
       new File(filename).delete()
@@ -232,77 +232,108 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
 
   it should "validate LW instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |sw x1, 32(x0) | lw x2, 32(x0)
+    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |lui x2, 0x80000000 | sw x1, 0(x2) | lw x3, 0(x2)
     val filename = "CPUSpecMemoryTestFileLW.hex"
-    new PrintWriter(new File(filename)) { write("f0f0f0b7\r\n0f008093\r\n02102023\r\n02002103\r\n"); close }
+    new PrintWriter(new File(filename)) {
+      write("""
+      f0f0f0b7
+      0f008093
+      80000137
+      00112023
+      00012183
+      """.stripMargin); close
+    }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f0f0.S)
-      // Check memory write at address 0x20 (32)
-      c.dataMemWriteAddr.expect(0x20.U)
-      c.dataMemWriteData.expect(0xf0f0f0f0L.U)
+      c.clock.step(1)
+      c.registers(2).expect(0x80000000.S)
+      // Check memory write at address 0x80000000L
+      c.memWriteAddr.expect(0x80000000L.U)
+      c.memWriteData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
       // Check memory read at address 0x20 (32)
-      c.dataMemReadAddr.expect(0x20.U)
-      c.dataMemReadData.expect(0xf0f0f0f0L.U)
+      c.memReadAddr.expect(0x80000000L.U)
+      c.memReadData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
-      // Check load
-      c.registers(2).expect(0xf0f0f0f0.S)
+      // Check loaded data
+      c.registers(3).expect(0xf0f0f0f0.S)
+      c.clock.step(5) // Paddding
       new File(filename).delete()
     }
   }
 
   it should "validate LH instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |sw x1, 32(x0) | lh x2, 32(x0)
+    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |lui x2, 0x80000000 | sw x1, 0(x2) | lh x3, 0(x2)
     val filename = "CPUSpecMemoryTestFileLH.hex"
-    new PrintWriter(new File(filename)) { write("f0f0f0b7\r\n0f008093\r\n02102023\r\n02001103\r\n"); close }
+    new PrintWriter(new File(filename)) {
+      write("""
+      f0f0f0b7
+      0f008093
+      80000137
+      00112023
+      00011183
+      """.stripMargin); close
+    }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f0f0.S)
-      // Check memory write at address 0x20 (32)
-      c.dataMemWriteAddr.expect(0x20.U)
-      c.dataMemWriteData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
-      // Check memory read at address 0x20 (32)
-      c.dataMemReadAddr.expect(0x20.U)
-      // Data truncation is currently done on control so we can't check it here.
-      // c.dataMemWriteData.expect(0xfffff0f0L.U)
+      c.registers(2).expect(0x80000000.S)
+      // Check memory write at address 0x80000000L
+      c.memWriteAddr.expect(0x80000000L.U)
+      c.memWriteData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
-      // Check load
-      c.registers(2).expect(0xfffff0f0.S)
+      // Check memory read at address 0x80000000L
+      c.memReadAddr.expect(0x80000000L.U)
+      c.memReadData.expect(0xf0f0f0f0L.U)
+      c.clock.step(1)
+      // Check loaded data
+      c.registers(3).expect(0xfffff0f0.S)
+      c.clock.step(5) // Paddding
       new File(filename).delete()
     }
   }
 
   it should "validate LB instruction" in {
     // Create memory test file with 32bit address space
-    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |sw x1, 32(x0) | lh x2, 32(x0)
+    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |lui x2, 0x80000000 | sw x1, 0(x2) | lb x3, 0(x2)
     val filename = "CPUSpecMemoryTestFileLB.hex"
-    new PrintWriter(new File(filename)) { write("f0f0f0b7\r\n0f008093\r\n02102023\r\n02000103\r\n"); close }
+    new PrintWriter(new File(filename)) {
+      write("""
+      f0f0f0b7
+      0f008093
+      80000137
+      00112023
+      00010183
+      """.stripMargin); close
+    }
     test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f0f0.S)
-      // Check memory write at address 0x20 (32)
-      c.dataMemWriteAddr.expect(0x20.U)
-      c.dataMemWriteData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
-      // Check memory read at address 0x20 (32)
-      c.dataMemReadAddr.expect(0x20.U)
-      // Data truncation is currently done on control so we can't check it here.
-      // c.dataMemWriteData.expect(0xfffffff0L.U)
+      c.registers(2).expect(0x80000000.S)
+      // Check memory write at address 0x80000000L
+      c.memWriteAddr.expect(0x80000000L.U)
+      c.memWriteData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
-      // Check load
-      c.registers(2).expect(0xfffffff0.S)
+      // Check memory read at address 0x80000000L
+      c.memReadAddr.expect(0x80000000L.U)
+      c.memReadData.expect(0xf0f0f0f0L.U)
+      c.clock.step(1)
+      // Check loaded data
+      c.registers(3).expect(0xfffffff0.S)
+      c.clock.step(5) // Paddding
       new File(filename).delete()
     }
   }

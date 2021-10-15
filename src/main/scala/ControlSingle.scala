@@ -151,14 +151,13 @@ class ControlSingle(
   }
 
   // Stores
-  val memoryOffset = 0x8000_0000L.U
   when(decoder.io.DecoderPort.is_store) {
     // Set register and memory addresses, write enable the data memory
     registerBank.io.regPort.rs1_addr            := decoder.io.DecoderPort.rs1
     registerBank.io.regPort.rs2_addr            := decoder.io.DecoderPort.rs2
     memoryIOManager.io.MemoryIOPort.writeEnable := true.B
     val memAddr = registerBank.io.regPort.rs1.asUInt() +
-      decoder.io.DecoderPort.imm + memoryOffset
+      decoder.io.DecoderPort.imm
     memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
     memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
     // Store Word
@@ -185,7 +184,7 @@ class ControlSingle(
     // Set register and memory addresses, write enable the register bank
     registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
     val memAddr = registerBank.io.regPort.rs1.asUInt() +
-      decoder.io.DecoderPort.imm + memoryOffset
+      decoder.io.DecoderPort.imm
     memoryIOManager.io.MemoryIOPort.readAddr := memAddr
 
     registerBank.io.regPort.writeEnable := true.B
