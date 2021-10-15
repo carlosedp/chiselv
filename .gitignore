@@ -70,3 +70,7 @@ tmp
 *.elf
 *.o
 /*.hex
+/*.json
+/*.fir
+/*.v
+/*.f
