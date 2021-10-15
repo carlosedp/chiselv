@@ -20,7 +20,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
   behavior of "ControlSingleApps"
 
   it should "load instructions from file to write to all registers with ADDI" in {
-    val filename = "./gcc/test_addi.mem"
+    val filename = "./gcc/test/test_addi.mem"
     test(new ControlSingleWrapperApps(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
@@ -38,7 +38,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
   }
 
   it should "load program and end with 25 (0x19) in mem address 100 (0x64)" in {
-    val filename = "./gcc/test_book.mem"
+    val filename = "./gcc/test/test_book.mem"
     test(new ControlSingleWrapperApps(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
@@ -95,7 +95,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
   }
 
   it should "loop thru ascii table writing to 0x3000_0000 region" in {
-    val filename = "./gcc/test_ascii.mem"
+    val filename = "./gcc/test/test_ascii.mem"
     test(new ControlSingleWrapperApps(32, 4 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
