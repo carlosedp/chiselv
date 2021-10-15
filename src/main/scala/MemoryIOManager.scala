@@ -16,9 +16,9 @@ import chisel3._
  * 0x3001_1000 - 0x3001_1FFF: GPIO1
  * 0x3001_2000 - 0x3001_2FFF: PWM1
  * 0x3001_3000 - 0x3FFF_FFFF: Reserved
- * 0x4000_0000 - 0x4FFF_FFFF: Off-chip memory (256MB)
+ * 0x4000_0000 - 0x4FFF_FFFF: Reserved
  * 0x5000_0000 - 0x7000_0000: Reserved
- * 0x8000_0000 - 0x8000_FFFF: On-chip memory ROM (64KB)
+ * 0x8000_0000 - 0x8000_FFFF: On-chip memory RAM (64KB)
  * 0x8001_0000 - 0xFFFF_FFFF: Reserved
  */
 
@@ -81,7 +81,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   val memory = Module(new DualPortRAM(bitWidth, sizeBytes))
   dontTouch(memory.io.dualPort)
   val addressOffset = 0x8000_0000L.U
-  memory.io.dualPort.writeEnable := io.MemoryIOPort.writeEnable
+  memory.io.dualPort.writeEnable := false.B
   memory.io.dualPort.writeData   := DontCare
   memory.io.dualPort.readAddr    := 0.U
   memory.io.dualPort.writeAddr   := 0.U
