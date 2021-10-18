@@ -112,7 +112,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
       c.clock.step(1)
       c.registers(4).peek().litValue() should be(0x3000_0000)
 
-      for (i <- 33 until 126) {
+      for (i <- 33 until 127) {
         // Check memory write at address 0x3000_0000
         c.memWriteAddr.peek().litValue() should be(0x3000_0000)
         c.memWriteData.peek().litValue() should be(i)

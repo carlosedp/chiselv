@@ -34,7 +34,7 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
   }
   it should "write to other registers as expected" in {
     test(new RegisterBank()).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      for (i <- 1 until 31) {
+      for (i <- 1 until 32) {
         c.io.regPort.writeEnable.poke(true.B)
         c.clock.step()
         c.io.regPort.regwr_addr.poke(i.U)
