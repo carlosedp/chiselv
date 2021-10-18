@@ -3,12 +3,39 @@ import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
+class SinglePort(val bitWidth: Int, val addressSize: Long) extends Bundle {
+  val readAddr = Input(UInt(log2Ceil(addressSize).W))
+  val readData = Output(UInt(bitWidth.W))
+}
+
 class DualPort(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val readAddr    = Input(UInt(log2Ceil(addressSize).W))
   val readData    = Output(UInt(bitWidth.W))
   val writeAddr   = Input(UInt(log2Ceil(addressSize).W))
   val writeData   = Input(UInt(bitWidth.W))
+  val writeMask   = Input(UInt((bitWidth / 8).W))
   val writeEnable = Input(Bool())
+}
+class InstructionMemory(
+  bitWidth: Int = 32,
+  sizeBytes: Long = 1,
+  memoryFile: String = "",
+) extends Module {
+  val words = sizeBytes / bitWidth
+  val io = IO(new Bundle() {
+    val memPort = new SinglePort(bitWidth, sizeBytes)
+  })
+
+  // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
+  annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
+
+  val mem = Mem(words, UInt(bitWidth.W))
+  // Divide memory address by 4 to get the word due to pc+4 addressing
+  val readAddress = io.memPort.readAddr >> 2
+  if (memoryFile.trim().nonEmpty) {
+    loadMemoryFromFileInline(mem, memoryFile)
+  }
+  io.memPort.readData := mem.read(readAddress)
 }
 
 class DualPortRAM(
@@ -32,8 +59,8 @@ class DualPortRAM(
   // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
   annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
 
-  val mem        = Mem(words, UInt(bitWidth.W))
-  val dedupBlock = WireInit(mem.hashCode.U) // Prevents deduping this memory module
+  val mem = SyncReadMem(words, UInt(bitWidth.W))
+  // val dedupBlock = WireInit(mem.hashCode.U) // Prevents deduping this memory module
   // Divide memory address by 4 to get the word due to pc+4 addressing
   val readAddress  = io.dualPort.readAddr >> 2
   val writeAddress = io.dualPort.writeAddr >> 2
