@@ -16,43 +16,36 @@ class ControlSingle(
   registerBank.io.regPort.rs2_addr    := 0.U
   registerBank.io.regPort.regwr_addr  := 0.U
   registerBank.io.regPort.regwr_data  := 0.S
-  dontTouch(registerBank.io.regPort)
 
   val PC = Module(new ProgramCounter(bitWidth))
   PC.io.pcPort.countEnable := false.B
   PC.io.pcPort.writeEnable := false.B
   PC.io.pcPort.dataIn      := DontCare
   PC.io.pcPort.writeAdd    := false.B
-  dontTouch(PC.io.pcPort)
 
   val ALU = Module(new ALU(bitWidth))
   ALU.io.ALUPort.inst := ERR_INST
   ALU.io.ALUPort.a    := 0.U
   ALU.io.ALUPort.b    := 0.U
-  dontTouch(ALU.io.ALUPort)
 
   val decoder = Module(new Decoder(bitWidth))
   decoder.io.DecoderPort.op := DontCare
-  dontTouch(decoder.io.DecoderPort)
 
-  val instructionMemory = Module(new DualPortRAM(bitWidth, instructionMemorySize, memoryFile))
-  instructionMemory.io.dualPort.readAddr    := DontCare
-  instructionMemory.io.dualPort.writeAddr   := DontCare
-  instructionMemory.io.dualPort.writeEnable := false.B
-  instructionMemory.io.dualPort.writeData   := 0.U
-  dontTouch(instructionMemory.io.dualPort)
+  val instructionMemory = Module(new InstructionMemory(bitWidth, instructionMemorySize, memoryFile))
+  instructionMemory.io.memPort.readAddr := DontCare
 
   val memoryIOManager = Module(new MemoryIOManager(bitWidth, 50000000, dataMemorySize))
   memoryIOManager.io.MemoryIOPort.readAddr    := DontCare
   memoryIOManager.io.MemoryIOPort.writeAddr   := DontCare
   memoryIOManager.io.MemoryIOPort.writeEnable := false.B
   memoryIOManager.io.MemoryIOPort.writeData   := 0.U
-  dontTouch(memoryIOManager.io.MemoryIOPort)
+  memoryIOManager.io.MemoryIOPort.writeMask   := DontCare
+  io.GPIO0ExternalPort <> memoryIOManager.io.GPIO0ExternalPort
 
   // --- CPU Control --- //
-  PC.io.pcPort.countEnable               := true.B
-  instructionMemory.io.dualPort.readAddr := PC.io.pcPort.dataOut
-  decoder.io.DecoderPort.op              := instructionMemory.io.dualPort.readData
+  PC.io.pcPort.countEnable              := true.B
+  instructionMemory.io.memPort.readAddr := PC.io.pcPort.dataOut
+  decoder.io.DecoderPort.op             := instructionMemory.io.memPort.readData
 
   // ALU Operations
   when(decoder.io.DecoderPort.toALU) {
@@ -114,7 +107,11 @@ class ControlSingle(
       // Write next instruction address to rd
       registerBank.io.regPort.writeEnable := true.B
       registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-      registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + 4.U).asSInt()
+      ALU.io.ALUPort.inst                 := ADD
+      ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+      ALU.io.ALUPort.b                    := 4.U
+      registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
+
       // Set PC to jump address
       PC.io.pcPort.writeEnable := true.B
       PC.io.pcPort.writeAdd    := true.B
@@ -124,7 +121,10 @@ class ControlSingle(
       // Write next instruction address to rd
       registerBank.io.regPort.writeEnable := true.B
       registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-      registerBank.io.regPort.regwr_data  := (PC.io.pcPort.dataOut + 4.U).asSInt()
+      ALU.io.ALUPort.inst                 := ADD
+      ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+      ALU.io.ALUPort.b                    := 4.U
+      registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
       // Set PC to jump address
       PC.io.pcPort.writeEnable         := true.B
       registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
@@ -144,10 +144,13 @@ class ControlSingle(
   when(decoder.io.DecoderPort.inst === AUIPC) {
     registerBank.io.regPort.writeEnable := true.B
     registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-    registerBank.io.regPort.regwr_data := (PC.io.pcPort.dataOut + Cat(
+    ALU.io.ALUPort.inst                 := ADD
+    ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+    ALU.io.ALUPort.b := Cat(
       decoder.io.DecoderPort.imm(31, 12),
       Fill(12, 0.U),
-    )).asSInt()
+    )
+    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt()
   }
 
   // Stores
@@ -156,8 +159,12 @@ class ControlSingle(
     registerBank.io.regPort.rs1_addr            := decoder.io.DecoderPort.rs1
     registerBank.io.regPort.rs2_addr            := decoder.io.DecoderPort.rs2
     memoryIOManager.io.MemoryIOPort.writeEnable := true.B
-    val memAddr = registerBank.io.regPort.rs1.asUInt() +
-      decoder.io.DecoderPort.imm
+
+    ALU.io.ALUPort.inst := ADD
+    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt()
+    ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
+    val memAddr = ALU.io.ALUPort.x
+
     memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
     memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
     // Store Word
@@ -183,8 +190,12 @@ class ControlSingle(
   when(decoder.io.DecoderPort.is_load) {
     // Set register and memory addresses, write enable the register bank
     registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
-    val memAddr = registerBank.io.regPort.rs1.asUInt() +
-      decoder.io.DecoderPort.imm
+
+    ALU.io.ALUPort.inst := ADD
+    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt()
+    ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
+    val memAddr = ALU.io.ALUPort.x
+
     memoryIOManager.io.MemoryIOPort.readAddr := memAddr
 
     registerBank.io.regPort.writeEnable := true.B
