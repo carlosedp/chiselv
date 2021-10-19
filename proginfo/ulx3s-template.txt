@@ -1,0 +1,11 @@
+# Programming instructions for ULX3S based on Lattice ECP5
+
+## To program with ujprog:
+
+ujprog $bitstreamSVF
+
+## To program the board using OpenOCD, use the command:
+
+openocd -f $interfaceConfig -f $boardConfig -c "transport select jtag; init; scan_chain; svf -quiet -progress $bitstreamSVF; exit"
+
+Other programming options are listed here https://github.com/emard/ulx3s/blob/master/doc/MANUAL.md#programming-options

@@ -1,0 +1,16 @@
+# This is the board programming files config
+# The board parameters must match the template for each board
+
+boards:
+    ulx3s-85f:
+      templateFile: ulx3s-template.txt
+      interfaceConfig: ft231x.cfg
+      boardConfig: LFE5U-85F.cfg
+      bitstream: carlosedp_chiselv_singlecycle_0.bit
+      bitstreamSVF: carlosedp_chiselv_singlecycle_0.svf
+
+    artya7-35t:
+      templateFile: artix7-template.txt
+      interfaceConfig: digilent-hs1.cfg
+      boardConfig: xilinx-xc7.cfg
+      bitstream: Toplevel.bit
