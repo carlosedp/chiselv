@@ -27,16 +27,25 @@ class CPUSingleCycleWrapper(
 class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "CPUSingleCycle"
 
+  val cpuFrequency          = 25000000
+  val bitWidth              = 32
+  val instructionMemorySize = 1 * 1024
+  val memorySize            = 1 * 1024
+
+  def defaultDut(memoryfile: String) =
+    test(new CPUSingleCycleWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
+      .withAnnotations(
+        Seq(
+          // WriteVcdAnnotation,
+          VerilatorBackendAnnotation
+        )
+      )
+
   it should "validate ADD/ADDI instructions" in {
     val filename = "CPUSpecMemoryTestFileADDI.hex"
     // addi x1, x1, 1 | addi x2, x2, 1 | add x3, x1, x2
     new PrintWriter(new File(filename)) { write("00108093\r\n00110113\r\n002081b3\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        WriteVcdAnnotation,
-        VerilatorBackendAnnotation,
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.registers(1).expect(0.S)
       c.registers(2).expect(0.S)
@@ -81,11 +90,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     0000006f
     """.stripMargin); close
     }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.registers(1).expect(0x00000000.S)
       c.registers(2).expect(0x00000000.S)
@@ -114,11 +119,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     // Instructions are: jal x1, +8 | nop | jalr x2, x1, -4
     val filename = "CPUSpecMemoryTestFileJAL.hex"
     new PrintWriter(new File(filename)) { write("008000ef\r\n00000013\r\nffc08167\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.pc.expect(0.U)
       c.registers(1).expect(0.S)
       c.registers(2).expect(0.S)
@@ -142,11 +143,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     val filename = "CPUSpecMemoryTestFileLUI.hex"
     /// lui x2, 0xc0000000
     new PrintWriter(new File(filename)) { write("C0000137\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.registers(2).expect(0x00000000L.S)
       c.clock.step(1)
@@ -159,11 +156,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     val filename = "CPUSpecMemoryTestFileAUIPC.hex"
     // auipc x2, 4096 | auipc x3, 4096
     new PrintWriter(new File(filename)) { write("00001117\r\n00001197\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.registers(2).expect(0x00000000L.S)
       c.clock.step(1)
@@ -179,11 +172,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sw x1, 20(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00102a23\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0x80f0f000L.S)
@@ -201,11 +190,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sh x1, 20(x0) | sh x1, 22(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00101a23\r\n00101b23\r\n"); close }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0x80f0f000L.S)
@@ -236,11 +221,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       021001a3
     """.stripMargin); close
     }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0x80f0f000L.S)
@@ -280,11 +261,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       00012183
       """.stripMargin); close
     }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000L.S)
@@ -320,11 +297,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       00011183
       """.stripMargin); close
     }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000L.S)
@@ -360,11 +333,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
       00010183
       """.stripMargin); close
     }
-    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
       c.registers(1).expect(0xf0f0f000L.S)

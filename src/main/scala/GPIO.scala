@@ -1,6 +1,6 @@
 import chisel3._
-import chisel3.util.HasBlackBoxInline
-import chisel3.experimental._ // For Analog type
+import chisel3.experimental._
+import chisel3.util.HasBlackBoxInline // For Analog type
 
 class GPIOPort(bitWidth: Int = 1) extends Bundle {
   val dataIn      = Input(UInt(bitWidth.W))

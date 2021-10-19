@@ -24,14 +24,23 @@ class CPUSingleCycleWrapperApps(
 class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "CPUSingleCycleApps"
 
+  val cpuFrequency          = 25000000
+  val bitWidth              = 32
+  val instructionMemorySize = 1 * 1024
+  val memorySize            = 1 * 1024
+
+  def defaultDut(memoryfile: String) =
+    test(new CPUSingleCycleWrapperApps(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
+      .withAnnotations(
+        Seq(
+          WriteVcdAnnotation,
+          VerilatorBackendAnnotation,
+        )
+      )
+
   it should "load instructions from file to write to all registers with ADDI" in {
     val filename = "./gcc/test/test_addi.mem"
-    test(new CPUSingleCycleWrapperApps(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        WriteVcdAnnotation,
-        VerilatorBackendAnnotation,
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       val results = List.fill(8)(List(0, 1000, 3000, 2000)).flatten
       for ((i, r) <- (0 until 31 zip results)) {
@@ -44,12 +53,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
 
   it should "load program and end with 25 (0x19) in mem address 100 (0x64)" in {
     val filename = "./gcc/test/test_book.mem"
-    test(new CPUSingleCycleWrapperApps(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        WriteVcdAnnotation,
-        VerilatorBackendAnnotation,
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.clock.step(1) // addi
       c.registers(2).peek().litValue() should be(5)
@@ -101,12 +105,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
 
   it should "loop thru ascii table writing to 0x3000_0000 region" in {
     val filename = "./gcc/test/test_ascii.mem"
-    test(new CPUSingleCycleWrapperApps(25000000, 32, 4 * 1024, 1 * 1024, filename)).withAnnotations(
-      Seq(
-        WriteVcdAnnotation,
-        VerilatorBackendAnnotation,
-      )
-    ) { c =>
+    defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       c.clock.step(1)
       c.registers(1).peek().litValue() should be(40)
