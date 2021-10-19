@@ -8,8 +8,13 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class ControlSingleWrapper(bitWidth: Int, instructionMemorySize: Int, memorySize: Int, memoryFile: String)
-  extends ControlSingle(bitWidth, instructionMemorySize, memorySize, memoryFile)
+class CPUSingleCycleWrapper(
+  cpuFrequency: Int,
+  bitWidth: Int,
+  instructionMemorySize: Int,
+  memorySize: Int,
+  memoryFile: String,
+) extends CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile)
   with Observer {
   val registers    = observe(registerBank.regs)
   val pc           = observe(PC.pc)
@@ -19,14 +24,19 @@ class ControlSingleWrapper(bitWidth: Int, instructionMemorySize: Int, memorySize
   val memReadData  = observe(memoryIOManager.io.MemoryIOPort.readData)
 }
 
-class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "ControlSingle"
+class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+  behavior of "CPUSingleCycle"
 
   it should "validate ADD/ADDI instructions" in {
     val filename = "CPUSpecMemoryTestFileADDI.hex"
     // addi x1, x1, 1 | addi x2, x2, 1 | add x3, x1, x2
     new PrintWriter(new File(filename)) { write("00108093\r\n00110113\r\n002081b3\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        WriteVcdAnnotation,
+        VerilatorBackendAnnotation,
+      )
+    ) { c =>
       c.clock.setTimeout(0)
       c.registers(1).expect(0.S)
       c.registers(2).expect(0.S)
@@ -71,7 +81,11 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     0000006f
     """.stripMargin); close
     }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.clock.setTimeout(0)
       c.registers(1).expect(0x00000000.S)
       c.registers(2).expect(0x00000000.S)
@@ -100,7 +114,11 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     // Instructions are: jal x1, +8 | nop | jalr x2, x1, -4
     val filename = "CPUSpecMemoryTestFileJAL.hex"
     new PrintWriter(new File(filename)) { write("008000ef\r\n00000013\r\nffc08167\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.pc.expect(0.U)
       c.registers(1).expect(0.S)
       c.registers(2).expect(0.S)
@@ -124,11 +142,15 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     val filename = "CPUSpecMemoryTestFileLUI.hex"
     /// lui x2, 0xc0000000
     new PrintWriter(new File(filename)) { write("C0000137\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).expect(0x00000000.S)
+      c.registers(2).expect(0x00000000L.S)
       c.clock.step(1)
-      c.registers(2).expect(0xc0000000.S)
+      c.registers(2).expect(0xc0000000L.S)
     }
     new File(filename).delete()
   }
@@ -137,13 +159,17 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     val filename = "CPUSpecMemoryTestFileAUIPC.hex"
     // auipc x2, 4096 | auipc x3, 4096
     new PrintWriter(new File(filename)) { write("00001117\r\n00001197\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).expect(0x00000000.S)
+      c.registers(2).expect(0x00000000L.S)
       c.clock.step(1)
-      c.registers(2).expect(0x00001000.S)
+      c.registers(2).expect(0x00001000L.S)
       c.clock.step(1)
-      c.registers(3).expect(0x00001004.S)
+      c.registers(3).expect(0x00001004L.S)
     }
     new File(filename).delete()
   }
@@ -153,13 +179,16 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sw x1, 20(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00102a23\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000.S)
+      c.registers(1).expect(0x80f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0.S)
-      c.clock.step(1)
+      c.registers(1).expect(0x80f0f0f0L.S)
       // Check memory address 0x14 (20)
       c.memWriteAddr.expect(0x14.U)
       c.memWriteData.expect(0x80f0f0f0L.U)
@@ -172,12 +201,16 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
     // Instructions are: lui x1, 0x80f0f000 | addi x1, x1, 240 | sh x1, 20(x0) | sh x1, 22(x0)
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00101a23\r\n00101b23\r\n"); close }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000.S)
+      c.registers(1).expect(0x80f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0.S)
+      c.registers(1).expect(0x80f0f0f0L.S)
       // Check memory address 0x14 (20)
       c.memWriteAddr.expect(0x14.U)
       c.memWriteData.expect(0xf0f0L.U)
@@ -203,12 +236,16 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       021001a3
     """.stripMargin); close
     }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000.S)
+      c.registers(1).expect(0x80f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0.S)
+      c.registers(1).expect(0x80f0f0f0L.S)
       // Check memory address 0x20 (32)
       c.memWriteAddr.expect(0x20.U)
       c.memWriteData.expect(0xf0.U)
@@ -243,14 +280,18 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       00012183
       """.stripMargin); close
     }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0xf0f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0xf0f0f0f0L.S)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000.S)
+      c.registers(2).expect(0x80000000L.S)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.expect(0x80000000L.U)
       c.memWriteData.expect(0xf0f0f0f0L.U)
@@ -260,7 +301,7 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       c.memReadData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xf0f0f0f0.S)
+      c.registers(3).expect(0xf0f0f0f0L.S)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }
@@ -279,14 +320,18 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       00011183
       """.stripMargin); close
     }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0xf0f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0xf0f0f0f0L.S)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000.S)
+      c.registers(2).expect(0x80000000L.S)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.expect(0x80000000L.U)
       c.memWriteData.expect(0xf0f0f0f0L.U)
@@ -296,7 +341,7 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       c.memReadData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xfffff0f0.S)
+      c.registers(3).expect(0xfffff0f0L.S)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }
@@ -315,14 +360,18 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       00010183
       """.stripMargin); close
     }
-    test(new ControlSingleWrapper(32, 1 * 1024, 1 * 1024, filename)) { c =>
+    test(new CPUSingleCycleWrapper(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.registers(1).expect(0.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000.S)
+      c.registers(1).expect(0xf0f0f000L.S)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0.S)
+      c.registers(1).expect(0xf0f0f0f0L.S)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000.S)
+      c.registers(2).expect(0x80000000L.S)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.expect(0x80000000L.U)
       c.memWriteData.expect(0xf0f0f0f0L.U)
@@ -332,7 +381,7 @@ class ControlSingleSpec extends AnyFlatSpec with ChiselScalatestTester with shou
       c.memReadData.expect(0xf0f0f0f0L.U)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xfffffff0.S)
+      c.registers(3).expect(0xfffffff0L.S)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }

@@ -1,15 +1,27 @@
 import Instruction._
 import chisel3._
 import chisel3.util._
+import chisel3.experimental._
 
-class ControlSingle(
+class CPUSingleCycle(
+  cpuFrequency: Int,
   bitWidth: Int = 32,
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize: Int = 1 * 1024,
   memoryFile: String = "",
 ) extends Module {
+  val io = IO(new Bundle {
+    val led0          = Output(Bool()) // LED 0 is the heartbeat
+    val GPIO0External = Analog(1.W)    // GPIO external port
+  })
 
   // Instantiate the modules
+
+  // Heartbeat LED
+  val blink = Module(new Blinky(cpuFrequency))
+  io.led0 := blink.io.led0
+
+  // Instantiate and initialize the Register Bank
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
   registerBank.io.regPort.rs1_addr    := 0.U
@@ -17,33 +29,46 @@ class ControlSingle(
   registerBank.io.regPort.regwr_addr  := 0.U
   registerBank.io.regPort.regwr_data  := 0.S
 
+  // Instantiate and initialize the Program Counter
   val PC = Module(new ProgramCounter(bitWidth))
   PC.io.pcPort.countEnable := false.B
   PC.io.pcPort.writeEnable := false.B
   PC.io.pcPort.dataIn      := DontCare
   PC.io.pcPort.writeAdd    := false.B
 
+  // Instantiate and initialize the ALU
   val ALU = Module(new ALU(bitWidth))
   ALU.io.ALUPort.inst := ERR_INST
   ALU.io.ALUPort.a    := 0.U
   ALU.io.ALUPort.b    := 0.U
 
+  // Instantiate and initialize the Instruction Decoder
   val decoder = Module(new Decoder(bitWidth))
   decoder.io.DecoderPort.op := DontCare
 
+  // Instantiate and initialize the Instruction memory
   val instructionMemory = Module(new InstructionMemory(bitWidth, instructionMemorySize, memoryFile))
   instructionMemory.io.memPort.readAddr := DontCare
 
-  val memoryIOManager = Module(new MemoryIOManager(bitWidth, 50000000, dataMemorySize))
+  // Instantiate and initialize the Memory IO Manager
+  val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize))
   memoryIOManager.io.MemoryIOPort.readAddr    := DontCare
   memoryIOManager.io.MemoryIOPort.writeAddr   := DontCare
   memoryIOManager.io.MemoryIOPort.writeEnable := false.B
   memoryIOManager.io.MemoryIOPort.writeData   := 0.U
   memoryIOManager.io.MemoryIOPort.writeMask   := DontCare
-  io.GPIO0ExternalPort <> memoryIOManager.io.GPIO0ExternalPort
 
-  // --- CPU Control --- //
-  PC.io.pcPort.countEnable              := true.B
+  // Instantiate and connect GPIO
+  val GPIO0 = Module(new GPIO(1))
+  GPIO0.io.GPIOPort.dataIn             := memoryIOManager.io.GPIO0Port.dataIn
+  GPIO0.io.GPIOPort.writeEnable        := memoryIOManager.io.GPIO0Port.writeEnable
+  GPIO0.io.GPIOPort.dir                := memoryIOManager.io.GPIO0Port.dir
+  memoryIOManager.io.GPIO0Port.dataOut := GPIO0.io.GPIOPort.dataOut
+  io.GPIO0External <> GPIO0.io.externalPort
+
+  // --------------- CPU Control --------------- //
+  PC.io.pcPort.countEnable := true.B
+
   instructionMemory.io.memPort.readAddr := PC.io.pcPort.dataOut
   decoder.io.DecoderPort.op             := instructionMemory.io.memPort.readData
 
@@ -134,12 +159,14 @@ class ControlSingle(
       )
     }
   }
+
   // LUI
   when(decoder.io.DecoderPort.inst === LUI) {
     registerBank.io.regPort.writeEnable := true.B
     registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
     registerBank.io.regPort.regwr_data  := Cat(decoder.io.DecoderPort.imm(31, 12), Fill(12, 0.U)).asSInt()
   }
+
   // AUIPC
   when(decoder.io.DecoderPort.inst === AUIPC) {
     registerBank.io.regPort.writeEnable := true.B
@@ -186,6 +213,7 @@ class ControlSingle(
       )
     }
   }
+
   // Loads
   when(decoder.io.DecoderPort.is_load) {
     // Set register and memory addresses, write enable the register bank

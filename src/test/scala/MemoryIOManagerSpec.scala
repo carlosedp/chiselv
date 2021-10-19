@@ -16,38 +16,53 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   behavior of "MemoryIOManager"
 
   it should "read dummy value from Syscon 0x0" in {
-    test(new MemoryIOManager(32, 50000000)) { c =>
+    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1000.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(0xbaad_cafeL.U)
     }
   }
   it should "read clock speed from Syscon" in {
-    test(new MemoryIOManager(32, 50000000)) { c =>
+    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1008.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(50000000.U)
     }
   }
   it should "check if UART0 is available in Syscon" in {
-    test(new MemoryIOManager(32, 50000000)) { c =>
+    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1010.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(0.U)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {
-    test(new MemoryIOManager(32, 50000000)) { c =>
+    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1018.U)
       c.clock.step()
-      c.io.MemoryIOPort.readData.expect(0.U)
+      c.io.MemoryIOPort.readData.expect(1.U)
     }
   }
   it should "write data and follow with a read in same address" in {
     test(new MemoryIOManager(32, 50000000, 64 * 1024)).withAnnotations(
       Seq(
-        VerilatorBackendAnnotation,
-        WriteVcdAnnotation,
+        VerilatorBackendAnnotation
       )
     ) { c =>
       val addressOffset = 0x8000_0000L

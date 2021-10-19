@@ -1,4 +1,5 @@
 import chisel3._
+import chisel3.util._
 
 /* Memory Map
  *
@@ -22,21 +23,20 @@ import chisel3._
  * 0x8001_0000 - 0xFFFF_FFFF: Reserved
  */
 
-class SerialIOPort() extends Bundle {
-  val tx = Output(UInt(1.W))
-  val rx = Input(UInt(1.W))
-}
-
 class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024) extends Module {
   val io = IO(new Bundle {
-    val MemoryIOPort = new DualPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
-    // val UART0Port    = new SerialIOPort()
-    // val GPIO0Port    = new SerialIOPort()
+    val MemoryIOPort = new MemoryPortDual(bitWidth, scala.math.pow(2, bitWidth).toLong)
+    val GPIO0Port    = Flipped(new GPIOPort(1))
   })
 
   val dataOut      = WireInit(0.U(bitWidth.W))
   val readAddress  = io.MemoryIOPort.readAddr
   val writeAddress = io.MemoryIOPort.writeAddr
+
+  // Initialize IO
+  io.GPIO0Port.dataIn      := DontCare
+  io.GPIO0Port.dir         := DontCare
+  io.GPIO0Port.writeEnable := DontCare
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U) {
@@ -54,7 +54,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     }
     // Has GPIO0
     when(readAddress(11, 0) === 0x18L.U) { // (0x0000_1018)
-      dataOut := 0.U
+      dataOut := 1.U
     }
     // Has PWM0
     when(readAddress(11, 0) === 0x20L.U) { // (0x0000_1020)
@@ -67,9 +67,12 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     dataOut := 0.U
   }
 
-  /* --- GPIO0 --- */
+  // GPIO0
   when(readAddress(31, 12) === 0x3000_1L.U || writeAddress(31, 12) === 0x3000_1L.U) {
-    dataOut := 0.U
+    io.GPIO0Port.writeEnable := io.MemoryIOPort.writeEnable
+    io.GPIO0Port.dataIn      := io.MemoryIOPort.writeData
+    io.GPIO0Port.dir         := 1.U // FIX THIS
+    io.MemoryIOPort.readData := io.GPIO0Port.dataOut
   }
 
   /* --- PWM0 --- */
@@ -79,15 +82,15 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
 
   /* --- Data Memory --- */
   val memory = Module(new DualPortRAM(bitWidth, sizeBytes))
-  dontTouch(memory.io.dualPort)
-  val addressOffset = 0x8000_0000L.U
+  // Initialize IO
   memory.io.dualPort.writeEnable := false.B
   memory.io.dualPort.writeData   := DontCare
-  memory.io.dualPort.readAddr    := 0.U
-  memory.io.dualPort.writeAddr   := 0.U
+  memory.io.dualPort.readAddr    := DontCare
+  memory.io.dualPort.writeAddr   := DontCare
+  memory.io.dualPort.writeMask   := DontCare
 
-  memory.io.dualPort.readAddr  := readAddress - addressOffset
-  memory.io.dualPort.writeAddr := writeAddress - addressOffset
+  memory.io.dualPort.readAddr  := Cat(Fill(16, 0.U), readAddress(15, 0))
+  memory.io.dualPort.writeAddr := Cat(Fill(16, 0.U), readAddress(15, 0))
   when(readAddress(31, 16) === 0x8000L.U || writeAddress(31, 16) === 0x8000L.U) {
 
     when(io.MemoryIOPort.writeEnable) {

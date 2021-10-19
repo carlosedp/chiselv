@@ -6,8 +6,13 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class ControlSingleWrapperApps(bitWidth: Int, instructionMemorySize: Int, memorySize: Int, memoryFile: String)
-  extends ControlSingle(bitWidth, instructionMemorySize, memorySize, memoryFile)
+class CPUSingleCycleWrapperApps(
+  cpuFrequency: Int,
+  bitWidth: Int,
+  instructionMemorySize: Int,
+  memorySize: Int,
+  memoryFile: String,
+) extends CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile)
   with Observer {
   val registers    = observe(registerBank.regs)
   val memWriteAddr = observe(memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -16,12 +21,12 @@ class ControlSingleWrapperApps(bitWidth: Int, instructionMemorySize: Int, memory
   val memReadData  = observe(memoryIOManager.io.MemoryIOPort.readData)
 }
 
-class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "ControlSingleApps"
+class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+  behavior of "CPUSingleCycleApps"
 
   it should "load instructions from file to write to all registers with ADDI" in {
     val filename = "./gcc/test/test_addi.mem"
-    test(new ControlSingleWrapperApps(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+    test(new CPUSingleCycleWrapperApps(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
@@ -39,7 +44,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
 
   it should "load program and end with 25 (0x19) in mem address 100 (0x64)" in {
     val filename = "./gcc/test/test_book.mem"
-    test(new ControlSingleWrapperApps(32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
+    test(new CPUSingleCycleWrapperApps(25000000, 32, 1 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
@@ -96,7 +101,7 @@ class ControlSingleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with 
 
   it should "loop thru ascii table writing to 0x3000_0000 region" in {
     val filename = "./gcc/test/test_ascii.mem"
-    test(new ControlSingleWrapperApps(32, 4 * 1024, 1 * 1024, filename)).withAnnotations(
+    test(new CPUSingleCycleWrapperApps(25000000, 32, 4 * 1024, 1 * 1024, filename)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
