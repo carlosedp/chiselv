@@ -8,7 +8,7 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class CPUSingleCycleWrapper(
+class CPUSingleCycleInstWrapper(
   cpuFrequency: Int,
   bitWidth: Int,
   instructionMemorySize: Int,
@@ -24,8 +24,8 @@ class CPUSingleCycleWrapper(
   val memReadData  = observe(memoryIOManager.io.MemoryIOPort.readData)
 }
 
-class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "CPUSingleCycle"
+class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
+  behavior of "CPUSingleInstructionCycle"
 
   val cpuFrequency          = 25000000
   val bitWidth              = 32
@@ -33,7 +33,7 @@ class CPUSingleCycleSpec extends AnyFlatSpec with ChiselScalatestTester with sho
   val memorySize            = 1 * 1024
 
   def defaultDut(memoryfile: String) =
-    test(new CPUSingleCycleWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
+    test(new CPUSingleCycleInstWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
       .withAnnotations(
         Seq(
           // WriteVcdAnnotation,

@@ -1,7 +1,7 @@
 import Instruction._
 import chisel3._
-import chisel3.util._
 import chisel3.experimental._
+import chisel3.util._
 
 class CPUSingleCycle(
   cpuFrequency: Int,
@@ -9,13 +9,12 @@ class CPUSingleCycle(
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize: Int = 1 * 1024,
   memoryFile: String = "",
+  numGPIO: Int = 8,
 ) extends Module {
   val io = IO(new Bundle {
-    val led0          = Output(Bool()) // LED 0 is the heartbeat
-    val GPIO0External = Analog(1.W)    // GPIO external port
+    val led0          = Output(Bool())    // LED 0 is the heartbeat
+    val GPIO0External = Analog(numGPIO.W) // GPIO external port
   })
-
-  // Instantiate the modules
 
   // Heartbeat LED
   val blink = Module(new Blinky(cpuFrequency))
@@ -24,10 +23,7 @@ class CPUSingleCycle(
   // Instantiate and initialize the Register Bank
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
-  registerBank.io.regPort.rs1_addr    := 0.U
-  registerBank.io.regPort.rs2_addr    := 0.U
-  registerBank.io.regPort.regwr_addr  := 0.U
-  registerBank.io.regPort.regwr_data  := 0.S
+  registerBank.io.regPort.regwr_data  := DontCare
 
   // Instantiate and initialize the Program Counter
   val PC = Module(new ProgramCounter(bitWidth))
@@ -55,21 +51,21 @@ class CPUSingleCycle(
   memoryIOManager.io.MemoryIOPort.readAddr    := DontCare
   memoryIOManager.io.MemoryIOPort.writeAddr   := DontCare
   memoryIOManager.io.MemoryIOPort.writeEnable := false.B
-  memoryIOManager.io.MemoryIOPort.writeData   := 0.U
+  memoryIOManager.io.MemoryIOPort.writeData   := DontCare
   memoryIOManager.io.MemoryIOPort.writeMask   := DontCare
 
   // Instantiate and connect GPIO
-  val GPIO0 = Module(new GPIO(1))
-  GPIO0.io.GPIOPort.dataIn             := memoryIOManager.io.GPIO0Port.dataIn
-  GPIO0.io.GPIOPort.writeEnable        := memoryIOManager.io.GPIO0Port.writeEnable
-  GPIO0.io.GPIOPort.dir                := memoryIOManager.io.GPIO0Port.dir
-  memoryIOManager.io.GPIO0Port.dataOut := GPIO0.io.GPIOPort.dataOut
+  val GPIO0 = Module(new GPIO(bitWidth, numGPIO))
+  GPIO0.io.GPIOPort <> memoryIOManager.io.GPIO0Port
   io.GPIO0External <> GPIO0.io.externalPort
 
   // --------------- CPU Control --------------- //
   PC.io.pcPort.countEnable := true.B
 
   instructionMemory.io.memPort.readAddr := PC.io.pcPort.dataOut
+  registerBank.io.regPort.regwr_addr    := decoder.io.DecoderPort.rd
+  registerBank.io.regPort.rs1_addr      := decoder.io.DecoderPort.rs1
+  registerBank.io.regPort.rs2_addr      := decoder.io.DecoderPort.rs2
   decoder.io.DecoderPort.op             := instructionMemory.io.memPort.readData
 
   // ALU Operations
@@ -83,16 +79,14 @@ class CPUSingleCycle(
     )
 
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
     registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
   }
 
   // Branch Operations
   when(decoder.io.DecoderPort.branch) {
-    registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
-    registerBank.io.regPort.rs2_addr := decoder.io.DecoderPort.rs2
-    ALU.io.ALUPort.a                 := registerBank.io.regPort.rs1.asUInt()
-    ALU.io.ALUPort.b                 := registerBank.io.regPort.rs2.asUInt()
+
+    ALU.io.ALUPort.a := registerBank.io.regPort.rs1.asUInt()
+    ALU.io.ALUPort.b := registerBank.io.regPort.rs2.asUInt()
     switch(decoder.io.DecoderPort.inst) {
       is(BEQ)(ALU.io.ALUPort.inst  := EQ)
       is(BNE)(ALU.io.ALUPort.inst  := NEQ)
@@ -109,31 +103,21 @@ class CPUSingleCycle(
   }
   // Jump Operations
   when(decoder.io.DecoderPort.jump) {
-    when(decoder.io.DecoderPort.inst === JAL) {
-      // Write next instruction address to rd
-      registerBank.io.regPort.writeEnable := true.B
-      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-      ALU.io.ALUPort.inst                 := ADD
-      ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
-      ALU.io.ALUPort.b                    := 4.U
-      registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
+    // Write next instruction address to rd
+    registerBank.io.regPort.writeEnable := true.B
+    ALU.io.ALUPort.inst                 := ADD
+    ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+    ALU.io.ALUPort.b                    := 4.U
+    registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
+    PC.io.pcPort.writeEnable            := true.B
 
+    when(decoder.io.DecoderPort.inst === JAL) {
       // Set PC to jump address
-      PC.io.pcPort.writeEnable := true.B
-      PC.io.pcPort.writeAdd    := true.B
-      PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm
+      PC.io.pcPort.writeAdd := true.B
+      PC.io.pcPort.dataIn   := decoder.io.DecoderPort.imm
     }
     when(decoder.io.DecoderPort.inst === JALR) {
-      // Write next instruction address to rd
-      registerBank.io.regPort.writeEnable := true.B
-      registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
-      ALU.io.ALUPort.inst                 := ADD
-      ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
-      ALU.io.ALUPort.b                    := 4.U
-      registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt()
       // Set PC to jump address
-      PC.io.pcPort.writeEnable         := true.B
-      registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
       PC.io.pcPort.dataIn := Cat(
         (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm.asSInt()).asUInt()(31, 1),
         0.U,
@@ -144,14 +128,12 @@ class CPUSingleCycle(
   // LUI
   when(decoder.io.DecoderPort.inst === LUI) {
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
     registerBank.io.regPort.regwr_data  := Cat(decoder.io.DecoderPort.imm(31, 12), Fill(12, 0.U)).asSInt()
   }
 
   // AUIPC
   when(decoder.io.DecoderPort.inst === AUIPC) {
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
     ALU.io.ALUPort.inst                 := ADD
     ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
     ALU.io.ALUPort.b := Cat(
@@ -164,8 +146,6 @@ class CPUSingleCycle(
   // Stores
   when(decoder.io.DecoderPort.is_store) {
     // Set register and memory addresses, write enable the data memory
-    registerBank.io.regPort.rs1_addr            := decoder.io.DecoderPort.rs1
-    registerBank.io.regPort.rs2_addr            := decoder.io.DecoderPort.rs2
     memoryIOManager.io.MemoryIOPort.writeEnable := true.B
 
     ALU.io.ALUPort.inst := ADD
@@ -198,7 +178,6 @@ class CPUSingleCycle(
   // Loads
   when(decoder.io.DecoderPort.is_load) {
     // Set register and memory addresses, write enable the register bank
-    registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
 
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt()
@@ -208,7 +187,6 @@ class CPUSingleCycle(
     memoryIOManager.io.MemoryIOPort.readAddr := memAddr
 
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_addr  := decoder.io.DecoderPort.rd
     // Load Word
     when(decoder.io.DecoderPort.inst === LW) {
       registerBank.io.regPort.regwr_data := memoryIOManager.io.MemoryIOPort.readData.asSInt()
