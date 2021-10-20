@@ -5,14 +5,15 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-class GPIOWrapper(bitWidth: Int = 1) extends GPIO(bitWidth) with Observer {
-  // val observe_InOut_dataOut = observe(InOut.io.dataOut)
+class GPIOWrapper(bitWidth: Int = 32, numGPIO: Int = 8) extends GPIO(bitWidth, numGPIO) with Observer {
+  val obs_GPIO      = observe(GPIO)
+  val obs_DIRECTION = observe(direction)
 }
 class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "GPIO"
 
   def defaultDut() =
-    test(new GPIO(1)).withAnnotations(
+    test(new GPIOWrapper(32, 8)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
@@ -22,26 +23,30 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
   it should "read IO when as 0 when initialized" in {
     defaultDut() { c =>
       c.io.GPIOPort.dataOut.peek().litValue() should be(0)
-      c.io.GPIOPort.dir.peek().litValue() should be(0)
+      c.obs_GPIO.peek().litValue() should be(0)
+      c.obs_DIRECTION.peek().litValue() should be(0)
     }
   }
 
   it should "write direction" in {
     defaultDut() { c =>
-      c.io.GPIOPort.writeEnable.poke(true.B)
-      c.io.GPIOPort.dir.poke(1.U)
+      c.io.GPIOPort.writeDirection.poke(true.B)
+      c.io.GPIOPort.dataIn.poke("b10101010".U)
       c.clock.step()
-      c.io.GPIOPort.dir.peek().litValue() should be(1)
+      c.obs_DIRECTION.expect("b10101010".U)
     }
   }
 
   it should "write IO data to output" in {
     defaultDut() { c =>
-      c.io.GPIOPort.writeEnable.poke(true.B)
-      c.io.GPIOPort.dataIn.poke(1.U)
-      c.io.GPIOPort.dir.poke(1.U)
+      c.io.GPIOPort.writeValue.poke(true.B)
+      c.io.GPIOPort.dataIn.poke("b11111111".U)
       c.clock.step()
-      c.io.GPIOPort.dataOut.peek().litValue() should be(1)
+      c.obs_GPIO.expect("b11111111".U)
+      c.io.GPIOPort.writeDirection.poke(true.B)
+      c.io.GPIOPort.dataIn.poke("b01010101".U)
+      c.clock.step()
+      c.io.GPIOPort.dataOut.expect("b01010101".U)
       c.clock.step(5)
     }
   }
