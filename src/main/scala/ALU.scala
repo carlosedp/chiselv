@@ -13,14 +13,29 @@ class ALU(bitWidth: Int = 32) extends Module {
     val ALUPort = new ALUPort(bitWidth)
   })
 
-  val op = io.ALUPort.inst
-  val a  = io.ALUPort.a
-  val b  = io.ALUPort.b
+  val a = io.ALUPort.a
+  val b = io.ALUPort.b
 
   val out = WireDefault(UInt(bitWidth.W), 0.U)
 
-  val shamt = b(4, 0).asUInt() // For RV32I the shift amount is 5 bits
-  // val shamt = b(5, 0).asUInt() // For RV64I the shift amount is 6 bits
+  // For RV32I the shift amount is 5 bits, for RV64I is 6 bits
+  val shamt = if (bitWidth == 32) b(4, 0).asUInt() else b(5, 0).asUInt()
+
+  // Use the correct ALU operation on Immediate instructions
+  val op = MuxCase(
+    io.ALUPort.inst,
+    Seq(
+      (io.ALUPort.inst === ADDI)  -> ADD,
+      (io.ALUPort.inst === SRAI)  -> SRA,
+      (io.ALUPort.inst === SRLI)  -> SRL,
+      (io.ALUPort.inst === SLLI)  -> SLL,
+      (io.ALUPort.inst === ANDI)  -> AND,
+      (io.ALUPort.inst === ORI)   -> OR,
+      (io.ALUPort.inst === XORI)  -> XOR,
+      (io.ALUPort.inst === SLTI)  -> SLT,
+      (io.ALUPort.inst === SLTIU) -> SLTU,
+    ),
+  )
 
   switch(op) {
     // Arithmetic
