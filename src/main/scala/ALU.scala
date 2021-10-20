@@ -21,7 +21,7 @@ class ALU(bitWidth: Int = 32) extends Module {
   val out = WireDefault(UInt(bitWidth.W), 0.U)
 
   // For RV32I the shift amount is 5 bits, for RV64I is 6 bits
-  val shamt = if (bitWidth == 32) b(4, 0).asUInt() else b(5, 0).asUInt()
+  val shamt = if (bitWidth == 32) b(4, 0).asUInt else b(5, 0).asUInt
 
   // Use the correct ALU operation on Immediate instructions
   val op = MuxCase(

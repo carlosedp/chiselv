@@ -52,10 +52,10 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       c.io.DecoderPort.op.poke("b10101010101010101010101110110111".U)
       c.clock.step()
       c.io.DecoderPort.inst.expect(LUI)
-      c.io.DecoderPort.rd.peek().litValue() should be(23)
-      c.io.DecoderPort.rs1.peek().litValue() should be(0)
-      c.io.DecoderPort.rs2.peek().litValue() should be(0)
-      c.io.DecoderPort.imm.peek().litValue() should be(2863308800L)
+      c.io.DecoderPort.rd.peek().litValue should be(23)
+      c.io.DecoderPort.rs1.peek().litValue should be(0)
+      c.io.DecoderPort.rs2.peek().litValue should be(0)
+      c.io.DecoderPort.imm.peek().litValue should be(2863308800L)
       c.io.DecoderPort.toALU.expect(false.B)
       c.io.DecoderPort.branch.expect(false.B)
     }
@@ -81,10 +81,10 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     branch: Bool,
   ) = {
     c.io.DecoderPort.inst.expect(inst)
-    c.io.DecoderPort.rd.peek().litValue() should be(rd)
-    c.io.DecoderPort.rs1.peek().litValue() should be(rs1)
-    c.io.DecoderPort.rs2.peek().litValue() should be(rs2)
-    c.io.DecoderPort.imm.peek().litValue().toLong.toBinaryString should be(imm.toBinaryString)
+    c.io.DecoderPort.rd.peek().litValue should be(rd)
+    c.io.DecoderPort.rs1.peek().litValue should be(rs1)
+    c.io.DecoderPort.rs2.peek().litValue should be(rs2)
+    c.io.DecoderPort.imm.peek().litValue.toLong.toBinaryString should be(imm.toBinaryString)
     c.io.DecoderPort.toALU.expect(toALU)
     c.io.DecoderPort.branch.expect(branch)
   }

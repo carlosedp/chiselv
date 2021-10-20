@@ -22,7 +22,7 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
       c.io.regPort.regwr_addr.poke(0.U)
       c.io.regPort.regwr_data.poke(123.S)
       c.clock.step()
-      c.io.regPort.rs1_addr.peek().litValue() should be(0)
+      c.io.regPort.rs1_addr.peek().litValue should be(0)
     }
   }
   it should "not write if not enabled" in {
