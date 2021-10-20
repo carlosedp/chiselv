@@ -61,6 +61,10 @@ class CPUSingleCycle(
   GPIO0.io.GPIOPort <> memoryIOManager.io.GPIO0Port
   io.GPIO0External <> GPIO0.io.externalPort
 
+  // Instantiate and connect the Timer
+  val timer0 = Module(new Timer(bitWidth, cpuFrequency))
+  timer0.io.timerPort <> memoryIOManager.io.Timer0Port
+
   // --------------- CPU Control --------------- //
   PC.io.pcPort.countEnable := true.B
 

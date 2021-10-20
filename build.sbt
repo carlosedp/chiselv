@@ -25,7 +25,7 @@ lazy val chiselv = (project in file("."))
 // Default library versions
 val defaultVersions = Map(
   "chisel3"          -> "3.5.0-RC1",
-  "chiseltest"       -> "0.5.0-RC1",
+  "chiseltest"       -> "0.5-SNAPSHOT",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
   "scalautils"       -> "0.5.0",
@@ -51,6 +51,9 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases"),
 )
+
+// Recommendation from https://www.scalatest.org/user_guide/using_scalatest_with_sbt
+logBuffered in Test := false
 
 scalacOptions ++= Seq(
   "-unchecked",

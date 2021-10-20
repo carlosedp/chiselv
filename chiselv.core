@@ -4,9 +4,9 @@ name: carlosedp:chiselv:singlecycle:0
 
 filesets:
 
-  progload: &program
+  progload:
     files:
-      - gcc/test/test_book.mem:
+      - gcc/test/test_gpio.mem:
           { copyto: progload.mem, file_type: user }
 
   proginfo:

@@ -33,7 +33,7 @@ fmt: ## Formats code using scalafmt and scalafix
 
 .PHONY: gcc
 gcc: ## Builds gcc sample code
-	pushd gcc ; make ; popd
+	pushd gcc/test ; make ; popd
 
 check-board-vars:
 	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)

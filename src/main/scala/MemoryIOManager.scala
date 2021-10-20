@@ -16,11 +16,9 @@ import chisel3.util._
  *                 0x00 (direction - 1: input, 0: output)
  *                 0x04 (value     - 1: high, 0: low)
  * 0x3000_2000 - 0x3000_2FFF: PWM0
- * 0x3000_3000 - 0x3000_FFFF: Reserved
- * 0x3001_0000 - 0x3001_0FFF: UART1
- * 0x3001_1000 - 0x3001_1FFF: GPIO1
- * 0x3001_2000 - 0x3001_2FFF: PWM1
- * 0x3001_3000 - 0x3FFF_FFFF: Reserved
+ * 0x3000_3000 - 0x3000_3FFF: Timer0
+ *                 0x00 (32 bit value in miliseconds)
+ * 0x3000_4000 - 0x3FFF_FFFF: Reserved
  * 0x4000_0000 - 0x4FFF_FFFF: Reserved
  * 0x5000_0000 - 0x7000_0000: Reserved
  * 0x8000_0000 - 0x8000_FFFF: On-chip memory RAM (64KB)
@@ -31,6 +29,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   val io = IO(new Bundle {
     val MemoryIOPort = new MemoryPortDual(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))
+    val Timer0Port   = Flipped(new TimerPort(bitWidth))
   })
 
   val dataOut      = WireInit(0.U(bitWidth.W))
@@ -41,6 +40,9 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   io.GPIO0Port.dataIn         := DontCare
   io.GPIO0Port.writeValue     := false.B
   io.GPIO0Port.writeDirection := false.B
+
+  io.Timer0Port.dataIn      := DontCare
+  io.Timer0Port.writeEnable := false.B
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U) {
@@ -63,6 +65,10 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     // Has PWM0
     when(readAddress(11, 0) === 0x20L.U) { // (0x0000_1020)
       dataOut := 0.U
+    }
+    // Has Timer0
+    when(readAddress(11, 0) === 0x24L.U) { // (0x0000_1024)
+      dataOut := 1.U
     }
   }
 
@@ -88,6 +94,13 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   /* --- PWM0 --- */
   when(readAddress(31, 12) === 0x3000_2L.U || writeAddress(31, 12) === 0x3000_2L.U) {
     dataOut := 0.U
+  }
+
+  /* --- Timer0 --- */
+  when(readAddress(31, 12) === 0x3000_3L.U || writeAddress(31, 12) === 0x3000_3L.U) {
+    io.Timer0Port.dataIn      := io.MemoryIOPort.writeData
+    io.Timer0Port.writeEnable := io.MemoryIOPort.writeEnable
+    dataOut                   := io.Timer0Port.dataOut
   }
 
   /* --- Data Memory --- */
