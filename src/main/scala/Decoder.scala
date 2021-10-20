@@ -1,3 +1,5 @@
+package chiselv
+
 import Instruction._
 import InstructionType._
 import chisel3._

@@ -1,3 +1,5 @@
+package chiselv
+
 import chisel3.experimental.ChiselEnum
 
 object Instruction extends ChiselEnum {

@@ -1,3 +1,5 @@
+package chiselv
+
 import chisel3._
 import chisel3.experimental._
 import com.carlosedp.scalautils.ParseArguments
