@@ -12,7 +12,7 @@
 set top [list TOP.clock TOP.reset ]
 
 ## This adds the signals based on a list of {"signal_name_filter" Color}
-set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_dualPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager.io_MemoryIOPort_" Red ""} {"memory.io_dualPort_" Orange ""}}
+set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_memPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager_io__MemoryIOPort_" Red ""} {"memory.io_dualPort_" Yellow ""} {"GPIO0.io_GPIOPort_" Orange ""} {"GPIO0.GPIO" Orange "GPIO0.GPIO_0"} {"GPIO0.direction" Orange "GPIO0.direction_0"}}
 
 ## For mapping values, add the translate files and the signals to map file
 # Format file as: "signal_value mapped_value" (one per line)

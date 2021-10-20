@@ -20,7 +20,7 @@ BOARD := bypass
 
 # Targets
 chisel: check-board-vars clean ## Generates Verilog code from Chisel sources using SBT
-	${SBT} "run --target:fpga -board ${BOARD} -td $(generated_files)"
+	${SBT} "run --target:fpga -board ${BOARD} -cpufreq 25000000 -td $(generated_files)"
 
 chisel_tests:
 	${SBT} "test"

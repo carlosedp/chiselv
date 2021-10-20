@@ -34,7 +34,7 @@ generate:
   ulx3s:
     generator: chisel
     parameters:
-      extraargs: "--target:fpga -board ulx3s"
+      extraargs: "--target:fpga -board ulx3s -cpufreq 15000000"
       buildtool: sbt
       copy_core: true
       output:
@@ -46,7 +46,7 @@ generate:
   artya7-35t:
     generator: chisel
     parameters:
-      extraargs: "--target:fpga -board artya7-35t -invreset false"
+      extraargs: "--target:fpga -board artya7-35t -invreset false -cpufreq 25000000"
       buildtool: sbt
       copy_core: true
       output:
@@ -67,7 +67,7 @@ targets:
       diamond:
         part: LFE5U-85F-6BG381C
       trellis:
-        nextpnr_options: [--package, CABGA381, --85k]
+        nextpnr_options: [--package, CABGA381, --85k, --lpf-allow-unconstrained]
         yosys_synth_options: [-abc9, -nowidelut]
     toplevel: Toplevel
 
