@@ -117,7 +117,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
     dut.clock.step()
     // println(s"Output is ${dut.io.ALUPort.x.peek()}")
-    dut.io.ALUPort.x.expect(out.U)
+    dut.io.ALUPort.x.peek().litValue should be(out)
   }
   def testCycle(dut: ALU, op: Type) =
     cases.foreach { i =>

@@ -1,6 +1,5 @@
 package chiselv
 
-import chisel3._
 import chiseltest._
 import org.scalatest._
 
@@ -49,15 +48,15 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     new PrintWriter(new File(filename)) { write("00108093\r\n00110113\r\n002081b3\r\n"); close }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).expect(0.S)
-      c.registers(2).expect(0.S)
-      c.registers(3).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(1.S)
+      c.registers(1).peek().litValue should be(1)
       c.clock.step(1)
-      c.registers(2).expect(1.S)
+      c.registers(2).peek().litValue should be(1)
       c.clock.step(1)
-      c.registers(3).expect(2.S)
+      c.registers(3).peek().litValue should be(2)
     }
     new File(filename).delete()
   }
@@ -94,24 +93,24 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).expect(0x00000000.S)
-      c.registers(2).expect(0x00000000.S)
-      c.registers(3).expect(0x00000000.S)
+      c.registers(1).peek().litValue should be(0x0)
+      c.registers(2).peek().litValue should be(0x0)
+      c.registers(3).peek().litValue should be(0x0)
       c.clock.step(1)
-      c.registers(1).expect(4.S)
+      c.registers(1).peek().litValue should be(4)
       c.clock.step(1)
-      c.registers(2).expect(4.S)
+      c.registers(2).peek().litValue should be(4)
       c.clock.step(1)
-      c.registers(3).expect(2.S)
-      c.pc.expect(0x0c.U)
+      c.registers(3).peek().litValue should be(2)
+      c.pc.peek().litValue should be(0x0c)
       c.clock.step(1)
-      c.pc.expect(0x14.U)
+      c.pc.peek().litValue should be(0x14)
       c.clock.step(1)
-      c.pc.expect(0x1c.U)
+      c.pc.peek().litValue should be(0x1c)
       c.clock.step(1)
-      c.pc.expect(0x24.U)
+      c.pc.peek().litValue should be(0x24)
       c.clock.step(1)
-      c.pc.expect(0x2c.U)
+      c.pc.peek().litValue should be(0x2c)
     }
     new File(filename).delete()
   }
@@ -122,21 +121,21 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     val filename = "CPUSpecMemoryTestFileJAL.hex"
     new PrintWriter(new File(filename)) { write("008000ef\r\n00000013\r\nffc08167\r\n"); close }
     defaultDut(filename) { c =>
-      c.pc.expect(0.U)
-      c.registers(1).expect(0.S)
-      c.registers(2).expect(0.S)
+      c.pc.peek().litValue should be(0)
+      c.registers(1).peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0)
       c.clock.step(1)
-      c.pc.expect(8.U)
-      c.registers(1).expect(4.S)
+      c.pc.peek().litValue should be(8)
+      c.registers(1).peek().litValue should be(4)
       c.clock.step(1)
-      c.pc.expect(0.U)
-      c.registers(2).expect(0xcL.S)
+      c.pc.peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0xcL)
       c.clock.step(1)
-      c.pc.expect(8.U)
-      c.registers(1).expect(4.S)
+      c.pc.peek().litValue should be(8)
+      c.registers(1).peek().litValue should be(4)
       c.clock.step(1)
-      c.pc.expect(0.U)
-      c.registers(2).expect(0xcL.S)
+      c.pc.peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0xcL)
     }
     new File(filename).delete()
   }
@@ -147,9 +146,9 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     new PrintWriter(new File(filename)) { write("C0000137\r\n"); close }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).expect(0x00000000L.S)
+      c.registers(2).peek().litValue should be(0x00000000)
       c.clock.step(1)
-      c.registers(2).expect(0xc0000000L.S)
+      c.registers(2).peek().litValue should be(0xc0000000)
     }
     new File(filename).delete()
   }
@@ -160,11 +159,11 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     new PrintWriter(new File(filename)) { write("00001117\r\n00001197\r\n"); close }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).expect(0x00000000L.S)
+      c.registers(2).peek().litValue should be(0x00000000)
       c.clock.step(1)
-      c.registers(2).expect(0x00001000L.S)
+      c.registers(2).peek().litValue should be(0x00001000)
       c.clock.step(1)
-      c.registers(3).expect(0x00001004L.S)
+      c.registers(3).peek().litValue should be(0x00001004)
     }
     new File(filename).delete()
   }
@@ -175,14 +174,14 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00102a23\r\n"); close }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000L.S)
+      c.registers(1).peek().litValue should be(0x80f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0x80f0f0f0)
       // Check memory address 0x14 (20)
-      c.memWriteAddr.expect(0x14.U)
-      c.memWriteData.expect(0x80f0f0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x14)
+      c.memWriteData.peek().litValue should be(0x80f0f0f0L)
       new File(filename).delete()
     }
   }
@@ -193,18 +192,18 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     val filename = "CPUSpecMemoryTestFileSW.hex"
     new PrintWriter(new File(filename)) { write("80f0f0b7\r\n0f008093\r\n00101a23\r\n00101b23\r\n"); close }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000L.S)
+      c.registers(1).peek().litValue should be(0x80f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0x80f0f0f0)
       // Check memory address 0x14 (20)
-      c.memWriteAddr.expect(0x14.U)
-      c.memWriteData.expect(0xf0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x14)
+      c.memWriteData.peek().litValue should be(0xf0f0L)
       c.clock.step(1)
       // Check memory address 0x16 (22)
-      c.memWriteAddr.expect(0x16.U)
-      c.memWriteData.expect(0xf0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x16)
+      c.memWriteData.peek().litValue should be(0xf0f0L)
       new File(filename).delete()
     }
   }
@@ -224,26 +223,26 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     """.stripMargin); close
     }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f000L.S)
+      c.registers(1).peek().litValue should be(0x80f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0x80f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0x80f0f0f0)
       // Check memory address 0x20 (32)
-      c.memWriteAddr.expect(0x20.U)
-      c.memWriteData.expect(0xf0.U)
+      c.memWriteAddr.peek().litValue should be(0x20)
+      c.memWriteData.peek().litValue should be(0xf0)
       c.clock.step(1)
       // Check memory address 0x21 (33)
-      c.memWriteAddr.expect(0x21.U)
-      c.memWriteData.expect(0xf0.U)
+      c.memWriteAddr.peek().litValue should be(0x21)
+      c.memWriteData.peek().litValue should be(0xf0)
       c.clock.step(1)
       // Check memory address 0x22 (34)
-      c.memWriteAddr.expect(0x22.U)
-      c.memWriteData.expect(0xf0.U)
+      c.memWriteAddr.peek().litValue should be(0x22)
+      c.memWriteData.peek().litValue should be(0xf0)
       c.clock.step(1)
       // Check memory address 0x23 (35)
-      c.memWriteAddr.expect(0x23.U)
-      c.memWriteData.expect(0xf0.U)
+      c.memWriteAddr.peek().litValue should be(0x23)
+      c.memWriteData.peek().litValue should be(0xf0)
       c.clock.step(1)
 
       new File(filename).delete()
@@ -264,23 +263,23 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       """.stripMargin); close
     }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f0f0)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000L.S)
+      c.registers(2).peek().litValue should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.expect(0x80000000L.U)
-      c.memWriteData.expect(0xf0f0f0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
+      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check memory read at address 0x20 (32)
-      c.memReadAddr.expect(0x80000000L.U)
-      c.memReadData.expect(0xf0f0f0f0L.U)
+      c.memReadAddr.peek().litValue should be(0x80000000L)
+      c.memReadData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xf0f0f0f0L.S)
+      c.registers(3).peek().litValue should be(0xf0f0f0f0)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }
@@ -300,23 +299,23 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       """.stripMargin); close
     }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f0f0)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000L.S)
+      c.registers(2).peek().litValue should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.expect(0x80000000L.U)
-      c.memWriteData.expect(0xf0f0f0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
+      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check memory read at address 0x80000000L
-      c.memReadAddr.expect(0x80000000L.U)
-      c.memReadData.expect(0xf0f0f0f0L.U)
+      c.memReadAddr.peek().litValue should be(0x80000000L)
+      c.memReadData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xfffff0f0L.S)
+      c.registers(3).peek().litValue should be(0xfffff0f0)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }
@@ -336,23 +335,23 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       """.stripMargin); close
     }
     defaultDut(filename) { c =>
-      c.registers(1).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f000L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f000)
       c.clock.step(1)
-      c.registers(1).expect(0xf0f0f0f0L.S)
+      c.registers(1).peek().litValue should be(0xf0f0f0f0)
       c.clock.step(1)
-      c.registers(2).expect(0x80000000L.S)
+      c.registers(2).peek().litValue should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.expect(0x80000000L.U)
-      c.memWriteData.expect(0xf0f0f0f0L.U)
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
+      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check memory read at address 0x80000000L
-      c.memReadAddr.expect(0x80000000L.U)
-      c.memReadData.expect(0xf0f0f0f0L.U)
+      c.memReadAddr.peek().litValue should be(0x80000000L)
+      c.memReadData.peek().litValue should be(0xf0f0f0f0L)
       c.clock.step(1)
       // Check loaded data
-      c.registers(3).expect(0xfffffff0L.S)
+      c.registers(3).peek().litValue should be(0xfffffff0)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }

@@ -34,6 +34,8 @@ trait Observer { this: Module =>
     *   it should "honor Wiring Transform for BoringUtils with Reg" in {
     *     test(new TopWrapper) { c =>
     *       c.observed_reg.expect(42.U)
+    *       // or
+    *       c.observed_reg.peek().litValue should be (42) # remove the chisel3 import
     *     }
     *   }
     * }}}

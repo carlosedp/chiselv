@@ -3,14 +3,14 @@
 module PLL0
 
  (
-  output        clko,
-  output        lock,
+  output reg    clko,
+  output reg    lock,
   input         clki
  );
 
    always @* begin
-    lock <= 1;
-    clko <= clki;
+    lock = 1;
+    clko = clki;
   end
 
 endmodule

@@ -52,9 +52,6 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
 )
 
-// Recommendation from https://www.scalatest.org/user_guide/using_scalatest_with_sbt
-logBuffered in Test := false
-
 scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",

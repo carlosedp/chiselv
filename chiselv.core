@@ -1,6 +1,7 @@
 CAPI=2:
 
 name: carlosedp:chiselv:singlecycle:0
+description : ChiselV is a RV32I core written in Chisel
 
 filesets:
 
@@ -13,6 +14,9 @@ filesets:
     files:
       - proginfo/proginfo.py : {file_type : user, copyto : proginfo.py}
       - proginfo/boardconfig.yaml : {file_type : user, copyto : boardconfig.yaml}
+
+  bypass:
+    depend: ["fusesoc:utils:generators:0.1.6"]
 
   ulx3s-85:
     depend: ["fusesoc:utils:generators:0.1.6"]
@@ -31,6 +35,18 @@ filesets:
       - proginfo/artix7-template.txt: { file_type: user }
 
 generate:
+  bypass:
+    generator: chisel
+    parameters:
+      extraargs: "--target:fpga -board bypass -cpufreq 15000000"
+      buildtool: sbt
+      copy_core: true
+      output:
+        files:
+          - generated/Toplevel.v: { file_type: verilogSource }
+          - generated/GPIOInOut.v: { file_type: verilogSource }
+          - generated/pll_bypass.v: { file_type: verilogSource }
+
   ulx3s:
     generator: chisel
     parameters:
@@ -56,6 +72,17 @@ generate:
           - generated/pll_artya7-35t.v: { file_type: verilogSource }
 
 targets:
+  lint:
+    default_tool : verilator
+    description : Lint the RTL. Uses Verilator by default
+    filesets: [bypass]
+    generate: [bypass]
+    tools :
+      verilator :
+        mode : lint-only
+        verilator_options: [--timescale 1ns/1ps"]
+    toplevel : Toplevel
+
   ulx3s_85:
     default_tool: trellis
     description: ULX3S 85k version

@@ -1,6 +1,5 @@
 package chiselv
 
-import chisel3._
 import chiseltest._
 import org.scalatest._
 
@@ -74,36 +73,36 @@ class CPUSingleCycleIOSpec extends AnyFlatSpec with ChiselScalatestTester with s
     }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).expect(0.S)
-      c.registers(2).expect(0.S)
-      c.registers(3).expect(0.S)
-      c.registers(4).expect(0.S)
+      c.registers(1).peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
+      c.registers(4).peek().litValue should be(0)
       c.clock.step(1) // lui
-      c.registers(1).expect(0x30001000L.S)
+      c.registers(1).peek().litValue should be(0x30001000)
       c.clock.step(1) // addi
-      c.registers(5).expect(0xffffffffL.S)
+      c.registers(5).peek().litValue should be(0xffffffff)
       c.clock.step(1) // addi
-      c.registers(3).expect(1.S)
+      c.registers(3).peek().litValue should be(1)
       c.clock.step(1) // addi
-      c.registers(4).expect(7.S)
+      c.registers(4).peek().litValue should be(7)
       // Check memory address 0x30001000L for direction (GPIO0)
-      c.memWriteAddr.expect(0x30001000L.U)
-      c.memWriteData.expect(0xffffffffL.U)
+      c.memWriteAddr.peek().litValue should be(0x30001000L)
+      c.memWriteData.peek().litValue should be(0xffffffffL)
       c.clock.step(1) // sw
       c.clock.step(1) // add
-      c.GPIO0_direction.expect(0xffffffffL.U)
-      c.registers(2).expect(1.S)
-      c.memWriteAddr.expect(0x30001004L.U)
-      c.memWriteData.expect(1.U)
+      c.GPIO0_direction.peek().litValue should be(0xffffffffL)
+      c.registers(2).peek().litValue should be(1)
+      c.memWriteAddr.peek().litValue should be(0x30001004L)
+      c.memWriteData.peek().litValue should be(1)
       c.clock.step(1) // sw
-      c.GPIO0_value.expect(1.U)
+      c.GPIO0_value.peek().litValue should be(1)
       c.clock.step(1) // jal
       c.clock.step(1) // add
-      c.registers(2).expect(2.S)
-      c.memWriteAddr.expect(0x30001004L.U)
-      c.memWriteData.expect(2.U)
+      c.registers(2).peek().litValue should be(2)
+      c.memWriteAddr.peek().litValue should be(0x30001004L)
+      c.memWriteData.peek().litValue should be(2)
       c.clock.step(1) // sw
-      c.GPIO0_value.expect(2.U)
+      c.GPIO0_value.peek().litValue should be(2)
     }
     new File(filename).delete()
   }
@@ -129,25 +128,25 @@ class CPUSingleCycleIOSpec extends AnyFlatSpec with ChiselScalatestTester with s
     }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).expect(0.S)
-      c.registers(2).expect(0.S)
-      c.registers(3).expect(0.S)
-      c.timerCounter.expect(0.U)
+      c.registers(1).peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
+      c.timerCounter.peek().litValue should be(0)
       c.clock.step(1) // lui
-      c.registers(1).expect(0x30003000L.S)
+      c.registers(1).peek().litValue should be(0x30003000)
       c.clock.step(1) // addi
-      c.registers(2).expect(2.S)
+      c.registers(2).peek().litValue should be(2)
       // Check read from memory address 0x30003000L
-      c.memReadAddr.expect(0x30003000L.U)
-      c.memReadData.expect(0.U)
+      c.memReadAddr.peek().litValue should be(0x30003000L)
+      c.memReadData.peek().litValue should be(0)
       c.clock.step(1) // lw
-      c.registers(3).expect(0.S)
+      c.registers(3).peek().litValue should be(0)
       c.clock.step(1)      // bne
       c.clock.step(2 * ms) // wait 2ms
-      c.timerCounter.expect(2.U)
-      c.registers(3).expect(2.S)
+      c.timerCounter.peek().litValue should be(2)
+      c.registers(3).peek().litValue should be(2)
       c.clock.step(1) // addi
-      c.registers(4).expect(1.S)
+      c.registers(4).peek().litValue should be(1)
     }
     new File(filename).delete()
   }
@@ -178,34 +177,34 @@ class CPUSingleCycleIOSpec extends AnyFlatSpec with ChiselScalatestTester with s
     }
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).expect(0.S)
-      c.registers(2).expect(0.S)
-      c.registers(3).expect(0.S)
-      c.timerCounter.expect(0.U)
+      c.registers(1).peek().litValue should be(0)
+      c.registers(2).peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
+      c.timerCounter.peek().litValue should be(0)
       c.clock.step(1) // lui
-      c.registers(1).expect(0x30003000L.S)
+      c.registers(1).peek().litValue should be(0x30003000)
       c.clock.step(1) // addi
-      c.registers(2).expect(1.S)
+      c.registers(2).peek().litValue should be(1)
       // Check read from memory address 0x30003000L
-      c.memReadAddr.expect(0x30003000L.U)
-      c.memReadData.expect(0.U)
-      c.registers(3).expect(0.S)
+      c.memReadAddr.peek().litValue should be(0x30003000L)
+      c.memReadData.peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
       c.clock.step(ms) // wait 1ms
-      c.timerCounter.expect(1.U)
-      c.registers(3).expect(1.S)
+      c.timerCounter.peek().litValue should be(1)
+      c.registers(3).peek().litValue should be(1)
       c.clock.step(1)
       // Check write to memory address 0x30003000L (reset)
-      c.memWriteAddr.expect(0x30003000L.U)
-      c.memWriteData.expect(0.U)
+      c.memWriteAddr.peek().litValue should be(0x30003000L)
+      c.memWriteData.peek().litValue should be(0)
       c.clock.step(1) // sw
-      c.timerCounter.expect(0.U)
-      c.registers(3).expect(0.S)
+      c.timerCounter.peek().litValue should be(0)
+      c.registers(3).peek().litValue should be(0)
       c.clock.step(ms) // wait 1ms
-      c.timerCounter.expect(1.U)
+      c.timerCounter.peek().litValue should be(1)
       c.clock.step(1) // lw
       c.clock.step(1) // bne
       c.clock.step(1) // addi
-      c.registers(3).expect(2.S)
+      c.registers(3).peek().litValue should be(2)
     }
     new File(filename).delete()
   }

@@ -1,6 +1,5 @@
 package chiselv
 
-import chisel3._
 import chiseltest._
 import org.scalatest._
 
@@ -64,7 +63,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       c.clock.step(1) // addi
       c.registers(7).peek().litValue should be(3)
       c.clock.step(1) // lui
-      c.registers(6).expect(0x8000_0000L.S)
+      c.registers(6).peek().litValue should be(0x80000000)
       c.clock.step(1) // or
       c.registers(4).peek().litValue should be(7)
       c.clock.step(1) // and
@@ -82,11 +81,11 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       c.clock.step(1) // sub
       c.registers(7).peek().litValue should be(7)
       // Check Memory write at address 0x80000000
-      c.memWriteAddr.peek().litValue should be(BigInt("80000000", 16))
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
       c.memWriteData.peek().litValue should be(7)
       c.clock.step(1) // sw
       // Check Memory read at address 0x80000000
-      c.memReadAddr.peek().litValue should be(BigInt("80000000", 16))
+      c.memReadAddr.peek().litValue should be(0x80000000L)
       c.memReadData.peek().litValue should be(7)
       c.clock.step(1) // lw
       c.registers(2).peek().litValue should be(7)
@@ -96,7 +95,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       c.clock.step(1) // add
       c.registers(2).peek().litValue should be(25)
       // // Check Memory address 0x80000000 + 100 (0x64)
-      c.memWriteAddr.peek().litValue should be(BigInt("80000000", 16) + 100)
+      c.memWriteAddr.peek().litValue should be(0x80000000L + 100)
       c.memWriteData.peek().litValue should be(25)
       c.clock.step(1) // sw
 
