@@ -43,7 +43,10 @@ class GPIOInOut(bitWidth: Int = 32, numGPIO: Int = 8) extends BlackBox(Map("WIDT
   })
   setInline(
     "GPIOInOut.v",
-    s"""module GPIOInOut #(parameter WIDTH=1, NUMGPIO=8) (
+    s"""// This module is inspired by Lucas Teske's Riscow digital port
+       |// https://github.com/racerxdl/riskow/blob/main/devices/digital_port.v
+       |//
+       |module GPIOInOut #(parameter WIDTH=1, NUMGPIO=8) (
        |  inout   [NUMGPIO-1:0] dataIO,
        |  input   [WIDTH-1:0] dataIn,
        |  output  [WIDTH-1:0] dataOut,
