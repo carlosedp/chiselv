@@ -18,7 +18,12 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   behavior of "MemoryIOManager"
 
   def defaultDut() =
-    test(new MemoryIOManager(32, 50000000))
+    test(new MemoryIOManager(32, 50000000)).withAnnotations(
+      Seq(
+        // WriteVcdAnnotation,
+        VerilatorBackendAnnotation
+      )
+    )
 
   it should "read dummy value from Syscon 0x0" in {
     defaultDut() { c =>
@@ -38,7 +43,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
     defaultDut() { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1010.U)
       c.clock.step()
-      c.io.MemoryIOPort.readData.expect(0.U)
+      c.io.MemoryIOPort.readData.expect(1.U)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {
@@ -48,15 +53,25 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
       c.io.MemoryIOPort.readData.expect(1.U)
     }
   }
+  it should "check if Timer0 is available in Syscon" in {
+    defaultDut() { c =>
+      c.io.MemoryIOPort.readAddr.poke(0x0000_1024.U)
+      c.clock.step()
+      c.io.MemoryIOPort.readData.expect(1.U)
+    }
+  }
   it should "write data and follow with a read in same address" in {
     defaultDut() { c =>
-      val addressOffset = 0x8000_0000L
+      val addressOffset = 0x80000000L
       val addresses     = Seq(0x0L, 0x0010L, 0x0d00L, 0x1000L, 0x2000L, 0x8000L, 0xe000L)
       val values        = Seq(0.U, 1.U, 0x0000_cafeL.U, 0xbaad_cafeL.U, 0xffff_ffffL.U)
       addresses.foreach { address =>
         values.foreach { value =>
           c.io.MemoryIOPort.writeEnable.poke(true.B)
+          c.io.MemoryIOPort.writeMask.poke("b1111".U)
+          c.io.MemoryIOPort.dataSize.poke(3.U)
           c.io.MemoryIOPort.writeAddr.poke((addressOffset + address).U)
+          c.io.MemoryIOPort.readAddr.poke((addressOffset + address).U)
           c.io.MemoryIOPort.writeData.poke(value)
           c.clock.step()
           c.io.MemoryIOPort.readAddr.poke((addressOffset + address).U)

@@ -9,6 +9,9 @@
 #
 # Config for ChiselV
 GPIO_BASE =  0x30001000
+UART_BASE =  0x30000000
+UART_RX = 0x04
+UART_TX = 0x00
 GPIO_DIR_OFFSET =  0x00
 GPIO_VALUE_OFFSET =  0x04
 GPIO_DIRECTION =  0xCF       # Set GPIO Inputs and Outputs (OOIIOOOO)
@@ -20,9 +23,12 @@ main:  lui   x1, %hi(GPIO_BASE)         # Define the GPIO0 base address
        addi  x3, x0, 16                 # Set x3 as the highest value (using 4 bits to match 8 used GPIO outputs)
        addi  x7, x0, 1000               # Set wait timer for 1s (1000ms)
        addi  x10, x0, 0x10              # Set x10 to check if button is pressed
+       lui   x13, %hi(UART_BASE)        # UART Base Address
        sw    x5, GPIO_DIR_OFFSET(x1)    # Write the GPIO direction to address 0x30001000
 loop:  addi  x2, x2, 1                  # Increment x2 by 1
        lw    x9, GPIO_VALUE_OFFSET(x1)  # Read the GPIO value 0x30001004 to x9
+       lw    x12, UART_RX(x13)          # Read the UART value 0x30000000 to x9
+       sw    x12, UART_TX(x13)           #
        and   x11, x9, x10               # Check if button is pressed
        bne   x10, x11 ,write            # If button is not pressed, do not switch LED on
        ori   x2, x2, 0x40               # Add x9 to x2

@@ -16,10 +16,11 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     test(new DualPortRAM(32, 1 * 1024)) { c =>
       c.io.dualPort.writeAddr.poke(0.U)
       c.io.dualPort.readAddr.poke(0.U)
-      c.clock.step()
+      c.io.dualPort.writeMask.poke("b1111".U)
+      c.clock.step(2)
       c.io.dualPort.writeEnable.poke(true.B)
       c.io.dualPort.writeData.poke(1234.U)
-      c.clock.step()
+      c.clock.step(2)
       c.io.dualPort.readData.expect(1234.U)
     }
   }
@@ -41,6 +42,7 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     test(new DualPortRAM(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.dualPort.readAddr.poke(0.U)
       c.io.dualPort.writeAddr.poke(0.U)
+      c.io.dualPort.writeMask.poke("b1111".U)
       c.clock.step()
       c.io.dualPort.readData.expect("h00010203".U)
       c.io.dualPort.readAddr.poke(4.U)

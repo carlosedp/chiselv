@@ -9,6 +9,7 @@ class GPIOPort(bitWidth: Int = 32) extends Bundle {
   val dataOut        = Output(UInt(bitWidth.W))
   val writeValue     = Input(Bool())
   val writeDirection = Input(Bool())
+  val stall          = Output(Bool()) // >1 => Stall, 0 => Run
 }
 
 class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
@@ -20,18 +21,19 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   val GPIO      = Reg(UInt(bitWidth.W))
   val direction = Reg(UInt(bitWidth.W)) // 1 = set output, 0 = read input
 
+  val InOut = Module(new GPIOInOut(numGPIO))
+  InOut.io.dataIn     := GPIO
+  InOut.io.dir        := direction
+  io.GPIOPort.stall   := false.B
+  io.GPIOPort.dataOut := InOut.io.dataOut
+  io.externalPort <> InOut.io.dataIO
+
   when(io.GPIOPort.writeValue) {
     GPIO := io.GPIOPort.dataIn
   }
   when(io.GPIOPort.writeDirection) {
     direction := io.GPIOPort.dataIn
   }
-
-  val InOut = Module(new GPIOInOut(numGPIO))
-  InOut.io.dataIn     := GPIO
-  InOut.io.dir        := direction
-  io.GPIOPort.dataOut := InOut.io.dataOut
-  io.externalPort <> InOut.io.dataIO
 }
 
 class GPIOInOut(bitWidth: Int = 32, numGPIO: Int = 8) extends BlackBox(Map("WIDTH" -> numGPIO)) with HasBlackBoxInline {

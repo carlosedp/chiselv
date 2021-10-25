@@ -33,6 +33,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   })
 
   val dataOut      = WireInit(0.U(bitWidth.W))
+  val stall        = WireDefault(false.B)
   val readAddress  = io.MemoryIOPort.readAddr
   val writeAddress = io.MemoryIOPort.writeAddr
 
@@ -80,7 +81,6 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   // GPIO0
   when(readAddress(31, 12) === 0x3000_1L.U || writeAddress(31, 12) === 0x3000_1L.U) {
     // Direction
-    io.GPIO0Port.dataIn := io.MemoryIOPort.writeData
     when(readAddress(7, 0) === 0x00.U) {
       io.GPIO0Port.writeDirection := io.MemoryIOPort.writeEnable
     }
@@ -88,7 +88,8 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
       .elsewhen(readAddress(7, 0) === 0x04.U) {
         io.GPIO0Port.writeValue := io.MemoryIOPort.writeEnable
       }
-    dataOut := io.GPIO0Port.dataOut
+    io.GPIO0Port.dataIn := io.MemoryIOPort.writeData
+    dataOut             := io.GPIO0Port.dataOut
   }
 
   /* --- PWM0 --- */
@@ -110,18 +111,63 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   memory.io.dualPort.writeData   := DontCare
   memory.io.dualPort.readAddr    := DontCare
   memory.io.dualPort.writeAddr   := DontCare
-  memory.io.dualPort.writeMask   := DontCare
+  memory.io.dualPort.dataSize    := DontCare
+  memory.io.dualPort.writeMask   := io.MemoryIOPort.writeMask
 
+  // Remove address offset
   memory.io.dualPort.readAddr  := Cat(Fill(16, 0.U), readAddress(15, 0))
   memory.io.dualPort.writeAddr := Cat(Fill(16, 0.U), readAddress(15, 0))
   when(readAddress(31, 16) === 0x8000L.U || writeAddress(31, 16) === 0x8000L.U) {
+    // Set the data write mask
+    val writeMask = WireDefault(0.U(4.W))
+    val dataIn    = WireDefault(0.U(bitWidth.W))
 
+    switch(io.MemoryIOPort.dataSize) {
+      is(3.U) { // Write word
+        dataIn    := io.MemoryIOPort.writeData
+        writeMask := "b1111".U
+      }
+      is(2.U) { // Write halfword
+        switch(memory.io.dualPort.writeAddr(1).asUInt()) {
+          is(1.U) { // Write half word 1
+            dataIn    := Cat(io.MemoryIOPort.writeData(15, 0).asUInt, Fill(16, 0.U))
+            writeMask := "b1100".U
+          }
+          is(0.U) { // Write half word 0
+            dataIn    := Cat(Fill(16, 0.U), io.MemoryIOPort.writeData(15, 0).asUInt)
+            writeMask := "b0011".U
+          }
+        }
+      }
+      is(1.U) { // Write byte
+        switch(memory.io.dualPort.writeAddr(1, 0)) {
+          is(3.U) { // Write byte 3
+            dataIn    := Cat(io.MemoryIOPort.writeData(7, 0).asUInt, Fill(24, 0.U))
+            writeMask := "b1000".U
+          }
+          is(2.U) { // Write byte 2
+            dataIn    := Cat(Fill(8, 0.U), io.MemoryIOPort.writeData(7, 0).asUInt, Fill(16, 0.U))
+            writeMask := "b0100".U
+          }
+          is(1.U) { // Write byte 2
+            dataIn    := Cat(Fill(16, 0.U), io.MemoryIOPort.writeData(7, 0).asUInt, Fill(8, 0.U))
+            writeMask := "b0010".U
+          }
+          is(0.U) { // Write byte 0
+            dataIn    := Cat(Fill(24, 0.U), io.MemoryIOPort.writeData(7, 0).asUInt)
+            writeMask := "b0001".U
+          }
+        }
+      }
+    }
     when(io.MemoryIOPort.writeEnable) {
       memory.io.dualPort.writeEnable := io.MemoryIOPort.writeEnable
-      memory.io.dualPort.writeData   := io.MemoryIOPort.writeData
+      memory.io.dualPort.writeMask   := writeMask
+      memory.io.dualPort.writeData   := dataIn
     }
     dataOut := memory.io.dualPort.readData
   }
 
   io.MemoryIOPort.readData := dataOut
+  io.MemoryIOPort.stall    := stall
 }

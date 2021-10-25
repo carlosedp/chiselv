@@ -18,6 +18,8 @@ class CPUSingleCycle(
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
   })
 
+  val stall = WireDefault(false.B)
+
   // Heartbeat LED
   val blink = Module(new Blinky(cpuFrequency))
   io.led0 := blink.io.led0
@@ -26,10 +28,10 @@ class CPUSingleCycle(
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
   registerBank.io.regPort.regwr_data  := DontCare
+  registerBank.io.regPort.stall       := stall
 
   // Instantiate and initialize the Program Counter
   val PC = Module(new ProgramCounter(bitWidth))
-  PC.io.pcPort.countEnable := false.B
   PC.io.pcPort.writeEnable := false.B
   PC.io.pcPort.dataIn      := DontCare
   PC.io.pcPort.writeAdd    := false.B
@@ -50,25 +52,30 @@ class CPUSingleCycle(
 
   // Instantiate and initialize the Memory IO Manager
   val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize))
+  memoryIOManager.io.MemoryIOPort.writeEnable := false.B
   memoryIOManager.io.MemoryIOPort.readAddr    := DontCare
   memoryIOManager.io.MemoryIOPort.writeAddr   := DontCare
-  memoryIOManager.io.MemoryIOPort.writeEnable := false.B
   memoryIOManager.io.MemoryIOPort.writeData   := DontCare
+  memoryIOManager.io.MemoryIOPort.dataSize    := DontCare
   memoryIOManager.io.MemoryIOPort.writeMask   := DontCare
 
   // Instantiate and connect GPIO
   val GPIO0 = Module(new GPIO(bitWidth, numGPIO))
   GPIO0.io.GPIOPort <> memoryIOManager.io.GPIO0Port
-  io.GPIO0External <> GPIO0.io.externalPort
+  GPIO0.io.externalPort <> io.GPIO0External
 
   // Instantiate and connect the Timer
   val timer0 = Module(new Timer(bitWidth, cpuFrequency))
   timer0.io.timerPort <> memoryIOManager.io.Timer0Port
 
   // --------------- CPU Control --------------- //
-  PC.io.pcPort.countEnable := true.B
+  when(!stall) {
+    // Stall the CPU
+    PC.io.pcPort.writeEnable := true.B
+    PC.io.pcPort.dataIn      := PC.io.pcPort.PC4
+  }
 
-  instructionMemory.io.memPort.readAddr := PC.io.pcPort.dataOut
+  instructionMemory.io.memPort.readAddr := PC.io.pcPort.PC
   registerBank.io.regPort.regwr_addr    := decoder.io.DecoderPort.rd
   registerBank.io.regPort.rs1_addr      := decoder.io.DecoderPort.rs1
   registerBank.io.regPort.rs2_addr      := decoder.io.DecoderPort.rs2
@@ -112,7 +119,7 @@ class CPUSingleCycle(
     // Write next instruction address to rd
     registerBank.io.regPort.writeEnable := true.B
     ALU.io.ALUPort.inst                 := ADD
-    ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+    ALU.io.ALUPort.a                    := PC.io.pcPort.PC
     ALU.io.ALUPort.b                    := 4.U
     registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt
     PC.io.pcPort.writeEnable            := true.B
@@ -141,7 +148,7 @@ class CPUSingleCycle(
   when(decoder.io.DecoderPort.inst === AUIPC) {
     registerBank.io.regPort.writeEnable := true.B
     ALU.io.ALUPort.inst                 := ADD
-    ALU.io.ALUPort.a                    := PC.io.pcPort.dataOut
+    ALU.io.ALUPort.a                    := PC.io.pcPort.PC
     ALU.io.ALUPort.b := Cat(
       decoder.io.DecoderPort.imm(31, 12),
       Fill(12, 0.U),
@@ -151,74 +158,96 @@ class CPUSingleCycle(
 
   // Stores
   when(decoder.io.DecoderPort.is_store) {
-    // Set register and memory addresses, write enable the data memory
-    memoryIOManager.io.MemoryIOPort.writeEnable := true.B
-
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
     val memAddr = ALU.io.ALUPort.x
 
-    memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
-    memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
-    // Store Word
-    when(decoder.io.DecoderPort.inst === SW) {
-      memoryIOManager.io.MemoryIOPort.writeData := registerBank.io.regPort.rs2.asUInt
+    // What a dirty hack, get rid of this as soon as possible
+    when(memAddr(31, 16) === 0x8000L.U || memAddr(31, 16) === 0x8000L.U) {
+      // Stall for 1 cycle for sync memory write
+      val memValid = RegInit(1.U(1.W))
+      memValid := Mux(memValid === 0.U, 1.U, memValid - 1.U)
+      stall    := memValid >= 1.U
     }
-    // Store Halfword
-    when(decoder.io.DecoderPort.inst === SH) {
-      memoryIOManager.io.MemoryIOPort.writeData := Cat(
-        memoryIOManager.io.MemoryIOPort.readData(31, 16),
-        registerBank.io.regPort.rs2(15, 0).asUInt,
-      )
-    }
-    // Store Byte
-    when(decoder.io.DecoderPort.inst === SB) {
-      memoryIOManager.io.MemoryIOPort.writeData := Cat(
-        memoryIOManager.io.MemoryIOPort.readData(31, 8),
-        registerBank.io.regPort.rs2(7, 0).asUInt,
-      )
+
+    when(!stall) {
+      memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
+      memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
+
+      // Set register and memory addresses, write enable the data memory
+      memoryIOManager.io.MemoryIOPort.writeEnable := true.B
+
+      val dataOut  = WireDefault(0.U(32.W))
+      val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
+
+      // Store Word
+      when(decoder.io.DecoderPort.inst === SW) {
+        dataOut  := registerBank.io.regPort.rs2.asUInt
+        dataSize := 3.U
+      }
+      // Store Halfword
+      when(decoder.io.DecoderPort.inst === SH) {
+        dataOut  := Cat(Fill(16, 0.U), registerBank.io.regPort.rs2(15, 0).asUInt)
+        dataSize := 2.U
+      }
+      // Store Byte
+      when(decoder.io.DecoderPort.inst === SB) {
+        dataOut  := Cat(Fill(24, 0.U), registerBank.io.regPort.rs2(7, 0).asUInt)
+        dataSize := 1.U
+      }
+      memoryIOManager.io.MemoryIOPort.dataSize  := dataSize
+      memoryIOManager.io.MemoryIOPort.writeData := dataOut
     }
   }
 
   // Loads
   when(decoder.io.DecoderPort.is_load) {
-    // Set register and memory addresses, write enable the register bank
-
+    // Set register and memory addresses
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
     val memAddr = ALU.io.ALUPort.x
 
+    // What a dirty hack, get rid of this as soon as possible
+    when(memAddr(31, 16) === 0x8000L.U || memAddr(31, 16) === 0x8000L.U) {
+      // Stall for 1 cycle for sync memory read
+      val memValid = RegInit(1.U(1.W))
+      memValid := Mux(memValid === 0.U, 1.U, memValid - 1.U)
+      stall    := memValid >= 1.U
+    }
+
     memoryIOManager.io.MemoryIOPort.readAddr := memAddr
 
-    registerBank.io.regPort.writeEnable := true.B
-    // Load Word
-    when(decoder.io.DecoderPort.inst === LW) {
-      registerBank.io.regPort.regwr_data := memoryIOManager.io.MemoryIOPort.readData.asSInt
-    }
-    // Load Halfword
-    when(decoder.io.DecoderPort.inst === LH) {
-      registerBank.io.regPort.regwr_data := Cat(
-        Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
-        memoryIOManager.io.MemoryIOPort.readData(15, 0),
-      ).asSInt
+    when(!stall) {
+      registerBank.io.regPort.writeEnable := true.B
+      // Load Word
+      when(decoder.io.DecoderPort.inst === LW) {
+        registerBank.io.regPort.regwr_data := memoryIOManager.io.MemoryIOPort.readData.asSInt
+      }
+      // Load Halfword
+      when(decoder.io.DecoderPort.inst === LH) {
+        registerBank.io.regPort.regwr_data := Cat(
+          Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
+          memoryIOManager.io.MemoryIOPort.readData(15, 0),
+        ).asSInt
 
-    }
-    // Load Halfword Unsigned
-    when(decoder.io.DecoderPort.inst === LHU) {
-      registerBank.io.regPort.regwr_data := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
-    }
-    // Load Byte
-    when(decoder.io.DecoderPort.inst === LB) {
-      registerBank.io.regPort.regwr_data := Cat(
-        Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
-        memoryIOManager.io.MemoryIOPort.readData(7, 0),
-      ).asSInt
-    }
-    // Load Byte Unsigned
-    when(decoder.io.DecoderPort.inst === LBU) {
-      registerBank.io.regPort.regwr_data := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
+      }
+      // Load Halfword Unsigned
+      when(decoder.io.DecoderPort.inst === LHU) {
+        registerBank.io.regPort.regwr_data := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
+      }
+      // Load Byte
+      when(decoder.io.DecoderPort.inst === LB) {
+        registerBank.io.regPort.regwr_data := Cat(
+          Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
+          memoryIOManager.io.MemoryIOPort.readData(7, 0),
+        ).asSInt
+      }
+      // Load Byte Unsigned
+      when(decoder.io.DecoderPort.inst === LBU) {
+        registerBank.io.regPort.regwr_data := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 package chiselv
 
 import chisel3._
+import chisel3.util._
 import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
@@ -16,7 +17,9 @@ class MemoryPortDual(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val writeAddr   = Input(UInt(log2Ceil(addressSize).W))
   val writeData   = Input(UInt(bitWidth.W))
   val writeMask   = Input(UInt((bitWidth / 8).W))
+  val dataSize    = Input(UInt(2.W))
   val writeEnable = Input(Bool())
+  val stall       = Output(Bool()) // 1 => Stall, 0 => Run
 }
 class InstructionMemory(
   bitWidth: Int = 32,
@@ -50,6 +53,7 @@ class DualPortRAM(
   val io = IO(new Bundle() {
     val dualPort = new MemoryPortDual(bitWidth, sizeBytes)
   })
+
   if (debugMsg) {
     println(s"Dual-port Memory Parameters:")
     println(s"  Words: $words")
@@ -63,6 +67,7 @@ class DualPortRAM(
 
   val mem = SyncReadMem(words, UInt(bitWidth.W))
   // val dedupBlock = WireInit(mem.hashCode.U) // Prevents deduping this memory module
+
   // Divide memory address by 4 to get the word due to pc+4 addressing
   val readAddress  = io.dualPort.readAddr >> 2
   val writeAddress = io.dualPort.writeAddr >> 2
@@ -73,7 +78,17 @@ class DualPortRAM(
   }
 
   io.dualPort.readData := mem.read(readAddress)
+  io.dualPort.stall    := DontCare
+
+  val dataOut = WireDefault(0.U(bitWidth.W))
+  dataOut := Cat(
+    Mux(io.dualPort.writeMask(3), io.dualPort.writeData(3 * 8 + 7, 3 * 8), io.dualPort.readData(3 * 8 + 7, 3 * 8)),
+    Mux(io.dualPort.writeMask(2), io.dualPort.writeData(2 * 8 + 7, 2 * 8), io.dualPort.readData(2 * 8 + 7, 2 * 8)),
+    Mux(io.dualPort.writeMask(1), io.dualPort.writeData(1 * 8 + 7, 1 * 8), io.dualPort.readData(1 * 8 + 7, 1 * 8)),
+    Mux(io.dualPort.writeMask(0), io.dualPort.writeData(0 * 8 + 7, 0 * 8), io.dualPort.readData(0 * 8 + 7, 0 * 8)),
+  )
+
   when(io.dualPort.writeEnable === true.B) {
-    mem.write(writeAddress, io.dualPort.writeData)
+    mem.write(writeAddress, dataOut)
   }
 }

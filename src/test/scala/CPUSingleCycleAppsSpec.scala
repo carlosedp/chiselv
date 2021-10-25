@@ -34,8 +34,8 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
     test(new CPUSingleCycleWrapperApps(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation,
-          VerilatorBackendAnnotation,
+          // WriteVcdAnnotation,
+          VerilatorBackendAnnotation
         )
       )
 
@@ -87,6 +87,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       // Check Memory read at address 0x80000000
       c.memReadAddr.peek().litValue should be(0x80000000L)
       c.memReadData.peek().litValue should be(7)
+      c.clock.step(1) // sw-stall
       c.clock.step(1) // lw
       c.registers(2).peek().litValue should be(7)
       c.clock.step(1) // add

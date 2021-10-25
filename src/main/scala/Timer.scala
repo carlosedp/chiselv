@@ -7,6 +7,7 @@ class TimerPort(bitWidth: Int = 32) extends Bundle {
   val dataIn      = Input(UInt(bitWidth.W))
   val dataOut     = Output(UInt(bitWidth.W))
   val writeEnable = Input(Bool())
+  val stall       = Output(Bool()) // >1 => Stall, 0 => Run
 }
 
 class Timer(bitWidth: Int = 32, cpuFrequency: Int) extends Module {
@@ -26,4 +27,5 @@ class Timer(bitWidth: Int = 32, cpuFrequency: Int) extends Module {
     }
   }
   io.timerPort.dataOut := counter
+  io.timerPort.stall   := false.B
 }

@@ -11,6 +11,7 @@ class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
   val regwr_addr  = Input(UInt(log2Ceil(bitWidth + 1).W))
   val regwr_data  = Input(SInt(bitWidth.W))
   val writeEnable = Input(Bool())
+  val stall       = Input(Bool()) // >1 => Stall, 0 => Run
 }
 
 class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
@@ -23,7 +24,7 @@ class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
 
   io.regPort.rs1 := regs(io.regPort.rs1_addr)
   io.regPort.rs2 := regs(io.regPort.rs2_addr)
-  when(io.regPort.writeEnable && io.regPort.regwr_addr =/= 0.U) {
+  when(io.regPort.writeEnable && io.regPort.regwr_addr =/= 0.U && !io.regPort.stall) {
     regs(io.regPort.regwr_addr) := io.regPort.regwr_data
   }
 }

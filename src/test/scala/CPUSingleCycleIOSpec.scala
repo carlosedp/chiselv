@@ -193,10 +193,11 @@ class CPUSingleCycleIOSpec extends AnyFlatSpec with ChiselScalatestTester with s
       c.timerCounter.peek().litValue should be(1)
       c.registers(3).peek().litValue should be(1)
       c.clock.step(1)
+      c.clock.step(1)
+      c.clock.step(1) // sw
       // Check write to memory address 0x30003000L (reset)
       c.memWriteAddr.peek().litValue should be(0x30003000L)
       c.memWriteData.peek().litValue should be(0)
-      c.clock.step(1) // sw
       c.timerCounter.peek().litValue should be(0)
       c.registers(3).peek().litValue should be(0)
       c.clock.step(ms) // wait 1ms
