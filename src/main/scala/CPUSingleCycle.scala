@@ -18,6 +18,7 @@ class CPUSingleCycle(
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
   })
 
+  // State of the CPU Stall
   val stall = WireDefault(false.B)
 
   // Heartbeat LED
@@ -70,16 +71,23 @@ class CPUSingleCycle(
 
   // --------------- CPU Control --------------- //
   when(!stall) {
-    // Stall the CPU
+    // If CPU is stalled, do not advance PC
     PC.io.pcPort.writeEnable := true.B
     PC.io.pcPort.dataIn      := PC.io.pcPort.PC4
   }
 
+  // Connect PC output to instruction memory
   instructionMemory.io.memPort.readAddr := PC.io.pcPort.PC
-  registerBank.io.regPort.regwr_addr    := decoder.io.DecoderPort.rd
-  registerBank.io.regPort.rs1_addr      := decoder.io.DecoderPort.rs1
-  registerBank.io.regPort.rs2_addr      := decoder.io.DecoderPort.rs2
-  decoder.io.DecoderPort.op             := instructionMemory.io.memPort.readData
+
+  // Connect the instruction memory to the decoder
+  decoder.io.DecoderPort.op := instructionMemory.io.memPort.readData
+
+  // Connect the decoder output to register bank inputs
+  registerBank.io.regPort.regwr_addr := decoder.io.DecoderPort.rd
+  registerBank.io.regPort.rs1_addr   := decoder.io.DecoderPort.rs1
+  registerBank.io.regPort.rs2_addr   := decoder.io.DecoderPort.rs2
+
+  // ----- CPU Operations ----- //
 
   // ALU Operations
   when(decoder.io.DecoderPort.toALU) {
@@ -97,7 +105,6 @@ class CPUSingleCycle(
 
   // Branch Operations
   when(decoder.io.DecoderPort.branch) {
-
     ALU.io.ALUPort.a := registerBank.io.regPort.rs1.asUInt
     ALU.io.ALUPort.b := registerBank.io.regPort.rs2.asUInt
     switch(decoder.io.DecoderPort.inst) {
@@ -114,16 +121,18 @@ class CPUSingleCycle(
       PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm
     }
   }
+
   // Jump Operations
   when(decoder.io.DecoderPort.jump) {
     // Write next instruction address to rd
     registerBank.io.regPort.writeEnable := true.B
-    ALU.io.ALUPort.inst                 := ADD
-    ALU.io.ALUPort.a                    := PC.io.pcPort.PC
-    ALU.io.ALUPort.b                    := 4.U
-    registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt
-    PC.io.pcPort.writeEnable            := true.B
+    // Use the ALU to get the result
+    ALU.io.ALUPort.inst                := ADD
+    ALU.io.ALUPort.a                   := PC.io.pcPort.PC
+    ALU.io.ALUPort.b                   := 4.U
+    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt
 
+    PC.io.pcPort.writeEnable := true.B
     when(decoder.io.DecoderPort.inst === JAL) {
       // Set PC to jump address
       PC.io.pcPort.writeAdd := true.B
@@ -158,24 +167,24 @@ class CPUSingleCycle(
 
   // Stores
   when(decoder.io.DecoderPort.is_store) {
+    // Use the ALU to get the resulting address
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
     val memAddr = ALU.io.ALUPort.x
 
-    // What a dirty hack, get rid of this as soon as possible
     when(memAddr(31, 16) === 0x8000L.U || memAddr(31, 16) === 0x8000L.U) {
       // Stall for 1 cycle for sync memory write
+      // What a dirty hack, get rid of this as soon as possible
       val memValid = RegInit(1.U(1.W))
       memValid := Mux(memValid === 0.U, 1.U, memValid - 1.U)
       stall    := memValid >= 1.U
     }
 
     when(!stall) {
-      memoryIOManager.io.MemoryIOPort.writeAddr := memAddr
-      memoryIOManager.io.MemoryIOPort.readAddr  := memAddr
-
-      // Set register and memory addresses, write enable the data memory
+      // Set memory addresses, write enable the data memory
+      memoryIOManager.io.MemoryIOPort.writeAddr   := memAddr
+      memoryIOManager.io.MemoryIOPort.readAddr    := memAddr
       memoryIOManager.io.MemoryIOPort.writeEnable := true.B
 
       val dataOut  = WireDefault(0.U(32.W))
@@ -203,24 +212,24 @@ class CPUSingleCycle(
 
   // Loads
   when(decoder.io.DecoderPort.is_load) {
-    // Set register and memory addresses
+    // Use the ALU to get the resulting address
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm
     val memAddr = ALU.io.ALUPort.x
 
-    // What a dirty hack, get rid of this as soon as possible
     when(memAddr(31, 16) === 0x8000L.U || memAddr(31, 16) === 0x8000L.U) {
       // Stall for 1 cycle for sync memory read
+      // What a dirty hack, get rid of this as soon as possible
       val memValid = RegInit(1.U(1.W))
       memValid := Mux(memValid === 0.U, 1.U, memValid - 1.U)
       stall    := memValid >= 1.U
     }
 
-    memoryIOManager.io.MemoryIOPort.readAddr := memAddr
-
     when(!stall) {
-      registerBank.io.regPort.writeEnable := true.B
+      registerBank.io.regPort.writeEnable      := true.B
+      memoryIOManager.io.MemoryIOPort.readAddr := memAddr
+
       // Load Word
       when(decoder.io.DecoderPort.inst === LW) {
         registerBank.io.regPort.regwr_data := memoryIOManager.io.MemoryIOPort.readData.asSInt

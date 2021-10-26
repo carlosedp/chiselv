@@ -43,7 +43,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
     defaultDut() { c =>
       c.io.MemoryIOPort.readAddr.poke(0x0000_1010.U)
       c.clock.step()
-      c.io.MemoryIOPort.readData.expect(1.U)
+      c.io.MemoryIOPort.readData.expect(0.U)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {

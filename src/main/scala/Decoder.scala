@@ -16,7 +16,7 @@ class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val branch   = Output(Bool())           // Branch is a flag to indicate if the instruction should jump and link. Update PC
   val use_imm  = Output(Bool())           // Use_imm is a flag to indicate if the instruction has an immediate
   val jump     = Output(Bool())           // jump is a flag to indicate if the instruction has is a jump
-  val is_load  = Output(Bool())           // is_load is a flag to indicate if the instruction has a load to memory
+  val is_load  = Output(Bool())           // is_load is a flag to indicate if the instruction has a load from memory
   val is_store = Output(Bool())           // is_store is a flag to indicate if the instruction has a store to memory
 }
 
