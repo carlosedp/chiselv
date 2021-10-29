@@ -13,14 +13,18 @@ GPIO_DIR_OFFSET =  0x00
 GPIO_VALUE_OFFSET =  0x04
 GPIO_DIRECTION =  0xCF       # Set GPIO Inputs and Outputs (OOIIOOOO)
 TIMER_BASE =  0x30003000
+MEM_BASE =  0x80000000
 
 main:  lui   x1, %hi(GPIO_BASE)         # Define the GPIO0 base address
        lui   x6, %hi(TIMER_BASE)        # Define the Timer0 base address
        addi  x5, x0, GPIO_DIRECTION     # Set x5 to use as GPIO direction
+       lui   x15, %hi(MEM_BASE)         # Store base RAM address
+       sw    x5, 40(x15)                # Store diretion to RAM (for testing)
+       lw    x16, 40(x15)               # Load direction form RAM (for testing)
        addi  x3, x0, 16                 # Set x3 as the highest value (using 4 bits to match 8 used GPIO outputs)
        addi  x7, x0, 1000               # Set wait timer for 1s (1000ms)
        addi  x10, x0, 0x10              # Set x10 to check if button is pressed
-       sw    x5, GPIO_DIR_OFFSET(x1)    # Write the GPIO direction to address 0x30001000
+       sw    x16, GPIO_DIR_OFFSET(x1)   # Write the GPIO direction to address 0x30001000
 loop:  addi  x2, x2, 1                  # Increment x2 by 1
        lw    x9, GPIO_VALUE_OFFSET(x1)  # Read the GPIO value 0x30001004 to x9
        and   x11, x9, x10               # Check if button is pressed
