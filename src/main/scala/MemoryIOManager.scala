@@ -82,10 +82,10 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
 
     // Writes
     when(writeAddress(7, 0) === 0x00.U) { // Direction
-      io.GPIO0Port.writeDirection := io.MemoryIOPort.writeRequest
+      io.GPIO0Port.writeDirection := io.MemoryIOPort.writeEnable
     }
       .elsewhen(writeAddress(7, 0) === 0x04.U) { // Value
-        io.GPIO0Port.writeValue := io.MemoryIOPort.writeRequest
+        io.GPIO0Port.writeValue := io.MemoryIOPort.writeEnable
       }
     io.GPIO0Port.dataIn := io.MemoryIOPort.writeData
   }
