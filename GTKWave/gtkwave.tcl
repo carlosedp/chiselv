@@ -8,11 +8,11 @@
 #
 
 # Customize this section as needed
-## Add TOPLevel clock and reset signals
-set top [list TOP.clock TOP.reset ]
+## Add TOPLevel clock, reset and stall signals
+set top [list clock reset stall]
 
 ## This adds the signals based on a list of {"signal_name_filter" Color}
-set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_memPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager_io__MemoryIOPort_" Red ""} {"memory.io_dualPort_" Yellow ""} {"GPIO0.io_GPIOPort_" Orange ""} {"GPIO0.GPIO" Orange "GPIO0.GPIO_0"} {"GPIO0.direction" Orange "GPIO0.direction_0"}}
+set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_memPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager_io__MemoryIOPort_" Red ""} {"memory.io_dualPort_" Yellow ""}}
 
 ## For mapping values, add the translate files and the signals to map file
 # Format file as: "signal_value mapped_value" (one per line)

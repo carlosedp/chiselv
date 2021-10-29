@@ -35,9 +35,9 @@ filesets:
       - proginfo/artix7-template.txt: { file_type: user }
 
 generate:
-  bypass:
+  default-chisel:
     generator: chisel
-    parameters:
+    parameters: &baseparam
       extraargs: "--target:fpga -board bypass -cpufreq 15000000"
       buildtool: sbt
       copy_core: true
@@ -45,31 +45,25 @@ generate:
         files:
           - generated/Toplevel.v: { file_type: verilogSource }
           - generated/GPIOInOut.v: { file_type: verilogSource }
-          - generated/pll_bypass.v: { file_type: verilogSource }
+          - generated/PLL.v: { file_type: verilogSource }
+
+  bypass:
+    generator: chisel
+    parameters:
+      <<: *baseparam
+      extraargs: "--target:fpga -board bypass -cpufreq 15000000"
 
   ulx3s:
     generator: chisel
     parameters:
+      <<: *baseparam
       extraargs: "--target:fpga -board ulx3s -cpufreq 15000000"
-      buildtool: sbt
-      copy_core: true
-      output:
-        files:
-          - generated/Toplevel.v: { file_type: verilogSource }
-          - generated/GPIOInOut.v: { file_type: verilogSource }
-          - generated/pll_ulx3s.v: { file_type: verilogSource }
 
   artya7-35t:
     generator: chisel
     parameters:
+      <<: *baseparam
       extraargs: "--target:fpga -board artya7-35t -invreset false -cpufreq 25000000"
-      buildtool: sbt
-      copy_core: true
-      output:
-        files:
-          - generated/Toplevel.v: { file_type: verilogSource }
-          - generated/GPIOInOut.v: { file_type: verilogSource }
-          - generated/pll_artya7-35t.v: { file_type: verilogSource }
 
 targets:
   lint:
@@ -80,7 +74,7 @@ targets:
     tools :
       verilator :
         mode : lint-only
-        verilator_options: [--timescale 1ns/1ps"]
+        verilator_options: ["--timescale 1ns/1ps"]
     toplevel : Toplevel
 
   ulx3s_85:
