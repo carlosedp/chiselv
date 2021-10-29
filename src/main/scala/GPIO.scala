@@ -6,7 +6,8 @@ import chisel3.util.HasBlackBoxInline // For Analog type
 
 class GPIOPort(bitWidth: Int = 32) extends Bundle {
   val dataIn         = Input(UInt(bitWidth.W))
-  val dataOut        = Output(UInt(bitWidth.W))
+  val valueOut       = Output(UInt(bitWidth.W))
+  val directionOut   = Output(UInt(bitWidth.W))
   val writeValue     = Input(Bool())
   val writeDirection = Input(Bool())
   val stall          = Output(Bool()) // >1 => Stall, 0 => Run
@@ -22,10 +23,11 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   val direction = Reg(UInt(bitWidth.W)) // 1 = set output, 0 = read input
 
   val InOut = Module(new GPIOInOut(numGPIO))
-  InOut.io.dataIn     := GPIO
-  InOut.io.dir        := direction
-  io.GPIOPort.stall   := false.B
-  io.GPIOPort.dataOut := InOut.io.dataOut
+  InOut.io.dataIn          := GPIO
+  InOut.io.dir             := direction
+  io.GPIOPort.stall        := false.B
+  io.GPIOPort.valueOut     := InOut.io.dataOut
+  io.GPIOPort.directionOut := direction
   io.externalPort <> InOut.io.dataIO
 
   when(io.GPIOPort.writeValue) {

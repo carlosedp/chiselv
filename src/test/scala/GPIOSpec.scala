@@ -24,7 +24,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
 
   it should "read IO when as 0 when initialized" in {
     defaultDut() { c =>
-      c.io.GPIOPort.dataOut.peek().litValue should be(0)
+      c.io.GPIOPort.valueOut.peek().litValue should be(0)
       c.obs_GPIO.peek().litValue should be(0)
       c.obs_DIRECTION.peek().litValue should be(0)
     }
@@ -48,7 +48,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
       c.io.GPIOPort.writeDirection.poke(true.B)
       c.io.GPIOPort.dataIn.poke("b01010101".U)
       c.clock.step()
-      c.io.GPIOPort.dataOut.expect("b01010101".U)
+      c.io.GPIOPort.valueOut.expect("b01010101".U)
       c.clock.step(5)
     }
   }

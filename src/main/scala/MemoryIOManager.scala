@@ -12,8 +12,12 @@ import chisel3.util._
  * 0x0003_0000 - 0x0003_FFFF: ROM (64KB)
  * 0x0001_0000 - 0x2FFF_FFFF: Reserved
  * 0x3000_0000 - 0x3000_0FFF: UART0
+ *                 0x00 (TX Write)
+ *                 0x04 (RX Read)
+ *                 0x0C (Status Read) [txFull|rxFull|txEmpty|rxEmpty]
+ *                 0x10 (Clock Divisor Read/Write)
  * 0x3000_1000 - 0x3000_1FFF: GPIO0
- *                 0x00 (direction - 1: input, 0: output)
+ *                 0x00 (direction - 0: input, 1: output)
  *                 0x04 (value     - 1: high, 0: low)
  * 0x3000_2000 - 0x3000_2FFF: PWM0
  * 0x3000_3000 - 0x3000_3FFF: Timer0
@@ -21,8 +25,8 @@ import chisel3.util._
  * 0x3000_4000 - 0x3FFF_FFFF: Reserved
  * 0x4000_0000 - 0x4FFF_FFFF: Reserved
  * 0x5000_0000 - 0x7000_0000: Reserved
- * 0x8000_0000 - 0x8000_FFFF: On-chip memory RAM (64KB)
- * 0x8001_0000 - 0xFFFF_FFFF: Reserved
+ * 0x8000_0000 - 0x8FFF_FFFF: On-chip memory RAM
+ * 0x9000_0000 - 0x9FFF_FFFF: Reserved
  */
 
 class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024) extends Module {
@@ -51,7 +55,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     // Clock frequency - (0x0000_1008)
     when(readAddress(11, 0) === 0x8L.U)(dataOut := clockFreq.asUInt(bitWidth.W))
     // Has UART0 - (0x0000_1010)
-    when(readAddress(11, 0) === 0x10L.U)(dataOut := 1.U)
+    when(readAddress(11, 0) === 0x10L.U)(dataOut := 0.U)
     // Has GPIO0 - (0x0000_1018)
     when(readAddress(11, 0) === 0x18L.U)(dataOut := 1.U)
     // Has PWM0 - (0x0000_1020)
@@ -67,16 +71,23 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
 
   // GPIO0
   when(readAddress(31, 12) === 0x3000_1L.U || writeAddress(31, 12) === 0x3000_1L.U) {
-    // Direction
-    when(readAddress(7, 0) === 0x00.U) {
-      io.GPIO0Port.writeDirection := io.MemoryIOPort.writeEnable
+    // Reads
+    when(readAddress(7, 0) === 0x00.U) { // Direction
+      dataOut := io.GPIO0Port.directionOut
     }
-      // Value
-      .elsewhen(readAddress(7, 0) === 0x04.U) {
-        io.GPIO0Port.writeValue := io.MemoryIOPort.writeEnable
+      .elsewhen(readAddress(7, 0) === 0x04.U) { // Value
+        dataOut := io.GPIO0Port.valueOut
+      }
+      .otherwise(dataOut := 0.U)
+
+    // Writes
+    when(writeAddress(7, 0) === 0x00.U) { // Direction
+      io.GPIO0Port.writeDirection := io.MemoryIOPort.writeRequest
+    }
+      .elsewhen(writeAddress(7, 0) === 0x04.U) { // Value
+        io.GPIO0Port.writeValue := io.MemoryIOPort.writeRequest
       }
     io.GPIO0Port.dataIn := io.MemoryIOPort.writeData
-    dataOut             := io.GPIO0Port.dataOut
   }
 
   /* --- PWM0 --- */
@@ -106,7 +117,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   memory.io.dualPort.readAddr  := Cat(Fill(16, 0.U), readAddress(15, 0))
   memory.io.dualPort.writeAddr := Cat(Fill(16, 0.U), readAddress(15, 0))
 
-  when(readAddress(31, 16) === 0x8000L.U || writeAddress(31, 16) === 0x8000L.U) {
+  when(readAddress(31, 28) === 0x8.U || writeAddress(31, 28) === 0x8.U) {
     // Set the data write mask and the data position within the word
     val writeMask   = WireDefault(0.U(4.W))
     val dataToWrite = WireDefault(0.U(bitWidth.W))
