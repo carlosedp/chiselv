@@ -27,6 +27,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
 
   it should "read dummy value from Syscon 0x0" in {
     defaultDut() { c =>
+      c.io.MemoryIOPort.readRequest.poke(true.B)
       c.io.MemoryIOPort.readAddr.poke(0x0000_1000.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(0xbaad_cafeL.U)
@@ -34,6 +35,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   }
   it should "read clock speed from Syscon" in {
     defaultDut() { c =>
+      c.io.MemoryIOPort.readRequest.poke(true.B)
       c.io.MemoryIOPort.readAddr.poke(0x0000_1008.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(50000000.U)
@@ -41,13 +43,15 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   }
   it should "check if UART0 is available in Syscon" in {
     defaultDut() { c =>
+      c.io.MemoryIOPort.readRequest.poke(true.B)
       c.io.MemoryIOPort.readAddr.poke(0x0000_1010.U)
       c.clock.step()
-      c.io.MemoryIOPort.readData.expect(0.U)
+      c.io.MemoryIOPort.readData.expect(1.U)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {
     defaultDut() { c =>
+      c.io.MemoryIOPort.readRequest.poke(true.B)
       c.io.MemoryIOPort.readAddr.poke(0x0000_1018.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(1.U)
@@ -55,6 +59,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   }
   it should "check if Timer0 is available in Syscon" in {
     defaultDut() { c =>
+      c.io.MemoryIOPort.readRequest.poke(true.B)
       c.io.MemoryIOPort.readAddr.poke(0x0000_1024.U)
       c.clock.step()
       c.io.MemoryIOPort.readData.expect(1.U)
@@ -67,15 +72,16 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
       val values        = Seq(0.U, 1.U, 0x0000_cafeL.U, 0xbaad_cafeL.U, 0xffff_ffffL.U)
       addresses.foreach { address =>
         values.foreach { value =>
-          c.io.MemoryIOPort.writeEnable.poke(true.B)
+          c.io.MemoryIOPort.readRequest.poke(true.B)
+          c.io.MemoryIOPort.writeRequest.poke(true.B)
           c.io.MemoryIOPort.writeMask.poke("b1111".U)
           c.io.MemoryIOPort.dataSize.poke(3.U)
           c.io.MemoryIOPort.writeAddr.poke((addressOffset + address).U)
           c.io.MemoryIOPort.readAddr.poke((addressOffset + address).U)
           c.io.MemoryIOPort.writeData.poke(value)
-          c.clock.step()
+          c.clock.step(2)
           c.io.MemoryIOPort.readAddr.poke((addressOffset + address).U)
-          c.clock.step()
+          c.clock.step(2)
           c.io.MemoryIOPort.readData.expect(value)
         }
       }

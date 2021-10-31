@@ -1,9 +1,10 @@
 package chiselv
 
-import Instruction._
-import InstructionType._
 import chisel3._
 import chisel3.util.{BitPat, _}
+
+import Instruction._
+import InstructionType._
 
 class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val op       = Input(UInt(bitWidth.W))  // Op is the 32 bit instruction read received for decoding

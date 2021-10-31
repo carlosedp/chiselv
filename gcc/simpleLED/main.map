@@ -1,0 +1,65 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000000000 0x0000000000010000 xrw
+RAM              0x0000000080000000 0x0000000000010000 xrw
+IO               0x0000000030000000 0x0000000000000010 rw
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000002000                __heap_size = 0x2000
+                0x0000000000008000                __stack_size = 0x8000
+
+.text           0x0000000000000000       0x84
+ *(.boot)
+ .boot          0x0000000000000000       0x10 ./crt.s.o
+                0x0000000000000000                _boot
+ *(.text)
+ .text          0x0000000000000010       0x74 ./main.o
+                0x0000000000000010                main
+                0x0000000000000054                dir
+ .text          0x0000000000000084        0x0 ./crt.s.o
+ *(.text)
+
+.data           0x0000000080000000        0x0
+ *(.rodata*)
+ *(.sbss)
+ *(.data)
+ .data          0x0000000080000000        0x0 ./main.o
+ .data          0x0000000080000000        0x0 ./crt.s.o
+ *(.bss)
+ .bss           0x0000000080000000        0x0 ./main.o
+ .bss           0x0000000080000000        0x0 ./crt.s.o
+ *(.rela*)
+ *(COMMON)
+
+.heap           0x0000000080000000     0x2000
+                0x0000000080000000                . = ALIGN (0x4)
+                [!provide]                        PROVIDE (end = .)
+                0x0000000080000000                _sheap = .
+                0x0000000080002000                . = (. + __heap_size)
+ *fill*         0x0000000080000000     0x2000 
+                0x0000000080002000                . = ALIGN (0x4)
+                0x0000000080002000                _eheap = .
+
+.stack          0x0000000080002000     0x8000
+                0x0000000080002000                . = ALIGN (0x4)
+                0x0000000080002000                _estack = .
+                0x000000008000a000                . = (. + __stack_size)
+ *fill*         0x0000000080002000     0x8000 
+                0x000000008000a000                . = ALIGN (0x4)
+                0x000000008000a000                _sstack = .
+LOAD ./main.o
+LOAD ./crt.s.o
+OUTPUT(main.elf elf32-littleriscv)
+
+.comment        0x0000000000000000       0x2c
+ .comment       0x0000000000000000       0x2c ./main.o
+                                         0x2d (size before relaxing)
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 ./main.o

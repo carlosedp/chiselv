@@ -1,10 +1,10 @@
 package chiselv
 
-import Instruction._
 import chisel3._
 import chiseltest._
 import org.scalatest._
 
+import Instruction._
 import flatspec._
 import matchers._
 

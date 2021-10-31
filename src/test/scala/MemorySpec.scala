@@ -13,21 +13,25 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
   behavior of "DataMemory"
 
   it should "write and read from address" in {
-    test(new DualPortRAM(32, 1 * 1024)) { c =>
-      c.io.dualPort.writeAddr.poke(0.U)
-      c.io.dualPort.readAddr.poke(0.U)
-      c.io.dualPort.writeMask.poke("b1111".U)
-      c.clock.step(2)
+    test(new DualPortRAM(32, 1 * 1024)).withAnnotations(
+      Seq(
+        WriteVcdAnnotation
+        // VerilatorBackendAnnotation,
+      )
+    ) { c =>
       c.io.dualPort.writeEnable.poke(true.B)
+      c.io.dualPort.writeAddress.poke(1.U)
       c.io.dualPort.writeData.poke(1234.U)
+      c.clock.step(1)
+      c.io.dualPort.readAddress.poke(1.U)
       c.clock.step(2)
       c.io.dualPort.readData.expect(1234.U)
     }
   }
   it should "not allow write to address" in {
     test(new DualPortRAM(32, 1 * 1024)) { c =>
-      c.io.dualPort.writeAddr.poke("h00000010".U)
-      c.io.dualPort.readAddr.poke("h00000010".U)
+      c.io.dualPort.writeAddress.poke("h00000010".U)
+      c.io.dualPort.readAddress.poke("h00000010".U)
       c.clock.step()
       c.io.dualPort.writeData.poke(1234.U)
       c.clock.step()

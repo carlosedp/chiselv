@@ -37,8 +37,8 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     test(new CPUSingleCycleInstWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
       .withAnnotations(
         Seq(
-          // WriteVcdAnnotation,
-          VerilatorBackendAnnotation
+          WriteVcdAnnotation,
+          VerilatorBackendAnnotation,
         )
       )
 
@@ -189,7 +189,7 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       // Check memory address 0x14 with offset
       c.memWriteAddr.peek().litValue should be(0x80000014L)
       c.memWriteData.peek().litValue should be(0x123L)
-      c.clock.step(1) // sw
+      c.clock.step(3) // sw
       c.clock.step(1) // lw
       c.registers(2).peek().litValue should be(0x123)
       new File(filename).delete()
@@ -208,7 +208,7 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     // sh x2, 54(x1)  // Memory offset 52 (0x34) should be 0x56785678
     // lw x4, 48(x1)  // x4 should be 0xffff5678
     // lw x5, 52(x1)  // x5 should be 0x56785678
-    val filename = "CPUSpecMemoryTestFileSW.hex"
+    val filename = "CPUSpecMemoryTestFileSH.hex"
     new PrintWriter(new File(filename)) {
       write("""
       800000b7
@@ -236,31 +236,30 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       // Check memory address offset 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0xffffffffL)
-      c.clock.step(2) // sw
-
+      c.clock.step(3) // sw
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(2) //sh
+      c.clock.step(3) //sh
       // Check memory address 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(2) //sh
+      c.clock.step(3) //sh
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(2) //sh
-      c.clock.step(1) // lw - stall
+      c.clock.step(3) //sh
+      c.clock.step(1) // lw
       // Check memory address 0x30
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memReadData.peek().litValue should be(0xffff5678L)
-      c.clock.step(1) // lw
-      c.registers(4).peek().litValue should be(0xffff5678)
       c.clock.step(1) // lw - stall
+      c.memReadData.peek().litValue should be(0xffff5678L)
+      c.registers(4).peek().litValue should be(0xffff5678)
       // Check memory address 0x34
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x34)
-      c.memReadData.peek().litValue should be(0x56785678L)
       c.clock.step(1) // lw
+      c.memReadData.peek().litValue should be(0x56785678L)
+      c.clock.step(1) // lw - stall
       c.registers(5).peek().litValue should be(0x56785678)
       c.clock.step(10) // padding
       new File(filename).delete()
@@ -309,33 +308,31 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       // Check memory address offset 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0xffffffffL)
-      c.clock.step(2) // sw
-
+      c.clock.step(3) // sw
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(2) //sb
+      c.clock.step(3) //sb
       // Check memory address 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(2) //sb
+      c.clock.step(3) //sb
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(2) //sb
+      c.clock.step(3) //sb
       // Check memory address offset 0x33
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x33)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(2) //sb
-      c.clock.step(1) // lw - stall
+      c.clock.step(3) //sb
       // Check memory address 0x30
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memReadData.peek().litValue should be(0x78ffff78L)
-      c.clock.step(1) // lw
-      c.registers(4).peek().litValue should be(0x78ffff78)
       c.clock.step(1) // lw - stall
+      c.memReadData.peek().litValue should be(0x78ffff78L)
+      c.registers(4).peek().litValue should be(0x78ffff78)
       // Check memory address 0x34
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x34)
+      c.clock.step(1) // lw - stall
       c.memReadData.peek().litValue should be(0x00780078L)
       c.clock.step(1) // lw
       c.registers(5).peek().litValue should be(0x00780078)
@@ -359,21 +356,20 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
     }
     defaultDut(filename) { c =>
       c.registers(1).peek().litValue should be(0)
-      c.clock.step(1)
+      c.clock.step(1) // lui
       c.registers(1).peek().litValue should be(0xf0f0f000)
-      c.clock.step(1)
+      c.clock.step(1) // addi
       c.registers(1).peek().litValue should be(0xf0f0f0f0)
-      c.clock.step(1)
+      c.clock.step(1) // lui
       c.registers(2).peek().litValue should be(0x80000000)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peek().litValue should be(0x80000000L)
       c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
+      c.clock.step(3) // sw
       // Check memory read at address 0x20 (32)
       c.memReadAddr.peek().litValue should be(0x80000000L)
       c.memReadData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
-      c.clock.step(1)
+      c.clock.step(2) // lw
       // Check loaded data
       c.registers(3).peek().litValue should be(0xf0f0f0f0)
       c.clock.step(5) // Paddding
@@ -405,14 +401,49 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peek().litValue should be(0x80000000L)
       c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
-      c.clock.step(1)
+      c.clock.step(3)
       // Check memory read at address 0x80000000L
       c.memReadAddr.peek().litValue should be(0x80000000L)
       c.memReadData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
+      c.clock.step(2)
       // Check loaded data
       c.registers(3).peek().litValue should be(0xfffff0f0)
+      c.clock.step(5) // Paddding
+      new File(filename).delete()
+    }
+  }
+
+  it should "validate LHU instruction" in {
+    // Create memory test file with 32bit address space
+    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |lui x2, 0x80000000 | sw x1, 0(x2) | lhu x4, 0(x2)
+    val filename = "CPUSpecMemoryTestFileLHU.hex"
+    new PrintWriter(new File(filename)) {
+      write("""
+      f0f0f0b7
+      0f008093
+      80000137
+      00112023
+      00015203
+      """.stripMargin); close
+    }
+    defaultDut(filename) { c =>
+      c.registers(1).peek().litValue should be(0)
+      c.clock.step(1)
+      c.registers(1).peek().litValue should be(0xf0f0f000)
+      c.clock.step(1)
+      c.registers(1).peek().litValue should be(0xf0f0f0f0)
+      c.clock.step(1)
+      c.registers(2).peek().litValue should be(0x80000000)
+      // Check memory write at address 0x80000000L
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
+      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
+      c.clock.step(3)
+      // Check memory read at address 0x80000000L
+      c.memReadAddr.peek().litValue should be(0x80000000L)
+      // c.memReadData.peek().litValue should be(0x0000f0f0L) // Can't check memory return since data is processed at the CPU level
+      c.clock.step(2) // lw
+      // Check loaded data
+      c.registers(4).peek().litValue should be(0x0000f0f0)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }
@@ -442,14 +473,49 @@ class CPUSingleCycleInstructionSpec extends AnyFlatSpec with ChiselScalatestTest
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peek().litValue should be(0x80000000L)
       c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
-      c.clock.step(1)
+      c.clock.step(3)
       // Check memory read at address 0x80000000L
       c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0xf0f0f0f0L)
-      c.clock.step(1)
+      // c.memReadData.peek().litValue should be(0xfffffff0L) // Can't check memory return since data is processed at the CPU level
+      c.clock.step(2) // lb
       // Check loaded data
       c.registers(3).peek().litValue should be(0xfffffff0)
+      c.clock.step(5) // Paddding
+      new File(filename).delete()
+    }
+  }
+
+  it should "validate LBU instruction" in {
+    // Create memory test file with 32bit address space
+    // Instructions are: lui x1, 0xf0f0f000 | addi x1, x1, 240 |lui x2, 0x80000000 | sw x1, 0(x2) | lbu x4, 0(x2)
+    val filename = "CPUSpecMemoryTestFileLBU.hex"
+    new PrintWriter(new File(filename)) {
+      write("""
+      f0f0f0b7
+      0f008093
+      80000137
+      00112023
+      00014203
+      """.stripMargin); close
+    }
+    defaultDut(filename) { c =>
+      c.registers(1).peek().litValue should be(0)
+      c.clock.step(1)
+      c.registers(1).peek().litValue should be(0xf0f0f000)
+      c.clock.step(1)
+      c.registers(1).peek().litValue should be(0xf0f0f0f0)
+      c.clock.step(1)
+      c.registers(2).peek().litValue should be(0x80000000)
+      // Check memory write at address 0x80000000L
+      c.memWriteAddr.peek().litValue should be(0x80000000L)
+      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
+      c.clock.step(3)
+      // Check memory read at address 0x80000000L
+      c.memReadAddr.peek().litValue should be(0x80000000L)
+      // c.memReadData.peek().litValue should be(0x000000f0L) // Can't check memory return since data is processed at the CPU level
+      c.clock.step(2)
+      // Check loaded data
+      c.registers(4).peek().litValue should be(0x000000f0)
       c.clock.step(5) // Paddding
       new File(filename).delete()
     }

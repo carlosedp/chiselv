@@ -12,7 +12,7 @@
 set top [list clock reset stall]
 
 ## This adds the signals based on a list of {"signal_name_filter" Color}
-set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_memPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager_io__MemoryIOPort_" Red ""} {"memory.io_dualPort_" Yellow ""}}
+set signals_to_add {{"PC.io_pcPort" Green ""} {"instructionMemory.io_memPort" Red ""} {"decoder.io_DecoderPort" Violet ""} {"ALU.io_ALUPort" Orange ""} {"registerBank.io_regPort" Green ""} {"registerBank.regs_" Green "regs_0_"} {"memoryIOManager.io_MemoryIOPort_" Red ""} {"memory.io_dualPort_" Yellow ""}}
 
 ## For mapping values, add the translate files and the signals to map file
 # Format file as: "signal_value mapped_value" (one per line)

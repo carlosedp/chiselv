@@ -20,7 +20,7 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   })
 
   val GPIO      = Reg(UInt(bitWidth.W))
-  val direction = Reg(UInt(bitWidth.W)) // 1 = set output, 0 = read input
+  val direction = Reg(UInt(bitWidth.W)) // 0 = input, 1 = output
 
   val InOut = Module(new GPIOInOut(numGPIO))
   InOut.io.dataIn          := GPIO
