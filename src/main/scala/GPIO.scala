@@ -19,8 +19,8 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
     val externalPort = Analog(numGPIO.W)
   })
 
-  val GPIO      = Reg(UInt(bitWidth.W))
-  val direction = Reg(UInt(bitWidth.W)) // 0 = input, 1 = output
+  val GPIO      = RegInit(0.U(bitWidth.W))
+  val direction = RegInit(0.U(bitWidth.W)) // 0 = input, 1 = output
 
   val InOut = Module(new GPIOInOut(numGPIO))
   InOut.io.dataIn          := GPIO
