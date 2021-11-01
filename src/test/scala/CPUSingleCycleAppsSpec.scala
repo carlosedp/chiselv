@@ -1,6 +1,7 @@
 package chiselv
 
 import chiseltest._
+import chiseltest.experimental._
 import org.scalatest._
 
 import flatspec._
@@ -13,13 +14,12 @@ class CPUSingleCycleWrapperApps(
   instructionMemorySize: Int,
   memorySize: Int,
   memoryFile: String,
-) extends CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile)
-  with Observer {
-  val registers    = observe(registerBank.regs)
-  val memWriteAddr = observe(memoryIOManager.io.MemoryIOPort.writeAddr)
-  val memWriteData = observe(memoryIOManager.io.MemoryIOPort.writeData)
-  val memReadAddr  = observe(memoryIOManager.io.MemoryIOPort.readAddr)
-  val memReadData  = observe(memoryIOManager.io.MemoryIOPort.readData)
+) extends CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
+  val registers    = expose(registerBank.regs)
+  val memWriteAddr = expose(memoryIOManager.io.MemoryIOPort.writeAddr)
+  val memWriteData = expose(memoryIOManager.io.MemoryIOPort.writeData)
+  val memReadAddr  = expose(memoryIOManager.io.MemoryIOPort.readAddr)
+  val memReadData  = expose(memoryIOManager.io.MemoryIOPort.readData)
 }
 
 class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {

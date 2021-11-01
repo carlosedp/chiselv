@@ -2,14 +2,15 @@ package chiselv
 
 import chisel3._
 import chiseltest._
+import chiseltest.experimental.expose
 import org.scalatest._
 
 import flatspec._
 import matchers._
 
-class GPIOWrapper(bitWidth: Int = 32, numGPIO: Int = 8) extends GPIO(bitWidth, numGPIO) with Observer {
-  val obs_GPIO      = observe(GPIO)
-  val obs_DIRECTION = observe(direction)
+class GPIOWrapper(bitWidth: Int = 32, numGPIO: Int = 8) extends GPIO(bitWidth, numGPIO) {
+  val obs_GPIO      = expose(GPIO)
+  val obs_DIRECTION = expose(direction)
 }
 class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "GPIO"

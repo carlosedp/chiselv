@@ -2,13 +2,14 @@ package chiselv
 
 import chisel3._
 import chiseltest._
+import chiseltest.experimental._
 import org.scalatest._
 
 import flatspec._
 import matchers._
 
-class TimerWrapper(bitWidth: Int = 32, cpuFrequency: Int) extends chiselv.Timer(bitWidth, cpuFrequency) with Observer {
-  val obs_counter = observe(counter)
+class TimerWrapper(bitWidth: Int = 32, cpuFrequency: Int) extends chiselv.Timer(bitWidth, cpuFrequency) {
+  val obs_counter = expose(counter)
 }
 class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "Timer"

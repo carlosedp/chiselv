@@ -2,6 +2,7 @@ package chiselv
 
 import chisel3._
 import chiseltest._
+import chiseltest.experimental._
 import org.scalatest._
 
 import flatspec._
@@ -9,9 +10,8 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class MemoryIOManagerWrapper(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1)
-  extends MemoryIOManager(bitWidth, clockFreq, sizeBytes)
-  with Observer {
-  val memPort = observe(memory.io.dualPort)
+  extends MemoryIOManager(bitWidth, clockFreq, sizeBytes) {
+  val memPort = expose(memory.io.dualPort)
 }
 
 class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
