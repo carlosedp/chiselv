@@ -39,6 +39,27 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     }
   }
 
+  it should "write data and follow with a read in same address" in {
+    test(new DualPortRAM(32, 64 * 1024)) { c =>
+      val addressOffset = 0x0000100L
+      val addresses     = Seq(0x0L, 0x0010L, 0x0d00L, 0x1000L, 0x2000L, 0x8000L, 0xe000L)
+      val values        = Seq(0.U, 1.U, 0x0000_cafeL.U, 0xbaad_cafeL.U, 0xffff_ffffL.U)
+      addresses.foreach { address =>
+        values.foreach { value =>
+          c.io.dualPort.writeEnable.poke(true.B)
+          c.io.dualPort.writeAddress.poke((addressOffset + address).U)
+          c.io.dualPort.readAddress.poke((addressOffset + address).U)
+          c.io.dualPort.writeData.poke(value)
+          c.clock.step(1)
+          c.io.dualPort.readAddress.poke((addressOffset + address).U)
+          c.clock.step(1)
+          c.io.dualPort.readData.expect(value)
+        }
+      }
+      c.clock.step(10)
+    }
+  }
+
   behavior of "InstructionMemory"
   it should "load from file and read multiple instructions" in {
     val filename = "MemorySpecTestFile.hex"

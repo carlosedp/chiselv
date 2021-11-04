@@ -15,14 +15,14 @@ int main() {
   dir();
 
   // Turn on LED1 (GPIO0)
-	uint32_t addrval;
-	addrval = GPIO0_BASE + GPIO0_VAL;
-	*(volatile uint32_t *)addrval = 1;
+    uint32_t addrval;
+    addrval = GPIO0_BASE + GPIO0_VAL;
+    *(volatile uint32_t *)addrval = 3;
 }
 
 void dir() {
-	// Set GPIO0 Direction (OOIIOOOO)
-	uint32_t addrdir;
-	addrdir = GPIO0_BASE + GPIO0_DIR;
-	*(volatile uint32_t *)addrdir = 0xCF;
+    // Set GPIO0 Direction (IIOOOOOO)
+    uint32_t addrdir;
+    addrdir = GPIO0_BASE + GPIO0_DIR;
+    *(volatile uint32_t *)addrdir = 0x3F;
 }

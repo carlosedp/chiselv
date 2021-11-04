@@ -7,8 +7,8 @@ filesets:
 
   progload:
     files:
-      # - gcc/blink/main.mem:
       - gcc/simpleLED/main.mem:
+      # - gcc/blinkLED/main.mem:
           { copyto: progload.mem, file_type: user }
 
   proginfo:
@@ -16,11 +16,10 @@ filesets:
       - proginfo/proginfo.py : {file_type : user, copyto : proginfo.py}
       - proginfo/boardconfig.yaml : {file_type : user, copyto : boardconfig.yaml}
 
-  bypass:
-    depend: ["fusesoc:utils:generators:0.1.6"]
+  base:
+    depend: ["fusesoc:utils:generators"]
 
   ulx3s-85:
-    depend: ["fusesoc:utils:generators:0.1.6"]
     files:
       - constraints/ecp5-ulx3s.lpf: { file_type: LPF }
       - openocd/ft231x.cfg: { file_type: user }
@@ -28,7 +27,6 @@ filesets:
       - proginfo/ulx3s-template.txt: { file_type: user }
 
   artya7-35t:
-    depend: ["fusesoc:utils:generators:0.1.6"]
     files:
       - constraints/arty_a7.xdc: { file_type: xdc }
       - openocd/digilent-hs1.cfg: { file_type: user }
@@ -70,7 +68,7 @@ targets:
   lint:
     default_tool : verilator
     description : Lint the RTL. Uses Verilator by default
-    filesets: [bypass]
+    filesets: [base]
     generate: [bypass]
     tools :
       verilator :
@@ -81,7 +79,7 @@ targets:
   ulx3s_85:
     default_tool: trellis
     description: ULX3S 85k version
-    filesets: [ulx3s-85, proginfo, progload]
+    filesets: [base, ulx3s-85, proginfo, progload]
     generate: [ulx3s]
     hooks:
       post_run: [ulx3s-85f]
@@ -96,7 +94,7 @@ targets:
   artya7-35t:
     default_tool : vivado
     description: Digilent ArtyA7-35T Board using Vivado
-    filesets : [artya7-35t, progload]
+    filesets : [base, artya7-35t, progload]
     generate: [artya7-35t]
     tools:
       vivado:
@@ -106,7 +104,7 @@ targets:
   artya7-35t-oss:
     default_tool : symbiflow
     description: Digilent ArtyA7-35T Board using Symbiflow OSS Toolchain
-    filesets : [artya7-35t, proginfo, progload]
+    filesets : [base, artya7-35t, proginfo, progload]
     generate: [artya7-35t]
     hooks:
       post_run: [artya7-35t]

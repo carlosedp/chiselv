@@ -12,16 +12,19 @@ Linker script and memory map
                 0x0000000000002000                __heap_size = 0x2000
                 0x0000000000008000                __stack_size = 0x8000
 
-.text           0x0000000000000000       0x84
+.text           0x0000000000000000       0x20
  *(.boot)
  .boot          0x0000000000000000       0x10 ./crt.s.o
                 0x0000000000000000                _boot
  *(.text)
- .text          0x0000000000000010       0x74 ./main.o
-                0x0000000000000010                main
-                0x0000000000000054                dir
- .text          0x0000000000000084        0x0 ./crt.s.o
+ .text          0x0000000000000010       0x10 ./main.o
+                0x0000000000000010                dir
+ .text          0x0000000000000020        0x0 ./crt.s.o
  *(.text)
+
+.text.startup   0x0000000000000020       0x1c
+ .text.startup  0x0000000000000020       0x1c ./main.o
+                0x0000000000000020                main
 
 .data           0x0000000080000000        0x0
  *(.rodata*)

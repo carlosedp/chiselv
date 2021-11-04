@@ -3,6 +3,7 @@ main.elf:     file format elf32-littleriscv
 
 SYMBOL TABLE:
 00000000 l    d  .text	00000000 .text
+00000020 l    d  .text.startup	00000000 .text.startup
 80000000 l    d  .heap	00000000 .heap
 80002000 l    d  .stack	00000000 .stack
 00000000 l    d  .comment	00000000 .comment
@@ -11,8 +12,8 @@ SYMBOL TABLE:
 00008000 g       *ABS*	00000000 __stack_size
 00000000 g       .text	00000000 _boot
 00002000 g       *ABS*	00000000 __heap_size
-00000010 g     F .text	00000044 main
-00000054 g     F .text	00000030 dir
+00000020 g     F .text.startup	0000001c main
+00000010 g     F .text	00000010 dir
 8000a000 g       .stack	00000000 _sstack
 80002000 g       .stack	00000000 _estack
 80002000 g       .heap	00000000 _eheap
@@ -24,38 +25,22 @@ Disassembly of section .text:
 00000000 <_boot>:
    0:	8000a137          	lui	sp,0x8000a
    4:	00010113          	mv	sp,sp
-   8:	008000ef          	jal	ra,10 <main>
+   8:	018000ef          	jal	ra,20 <main>
    c:	ff5ff06f          	j	0 <_boot>
 
-00000010 <main>:
-  10:	fe010113          	addi	sp,sp,-32 # 80009fe0 <_sstack+0xffffffe0>
-  14:	00112e23          	sw	ra,28(sp)
-  18:	00812c23          	sw	s0,24(sp)
-  1c:	02010413          	addi	s0,sp,32
-  20:	034000ef          	jal	ra,54 <dir>
-  24:	300017b7          	lui	a5,0x30001
-  28:	00478793          	addi	a5,a5,4 # 30001004 <__stack_size+0x2fff9004>
-  2c:	fef42623          	sw	a5,-20(s0)
-  30:	fec42783          	lw	a5,-20(s0)
-  34:	00100713          	li	a4,1
-  38:	00e7a023          	sw	a4,0(a5)
-  3c:	00000793          	li	a5,0
-  40:	00078513          	mv	a0,a5
-  44:	01c12083          	lw	ra,28(sp)
-  48:	01812403          	lw	s0,24(sp)
-  4c:	02010113          	addi	sp,sp,32
-  50:	00008067          	ret
+00000010 <dir>:
+  10:	300017b7          	lui	a5,0x30001
+  14:	03f00713          	li	a4,63
+  18:	00e7a023          	sw	a4,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  1c:	00008067          	ret
 
-00000054 <dir>:
-  54:	fe010113          	addi	sp,sp,-32
-  58:	00812e23          	sw	s0,28(sp)
-  5c:	02010413          	addi	s0,sp,32
-  60:	300017b7          	lui	a5,0x30001
-  64:	fef42623          	sw	a5,-20(s0)
-  68:	fec42783          	lw	a5,-20(s0)
-  6c:	0cf00713          	li	a4,207
-  70:	00e7a023          	sw	a4,0(a5) # 30001000 <__stack_size+0x2fff9000>
-  74:	00000013          	nop
-  78:	01c12403          	lw	s0,28(sp)
-  7c:	02010113          	addi	sp,sp,32
-  80:	00008067          	ret
+Disassembly of section .text.startup:
+
+00000020 <main>:
+  20:	300017b7          	lui	a5,0x30001
+  24:	03f00713          	li	a4,63
+  28:	00e7a023          	sw	a4,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  2c:	00300713          	li	a4,3
+  30:	00e7a223          	sw	a4,4(a5)
+  34:	00000513          	li	a0,0
+  38:	00008067          	ret
