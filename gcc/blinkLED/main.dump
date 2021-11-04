@@ -1,0 +1,230 @@
+
+main.elf:     file format elf32-littleriscv
+
+SYMBOL TABLE:
+00000000 l    d  .text	00000000 .text
+0000018c l    d  .text.startup	00000000 .text.startup
+80000000 l    d  .heap	00000000 .heap
+80002000 l    d  .stack	00000000 .stack
+00000000 l    d  .comment	00000000 .comment
+00000000 l    df *ABS*	00000000 ./crt.s.o
+00000090 l       .text	00000000 _halt
+00000000 l    df *ABS*	00000000 main.c
+0000010c g     F .text	0000000c readGPIO
+80000000 g       .heap	00000000 _sheap
+00008000 g       *ABS*	00000000 __stack_size
+000000dc g     F .text	00000024 digitalRead
+00000000 g       .text	00000000 _boot
+000000d0 g     F .text	0000000c readDirection
+0000016c g     F .text	00000020 sleep
+00000118 g     F .text	00000030 digitalWrite
+00000094 g     F .text	00000030 pinMode
+00000154 g     F .text	0000000c getTimer
+00002000 g       *ABS*	00000000 __heap_size
+0000018c g     F .text.startup	00000108 main
+8000a000 g       .stack	00000000 _sstack
+00000100 g     F .text	0000000c setGPIO
+000000c4 g     F .text	0000000c setDirection
+00000160 g     F .text	0000000c resetTimer
+80002000 g       .stack	00000000 _estack
+80002000 g       .heap	00000000 _eheap
+00000148 g     F .text	0000000c setTimer
+
+
+
+Disassembly of section .text:
+
+00000000 <_boot>:
+   0:	00000033          	add	zero,zero,zero
+   4:	000000b3          	add	ra,zero,zero
+   8:	00000133          	add	sp,zero,zero
+   c:	000001b3          	add	gp,zero,zero
+  10:	00000233          	add	tp,zero,zero
+  14:	000002b3          	add	t0,zero,zero
+  18:	00000333          	add	t1,zero,zero
+  1c:	000003b3          	add	t2,zero,zero
+  20:	00000433          	add	s0,zero,zero
+  24:	000004b3          	add	s1,zero,zero
+  28:	00000533          	add	a0,zero,zero
+  2c:	000005b3          	add	a1,zero,zero
+  30:	00000633          	add	a2,zero,zero
+  34:	000006b3          	add	a3,zero,zero
+  38:	00000733          	add	a4,zero,zero
+  3c:	000007b3          	add	a5,zero,zero
+  40:	00000833          	add	a6,zero,zero
+  44:	000008b3          	add	a7,zero,zero
+  48:	00000933          	add	s2,zero,zero
+  4c:	000009b3          	add	s3,zero,zero
+  50:	00000a33          	add	s4,zero,zero
+  54:	00000ab3          	add	s5,zero,zero
+  58:	00000b33          	add	s6,zero,zero
+  5c:	00000bb3          	add	s7,zero,zero
+  60:	00000c33          	add	s8,zero,zero
+  64:	00000cb3          	add	s9,zero,zero
+  68:	00000d33          	add	s10,zero,zero
+  6c:	00000db3          	add	s11,zero,zero
+  70:	00000e33          	add	t3,zero,zero
+  74:	00000eb3          	add	t4,zero,zero
+  78:	00000f33          	add	t5,zero,zero
+  7c:	00000fb3          	add	t6,zero,zero
+  80:	8000a137          	lui	sp,0x8000a
+  84:	00010113          	mv	sp,sp
+  88:	104000ef          	jal	ra,18c <main>
+  8c:	0040006f          	j	90 <_halt>
+
+00000090 <_halt>:
+  90:	0000006f          	j	90 <_halt>
+
+00000094 <pinMode>:
+  94:	300017b7          	lui	a5,0x30001
+  98:	0007a703          	lw	a4,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  9c:	00100793          	li	a5,1
+  a0:	00a79533          	sll	a0,a5,a0
+  a4:	00058a63          	beqz	a1,b8 <pinMode+0x24>
+  a8:	00e56533          	or	a0,a0,a4
+  ac:	300017b7          	lui	a5,0x30001
+  b0:	00a7a023          	sw	a0,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  b4:	00008067          	ret
+  b8:	fff54513          	not	a0,a0
+  bc:	00e57533          	and	a0,a0,a4
+  c0:	fedff06f          	j	ac <pinMode+0x18>
+
+000000c4 <setDirection>:
+  c4:	300017b7          	lui	a5,0x30001
+  c8:	00a7a023          	sw	a0,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  cc:	00008067          	ret
+
+000000d0 <readDirection>:
+  d0:	300017b7          	lui	a5,0x30001
+  d4:	0007a503          	lw	a0,0(a5) # 30001000 <__stack_size+0x2fff9000>
+  d8:	00008067          	ret
+
+000000dc <digitalRead>:
+  dc:	300017b7          	lui	a5,0x30001
+  e0:	0047a783          	lw	a5,4(a5) # 30001004 <__stack_size+0x2fff9004>
+  e4:	00078a63          	beqz	a5,f8 <digitalRead+0x1c>
+  e8:	00100793          	li	a5,1
+  ec:	00a79533          	sll	a0,a5,a0
+  f0:	00a03533          	snez	a0,a0
+  f4:	00008067          	ret
+  f8:	00000513          	li	a0,0
+  fc:	00008067          	ret
+
+00000100 <setGPIO>:
+ 100:	300017b7          	lui	a5,0x30001
+ 104:	00a7a223          	sw	a0,4(a5) # 30001004 <__stack_size+0x2fff9004>
+ 108:	00008067          	ret
+
+0000010c <readGPIO>:
+ 10c:	300017b7          	lui	a5,0x30001
+ 110:	0047a503          	lw	a0,4(a5) # 30001004 <__stack_size+0x2fff9004>
+ 114:	00008067          	ret
+
+00000118 <digitalWrite>:
+ 118:	300017b7          	lui	a5,0x30001
+ 11c:	0047a703          	lw	a4,4(a5) # 30001004 <__stack_size+0x2fff9004>
+ 120:	00100793          	li	a5,1
+ 124:	00a79533          	sll	a0,a5,a0
+ 128:	00058a63          	beqz	a1,13c <digitalWrite+0x24>
+ 12c:	00e56533          	or	a0,a0,a4
+ 130:	300017b7          	lui	a5,0x30001
+ 134:	00a7a223          	sw	a0,4(a5) # 30001004 <__stack_size+0x2fff9004>
+ 138:	00008067          	ret
+ 13c:	fff54513          	not	a0,a0
+ 140:	00e57533          	and	a0,a0,a4
+ 144:	fedff06f          	j	130 <digitalWrite+0x18>
+
+00000148 <setTimer>:
+ 148:	300037b7          	lui	a5,0x30003
+ 14c:	00a7a023          	sw	a0,0(a5) # 30003000 <__stack_size+0x2fffb000>
+ 150:	00008067          	ret
+
+00000154 <getTimer>:
+ 154:	300037b7          	lui	a5,0x30003
+ 158:	0007a503          	lw	a0,0(a5) # 30003000 <__stack_size+0x2fffb000>
+ 15c:	00008067          	ret
+
+00000160 <resetTimer>:
+ 160:	300037b7          	lui	a5,0x30003
+ 164:	0007a023          	sw	zero,0(a5) # 30003000 <__stack_size+0x2fffb000>
+ 168:	00008067          	ret
+
+0000016c <sleep>:
+ 16c:	300037b7          	lui	a5,0x30003
+ 170:	0007a023          	sw	zero,0(a5) # 30003000 <__stack_size+0x2fffb000>
+ 174:	0007a703          	lw	a4,0(a5)
+ 178:	00e50533          	add	a0,a0,a4
+ 17c:	0007a703          	lw	a4,0(a5)
+ 180:	fee57ee3          	bgeu	a0,a4,17c <sleep+0x10>
+ 184:	0007a023          	sw	zero,0(a5)
+ 188:	00008067          	ret
+
+Disassembly of section .text.startup:
+
+0000018c <main>:
+ 18c:	ff010113          	addi	sp,sp,-16 # 80009ff0 <_sstack+0xfffffff0>
+ 190:	00812423          	sw	s0,8(sp)
+ 194:	30001437          	lui	s0,0x30001
+ 198:	00042783          	lw	a5,0(s0) # 30001000 <__stack_size+0x2fff9000>
+ 19c:	00112623          	sw	ra,12(sp)
+ 1a0:	00912223          	sw	s1,4(sp)
+ 1a4:	0017e793          	ori	a5,a5,1
+ 1a8:	00f42023          	sw	a5,0(s0)
+ 1ac:	00042783          	lw	a5,0(s0)
+ 1b0:	1f400513          	li	a0,500
+ 1b4:	0027e793          	ori	a5,a5,2
+ 1b8:	00f42023          	sw	a5,0(s0)
+ 1bc:	00042783          	lw	a5,0(s0)
+ 1c0:	0047e793          	ori	a5,a5,4
+ 1c4:	00f42023          	sw	a5,0(s0)
+ 1c8:	00042783          	lw	a5,0(s0)
+ 1cc:	0087e793          	ori	a5,a5,8
+ 1d0:	00f42023          	sw	a5,0(s0)
+ 1d4:	00042783          	lw	a5,0(s0)
+ 1d8:	0107e793          	ori	a5,a5,16
+ 1dc:	00f42023          	sw	a5,0(s0)
+ 1e0:	00042783          	lw	a5,0(s0)
+ 1e4:	0207e793          	ori	a5,a5,32
+ 1e8:	00f42023          	sw	a5,0(s0)
+ 1ec:	00042783          	lw	a5,0(s0)
+ 1f0:	fbf7f793          	andi	a5,a5,-65
+ 1f4:	00f42023          	sw	a5,0(s0)
+ 1f8:	00042783          	lw	a5,0(s0)
+ 1fc:	f7f7f793          	andi	a5,a5,-129
+ 200:	00f42023          	sw	a5,0(s0)
+ 204:	00442783          	lw	a5,4(s0)
+ 208:	0017e793          	ori	a5,a5,1
+ 20c:	00f42223          	sw	a5,4(s0)
+ 210:	00442783          	lw	a5,4(s0)
+ 214:	0027e793          	ori	a5,a5,2
+ 218:	00f42223          	sw	a5,4(s0)
+ 21c:	00442783          	lw	a5,4(s0)
+ 220:	0047e793          	ori	a5,a5,4
+ 224:	00f42223          	sw	a5,4(s0)
+ 228:	00442783          	lw	a5,4(s0)
+ 22c:	0087e793          	ori	a5,a5,8
+ 230:	00f42223          	sw	a5,4(s0)
+ 234:	00442783          	lw	a5,4(s0)
+ 238:	0107e793          	ori	a5,a5,16
+ 23c:	00f42223          	sw	a5,4(s0)
+ 240:	f2dff0ef          	jal	ra,16c <sleep>
+ 244:	00442783          	lw	a5,4(s0)
+ 248:	1f400513          	li	a0,500
+ 24c:	ffb7f793          	andi	a5,a5,-5
+ 250:	00f42223          	sw	a5,4(s0)
+ 254:	f19ff0ef          	jal	ra,16c <sleep>
+ 258:	00a00493          	li	s1,10
+ 25c:	00442783          	lw	a5,4(s0)
+ 260:	0c800513          	li	a0,200
+ 264:	fff48493          	addi	s1,s1,-1
+ 268:	0207e793          	ori	a5,a5,32
+ 26c:	00f42223          	sw	a5,4(s0)
+ 270:	efdff0ef          	jal	ra,16c <sleep>
+ 274:	00442783          	lw	a5,4(s0)
+ 278:	0c800513          	li	a0,200
+ 27c:	fdf7f793          	andi	a5,a5,-33
+ 280:	00f42223          	sw	a5,4(s0)
+ 284:	ee9ff0ef          	jal	ra,16c <sleep>
+ 288:	fc049ae3          	bnez	s1,25c <main+0xd0>
+ 28c:	3e800513          	li	a0,1000
+ 290:	fc5ff06f          	j	254 <main+0xc8>

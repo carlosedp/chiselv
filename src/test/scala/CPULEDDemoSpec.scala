@@ -31,8 +31,8 @@ class CPULEDDemoSpec extends AnyFlatSpec with ChiselScalatestTester with should.
     test(new CPUSingleCycleWrapperLED(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation,
-          VerilatorBackendAnnotation,
+          // WriteVcdAnnotation,
+          VerilatorBackendAnnotation
         )
       )
 
@@ -42,6 +42,17 @@ class CPULEDDemoSpec extends AnyFlatSpec with ChiselScalatestTester with should.
       c.clock.setTimeout(2000)
       c.clock.step(1) // Step from initial PC
       while (c.pc.peek().litValue != 0) {
+        c.clock.step(1)
+      }
+    }
+  }
+
+  it should "blink LED connected to GPIO0 from gcc program" in {
+    val cycles   = 20000
+    val filename = "./gcc/blinkLED/main.mem"
+    defaultDut(filename) { c =>
+      c.clock.setTimeout(21000)
+      for (_ <- 0 until cycles) {
         c.clock.step(1)
       }
     }
