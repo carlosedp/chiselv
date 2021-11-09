@@ -1,25 +1,28 @@
 # ChiselV - A RISC-V Processor in Chisel
 
 ```sh
-   `.`
- `.:+/:            MM'""""'YMM dP       oo                   dP M""MMMMM""M
- ./:-:/:`          M' .mmm. `M 88                            88 M  MMMMM  M
- `:---:::.`        M  MMMMMooM 88d888b. dP .d8888b. .d8888b. 88 M  MMMMP  M
-   `.---:::-`      M  MMMMMMMM 88'  `88 88 Y8ooooo. 88ooood8 88 M  MMMM' .M
-     `-----/+.     M. `MMM' .M 88    88 88       88 88.  ... 88 M  MMP' .MM
-       .-``.:+-    MM.     .dM dP    dP dP `88888P' `88888P' dP M     .dMMM
-        .--.-+s-   MMMMMMMMMMM                                  MMMMMMMMMMM
-          `-o::/`
-              `.::
-                .+o+//+:`
-                `+oooooss:
-               `-.:ooooooss-
-                `-.-/ooooosyo-
-                  .-.-+oossssyo.
-                   `.--:osssssso:`
-                     `--:/ssoo+/-`
-                       ../s+/-`
-                        `--`
+(..,,***)
+ ( #,,****)             MM''''''YMM dP       oo                   dP M''MMMMM''M
+  (,,.,,***)            M' .mmm. 'M 88                            88 M  MMMMM  M
+   (,,,,,,*,,)          M  MMMMMooM 88d888b. dP .d8888b. .d8888b. 88 M  MMMMP  M
+     (,,,,,,,,,)        M  MMMMMMMM 88'  '88 88 Y8ooooo. 88ooood8 88 M  MMMM' .M
+       ( .,,...,*)      M. 'MMM' .M 88    88 88       88 88.  ... 88 M  MMP' .MM
+         ( .,,,.., )    MM.     .dM dP    dP dP '88888P' '88888P' dP M     .dMMM
+           (,,.,,.,..)  MMMMMMMMMMM                                  MMMMMMMMMMM
+             (,*,.   ,)
+               (,*#/#.,)            INSTRUCTION SETS WANT TO BE FREE
+                  ,###.
+                    *#*(,
+                      /((((((((##.
+                    ...*(((((/(/(/##(
+                    .... ((((((((((###
+                      *....,(((((((((((###
+                        .,....(((((((((((###
+                          *....(/((((((((####/
+                            *.,,.,((((((((((((((
+                              /.,,,,((#((/(/***
+                                /...((((***
+                                  ,(*/*
 ```
 
 [![Scala CI](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml/badge.svg)](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml)
@@ -27,7 +30,7 @@
 This project is a learning exercise for both writing a RISC-V core and also
 better understand [Chisel](https://www.chisel-lang.org/), an HDL language based on Scala.
 
-Currently the target is to have a RV32I core.
+Currently the target builds a RV32I core.
 
 ## Generating Verilog
 
@@ -38,6 +41,13 @@ make chisel BOARD=artya7-35
 ```
 
 The `BOARD` argument must match one of the `pll_BOARD.v]` files in `/src/main/resources` directory.
+
+The core can be simulated in Verilator using the commands:
+
+```sh
+make verilator   # this will build the core, generate the Verilog files and Verilator project
+make verirun     # This will copy the UART demo (RAM/ROM) from gcc/helloUART and run Verilator
+```
 
 ## Building for FPGAs
 
