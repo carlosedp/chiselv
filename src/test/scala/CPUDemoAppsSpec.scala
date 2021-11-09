@@ -71,7 +71,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
   }
 
   it should "blink LED connected to GPIO0 from gcc program" in {
-    val filename = "./gcc/blinkLED/main.mem"
+    val filename = "./gcc/blinkLED/main-rom.mem"
     defaultDut(filename) { c =>
       c.clock.setTimeout(3000)
       c.clock.step(2000)

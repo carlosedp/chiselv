@@ -4,14 +4,26 @@ name: carlosedp:chiselv:singlecycle:0
 description : ChiselV is a RV32I core written in Chisel
 
 filesets:
+  # These are the demo filesets, use the `&demofiles` tag for the one to be used
+  gpiodemo:
+    files:
+      - gcc/blinkLED/main-rom.mem:
+          { copyto: progload.mem, file_type: user }
+      - gcc/blinkLED/main-ram.mem:
+          { copyto: progload-RAM.mem, file_type: user }
 
-  progload:
+  uartdemo: &demofiles
     files:
       - gcc/helloUART/main-rom.mem:
           { copyto: progload.mem, file_type: user }
       - gcc/helloUART/main-ram.mem:
           { copyto: progload-RAM.mem, file_type: user }
 
+  # This is the fileset to be programmed into the FPGA
+  progload:
+    <<: *demofiles
+
+  # Show the programming info for the FPGAs
   proginfo:
     files:
       - proginfo/proginfo.py : {file_type : user, copyto : proginfo.py}
@@ -20,6 +32,7 @@ filesets:
   base:
     depend: ["fusesoc:utils:generators"]
 
+  # Files specific to each FPGA board
   ulx3s-85:
     files:
       - constraints/ecp5-ulx3s.lpf: { file_type: LPF }
@@ -63,7 +76,7 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board artya7-35t -invreset false -cpufreq 20000000"
+      extraargs: "--target:fpga -board artya7-35t -cpufreq 15000000"
 
 targets:
   lint:

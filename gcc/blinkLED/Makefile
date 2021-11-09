@@ -2,29 +2,33 @@ SOURCES       := $(shell find . -name '*.c')
 ASM_SOURCES   := $(shell find . -name '*.s')
 OBJECTS       := $(SOURCES:%.c=%.o)
 ASM_OBJECTS   := $(ASM_SOURCES:%.s=%.s.o)
-PROGDATA      := $(SOURCES:%.c=%.elf)
-DUMPDATA      := $(SOURCES:%.c=%.dump)
-HEXDATA       := $(SOURCES:%.c=%.hex)
-MEMDATA       := $(SOURCES:%.c=%.mem)
 ASM           := $(SOURCES:%.c=%.s)
 
+USEDOCKER = 1
 DOCKERARGS = run --rm -v $(PWD):/src -w /src
-DOCKERIMG  = docker $(DOCKERARGS) carlosedp/crossbuild-riscv64
+DOCKERIMG  = docker $(DOCKERARGS) docker.io/carlosedp/crossbuild-rv32i
 
-CFLAGS=-mabi=ilp32 -march=rv32i -Os
+CFLAGS=-Wall -mabi=ilp32 -march=rv32i -ffreestanding -fcommon -Os
 LDFLAGS=-T riscv.ld -m elf32lriscv -O binary -Map=main.map
 
-# OC=riscv64-linux-gnu-objcopy
-# CC=riscv64-linux-gnu-gcc-10
-# LD=riscv64-linux-gnu-ld
-# HD=hexdump
-OC=$(DOCKERIMG) riscv64-linux-objcopy
-OD=$(DOCKERIMG) riscv64-linux-objdump
-CC=$(DOCKERIMG) riscv64-linux-gcc
-LD=$(DOCKERIMG) riscv64-linux-ld
-HD=$(DOCKERIMG) hexdump
+# PREFIX=riscv64-linux-
+PREFIX=riscv32-unknown-elf
 
-all: clean $(PROGDATA) $(MEMDATA) $(HEXDATA) $(DUMPDATA)
+ifeq ($(USEDOCKER), 1)
+	OC=$(DOCKERIMG) $(PREFIX)-objcopy
+	OD=$(DOCKERIMG) $(PREFIX)-objdump
+	CC=$(DOCKERIMG) $(PREFIX)-gcc
+	LD=$(DOCKERIMG) $(PREFIX)-ld
+	HD=$(DOCKERIMG) hexdump
+else
+	OC=$(PREFIX)-objcopy
+	OD=$(PREFIX)-objdump
+	CC=$(PREFIX)-gcc
+	LD=$(PREFIX)-ld
+	HD=hexdump
+endif
+
+all: clean main.elf main-rom.mem main-ram.mem main.hex main.dump
 asm: $(ASM)
 
 %.o: %.c
@@ -35,27 +39,32 @@ asm: $(ASM)
 	@echo "Building $< -> $@"
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-%.elf: $(OBJECTS) $(ASM_OBJECTS)
+main.elf: $(OBJECTS) $(ASM_OBJECTS)
 	@echo "Linking $< $(OBJECTS) $(ASM_OBJECTS)"
-	@$(LD) $(LDFLAGS) $(OBJECTS) $(ASM_OBJECTS) -o $@
+	@$(LD) $(LDFLAGS) $(OBJECTS) $(ASM_OBJECTS) -o main.elf
 
-%.dump: %.elf
+main.dump: main.elf
 	@echo "Dumping to $@"
 	@$(OD) -d -t -r $< > $@
+
+main.hex: main.elf
+	@echo "Building $@ for http://tice.sea.eseo.fr/riscv/"
+	@echo "Building $< -> $@"
+	@$(OC) -O ihex $< $@ --only-section .text\*
+
+main-rom.mem: main.elf  ## Readmemh 32bit memory file
+	@echo "Building $< -> $@"
+	@$(OC) -O binary $< $(@:%-rom.mem=%.bin) --only-section .text*
+	@$(HD) -ve '1/4 "%08x\n"' $(@:%-rom.mem=%.bin) > $@
+
+main-ram.mem: main.elf  ## Readmemh 32bit memory file
+	@echo "Building $< -> $@"
+	@$(OC) -O binary $< $(@:%-ram.mem=%.bin) --only-section .*data*
+	@$(HD) -ve '1/4 "%08x\n"' $(@:%-ram.mem=%.bin) > $@
 
 %.s: %.c
 	@echo "Building $< -> $@"
 	@$(CC) -S $(CFLAGS) -o $@ $<
-
-%.hex: %.elf
-	@echo "Building $@ for http://tice.sea.eseo.fr/riscv/"
-	@echo "Building $< -> $@"
-	@$(OC) -O ihex $(@:%.hex=%.elf) $@ --only-section .text\*
-
-%.mem: %.elf  ## Readmemh 32bit memory file
-	@echo "Building $< -> $@"
-	@$(OC) -O binary $(@:%.mem=%.elf) $(@:%.mem=%.bin) --only-section .text\*
-	@$(HD) -ve '1/4 "%08x\n"' $(@:%.mem=%.bin) > $@
 
 clean:
 	@echo "Cleaning build files"

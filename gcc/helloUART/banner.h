@@ -25,12 +25,12 @@ char *logorv =
     "Hello from ChiselV, a RISC-V Processor!\n\n";
 
 char *logocv =
-"(..,,***)                                                                       \n"
-" ( #,,****)             MM''''''YMM dP       oo                   dP M''MMMMM''M\n"
+"(..,,**)                                                                       \n"
+" ( #,,***)              MM''''''YMM dP       oo                   dP M''MMMMM''M\n"
 "  (,,.,,***)            M' .mmm. 'M 88                            88 M  MMMMM  M\n"
-"   (,,,,,,*,,)          M  MMMMMooM 88d888b. dP .d8888b. .d8888b. 88 M  MMMMP  M\n"
-"     (,,,,,,,,,)        M  MMMMMMMM 88'  '88 88 Y8ooooo. 88ooood8 88 M  MMMM' .M\n"
-"       ( .,,...,*)      M. 'MMM' .M 88    88 88       88 88.  ... 88 M  MMP' .MM\n"
+"   (,,,,,,**.)          M  MMMMMooM 88d888b. dP .d8888b. .d8888b. 88 M  MMMMP  M\n"
+"     (,,,,,,**,)        M  MMMMMMMM 88'  '88 88 Y8ooooo. 88ooood8 88 M  MMMM' .M\n"
+"       ( .,,..*.,)      M. 'MMM' .M 88    88 88       88 88.  ... 88 M  MMP' .MM\n"
 "         ( .,,,.., )    MM.     .dM dP    dP dP '88888P' '88888P' dP M     .dMMM\n"
 "           (,,.,,.,..)  MMMMMMMMMMM                                  MMMMMMMMMMM\n"
 "             (,*,.   ,)                                                         \n"

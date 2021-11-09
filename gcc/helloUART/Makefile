@@ -28,8 +28,6 @@ else
 	HD=hexdump
 endif
 
-
-
 all: clean main.elf main-rom.mem main-ram.mem main.hex main.dump
 asm: $(ASM)
 

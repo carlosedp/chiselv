@@ -4,7 +4,6 @@ Memory Configuration
 Name             Origin             Length             Attributes
 ROM              0x0000000000000000 0x0000000000010000 xrw
 RAM              0x0000000080000000 0x0000000000010000 xrw
-IO               0x0000000030000000 0x0000000000000010 rw
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
@@ -12,67 +11,112 @@ Linker script and memory map
                 0x0000000000002000                __heap_size = 0x2000
                 0x0000000000008000                __stack_size = 0x8000
 
-.text           0x0000000000000000      0x18c
+.text           0x0000000000000000      0x924
  *(.boot)
  .boot          0x0000000000000000       0x94 ./crt.s.o
                 0x0000000000000000                _boot
  *(.text)
- .text          0x0000000000000094       0xf8 ./main.o
+ .text          0x0000000000000094       0xf0 ./io.o
                 0x0000000000000094                pinMode
-                0x00000000000000c4                setDirection
-                0x00000000000000d0                readDirection
-                0x00000000000000dc                digitalRead
-                0x0000000000000100                setGPIO
-                0x000000000000010c                readGPIO
-                0x0000000000000118                digitalWrite
-                0x0000000000000148                setTimer
-                0x0000000000000154                getTimer
-                0x0000000000000160                resetTimer
-                0x000000000000016c                sleep
- .text          0x000000000000018c        0x0 ./crt.s.o
- *(.text)
+                0x00000000000000c4                digitalRead
+                0x00000000000000e0                digitalWrite
+                0x0000000000000110                getTimer
+                0x000000000000011c                resetTimer
+                0x0000000000000128                sleep
+                0x0000000000000148                setDirection
+                0x0000000000000154                readDirection
+                0x0000000000000160                setGPIO
+                0x000000000000016c                readGPIO
+                0x0000000000000178                setTimer
+ .text          0x0000000000000184      0x688 ./stdio.o
+                0x0000000000000184                gets
+                0x000000000000025c                putstr
+                0x000000000000029c                puts
+                0x00000000000002b8                putdx
+                0x00000000000003b0                putx
+                0x00000000000003b8                putd
+                0x00000000000003c0                printf
+                0x00000000000004bc                strncmp
+                0x00000000000004f0                strcmp
+                0x00000000000004f8                strlen
+                0x0000000000000518                memcpy
+                0x000000000000053c                memset
+                0x0000000000000558                strtok
+                0x00000000000005f8                atoi
+                0x000000000000064c                xtoi
+                0x000000000000068c                __umulsi3
+                0x00000000000006c0                __mulsi3
+                0x0000000000000710                __udiv_umod_si3
+                0x0000000000000768                __udivsi3
+                0x0000000000000770                __umodsi3
+                0x0000000000000778                __div_mod_si3
+                0x00000000000007fc                __divsi3
+                0x0000000000000804                __modsi3
+ .text          0x000000000000080c        0x0 ./main.o
+ .text          0x000000000000080c      0x118 ./uart.o
+                0x000000000000080c                uart_reg_read
+                0x000000000000081c                uart_reg_write
+                0x000000000000082c                uart_rx_empty
+                0x000000000000083c                uart_tx_full
+                0x0000000000000850                uart_read
+                0x0000000000000860                uart_write
+                0x000000000000086c                uart_divisor
+                0x000000000000088c                uart_init
+                0x00000000000008bc                getchar
+                0x00000000000008d8                putchar
+ .text          0x0000000000000924        0x0 ./crt.s.o
 
-.text.startup   0x000000000000018c      0x108
- .text.startup  0x000000000000018c      0x108 ./main.o
-                0x000000000000018c                main
+.text.startup   0x0000000000000924       0xf0
+ .text.startup  0x0000000000000924       0xf0 ./main.o
+                0x0000000000000924                main
 
-.data           0x0000000080000000        0x0
+.data           0x0000000080000000       0x60
  *(.rodata*)
+ .rodata.str1.4
+                0x0000000080000000       0x19 ./stdio.o
+ *fill*         0x0000000080000019        0x3 
+ .rodata        0x000000008000001c       0x40 ./stdio.o
+ *(.*data*)
+ .data          0x000000008000005c        0x0 ./io.o
+ .data          0x000000008000005c        0x0 ./stdio.o
+ .data          0x000000008000005c        0x0 ./main.o
+ .data          0x000000008000005c        0x0 ./uart.o
+ .data          0x000000008000005c        0x0 ./crt.s.o
  *(.sbss)
- *(.data)
- .data          0x0000000080000000        0x0 ./main.o
- .data          0x0000000080000000        0x0 ./crt.s.o
+ .sbss          0x000000008000005c        0x4 ./stdio.o
  *(.bss)
- .bss           0x0000000080000000        0x0 ./main.o
- .bss           0x0000000080000000        0x0 ./crt.s.o
+ .bss           0x0000000080000060        0x0 ./io.o
+ .bss           0x0000000080000060        0x0 ./stdio.o
+ .bss           0x0000000080000060        0x0 ./main.o
+ .bss           0x0000000080000060        0x0 ./uart.o
+ .bss           0x0000000080000060        0x0 ./crt.s.o
  *(.rela*)
  *(COMMON)
-
-.heap           0x0000000080000000     0x2000
-                0x0000000080000000                . = ALIGN (0x4)
-                [!provide]                        PROVIDE (end = .)
-                0x0000000080000000                _sheap = .
-                0x0000000080002000                . = (. + __heap_size)
- *fill*         0x0000000080000000     0x2000 
-                0x0000000080002000                . = ALIGN (0x4)
-                0x0000000080002000                _eheap = .
-
-.stack          0x0000000080002000     0x8000
-                0x0000000080002000                . = ALIGN (0x4)
-                0x0000000080002000                _estack = .
-                0x000000008000a000                . = (. + __stack_size)
- *fill*         0x0000000080002000     0x8000 
-                0x000000008000a000                . = ALIGN (0x4)
-                0x000000008000a000                _sstack = .
+                0x0000000080000060                _heap = .
+                0x0000000080010000                PROVIDE (_sstack = (ORIGIN (RAM) + LENGTH (RAM)))
+LOAD ./io.o
+LOAD ./stdio.o
 LOAD ./main.o
+LOAD ./uart.o
 LOAD ./crt.s.o
 OUTPUT(main.elf elf32-littleriscv)
 
-.comment        0x0000000000000000       0x2c
- .comment       0x0000000000000000       0x2c ./main.o
-                                         0x2d (size before relaxing)
+.comment        0x0000000000000000       0x12
+ .comment       0x0000000000000000       0x12 ./io.o
+                                         0x13 (size before relaxing)
+ .comment       0x0000000000000012       0x13 ./stdio.o
+ .comment       0x0000000000000012       0x13 ./main.o
+ .comment       0x0000000000000012       0x13 ./uart.o
 
-.note.GNU-stack
-                0x0000000000000000        0x0
- .note.GNU-stack
-                0x0000000000000000        0x0 ./main.o
+.riscv.attributes
+                0x0000000000000000       0x1c
+ .riscv.attributes
+                0x0000000000000000       0x1c ./io.o
+ .riscv.attributes
+                0x000000000000001c       0x1c ./stdio.o
+ .riscv.attributes
+                0x0000000000000038       0x1c ./main.o
+ .riscv.attributes
+                0x0000000000000054       0x1c ./uart.o
+ .riscv.attributes
+                0x0000000000000070       0x1a ./crt.s.o

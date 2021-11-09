@@ -6,8 +6,12 @@ import chisel3.util._
 /** The blinking LED module.
   *
   * @constructor
-  *   creates a new blinking object.
-  * @param io.led0
+  *   creates a new blinking LED module that flashes every second.
+  * @param freq
+  *   the frequency of the core in Hertz.
+  * @param startOn
+  *   if true, the LED is initially on.
+  * @param io_led0
   *   (Output) is the led output
   */
 class Blinky(freq: Int, startOn: Boolean = false) extends Module {

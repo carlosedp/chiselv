@@ -8,7 +8,6 @@ MEMORY
 {
     ROM         (rwx) : ORIGIN = 0x00000000, LENGTH = 0x10000
     RAM         (rwx) : ORIGIN = 0x80000000, LENGTH = 0x10000
-    IO          (rw)  : ORIGIN = 0x30000000, LENGTH = 0x00010
 }
 SECTIONS
 {
@@ -16,36 +15,17 @@ SECTIONS
     {
         *(.boot)
         *(.text)
-        *(.text)
     } > ROM
     .data :
     {
         *(.rodata*)
+        *(.*data*)
         *(.sbss)
-        *(.data)
         *(.bss)
         *(.rela*)
         *(COMMON)
+        _heap = .;
     } > RAM
 
-    .heap :
-    {
-        . = ALIGN(4);
-        PROVIDE ( end = . );
-        _sheap = .;
-        . = . + __heap_size;
-        . = ALIGN(4);
-        _eheap = .;
-    } >RAM
-
-
-    .stack :
-    {
-        . = ALIGN(4);
-        _estack = .;
-        . = . + __stack_size;
-        . = ALIGN(4);
-        _sstack = .;
-    } >RAM
-
+    PROVIDE ( _sstack = ORIGIN(RAM) + LENGTH(RAM) );
 }
