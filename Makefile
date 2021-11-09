@@ -14,19 +14,38 @@ ifndef SBTLOCAL
 else
 	SBT=sbt
 endif
+VERILATOR=verilator
 
 # Default board PLL
 BOARD := bypass
 
 # Targets
 chisel: check-board-vars clean ## Generates Verilog code from Chisel sources using SBT
-	${SBT} "run --target:fpga -board ${BOARD} -cpufreq 25000000 -td $(generated_files)"
+	${SBT} "run --target:fpga -board ${BOARD} -cpufreq 50000000 -td $(generated_files) -invreset false"
 
 chisel_tests:
 	${SBT} "test"
 
 check: chisel_tests ## Run Chisel tests
 test: chisel_tests
+
+romfile = gcc/helloUART/main-rom.mem
+ramfile = gcc/helloUART/main-ram.mem
+verilator: chisel
+	@rm -rf obj_dir
+	$(VERILATOR) -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
+	@make -C obj_dir -f VToplevel.mk -j`nproc`
+	@cp obj_dir/chiselv .
+	@cp $(romfile) progload.mem
+	@cp $(ramfile) progload-RAM.mem
+
+verirun:
+	@cp $(romfile) progload.mem
+	@cp $(ramfile) progload-RAM.mem
+	./chiselv
+
+dot:
+	yosys -p "read_verilog Toplevel.v; proc; opt; show -colors 2 -width -format dot -prefix chiselv -signed Toplevel"
 
 fmt: ## Formats code using scalafmt and scalafix
 	${SBT} lint
@@ -43,6 +62,8 @@ clean:   ## Clean all generated files
 	@rm -rf $(generated_files)
 	@rm -rf out
 	@rm -f $(project)
+	@rm -f chiselv
+	@rm -f *.mem
 
 help:
 	@echo "Makefile targets:"
@@ -50,5 +71,5 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "[:##]"}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$4}'
 	@echo ""
 
-.PHONY: chisel clean prog help
+.PHONY: chisel clean prog help verilator
 .DEFAULT_GOAL := help

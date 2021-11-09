@@ -7,8 +7,10 @@ import com.carlosedp.scalautils.ParseArguments
 // Project Top level
 class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {
   val io = IO(new Bundle {
-    val led0  = Output(Bool()) // LED 0 is the heartbeat
-    val GPIO0 = Analog(8.W)    // GPIO 0
+    val led0    = Output(Bool())    // LED 0 is the heartbeat
+    val GPIO0   = Analog(8.W)       // GPIO 0
+    val UART0tx = Output(UInt(1.W)) // UART0 TX
+    val UART0rx = Input(UInt(1.W))  // UART0 RX
   })
 
   // Instantiate PLL module based on board
@@ -23,14 +25,26 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
     val bitWidth              = 32
     val instructionMemorySize = 64 * 1024
     val dataMemorySize        = 64 * 1024
-    val memoryFile            = "progload.mem"
     val numGPIO               = 8
-    val CPU =
-      Module(new CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, dataMemorySize, memoryFile, numGPIO))
 
+    val CPU =
+      Module(
+        new CPUSingleCycle(
+          cpuFrequency = cpuFrequency,
+          bitWidth = bitWidth,
+          instructionMemorySize = instructionMemorySize,
+          dataMemorySize = dataMemorySize,
+          memoryFile = "progload.mem",
+          ramFile = "progload-RAM.mem",
+          numGPIO = numGPIO,
+        )
+      )
+    // }
     // Connect IO
     io.led0 := CPU.io.led0
     io.GPIO0 <> CPU.io.GPIO0External
+    io.UART0tx                := CPU.io.UART0SerialPort.tx
+    CPU.io.UART0SerialPort.rx := io.UART0rx
   }
 }
 

@@ -7,9 +7,10 @@ filesets:
 
   progload:
     files:
-      - gcc/simpleLED/main.mem:
-      # - gcc/blinkLED/main.mem:
+      - gcc/helloUART/main-rom.mem:
           { copyto: progload.mem, file_type: user }
+      - gcc/helloUART/main-ram.mem:
+          { copyto: progload-RAM.mem, file_type: user }
 
   proginfo:
     files:
@@ -62,7 +63,7 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board artya7-35t -invreset false -cpufreq 25000000"
+      extraargs: "--target:fpga -board artya7-35t -invreset false -cpufreq 20000000"
 
 targets:
   lint:

@@ -12,14 +12,15 @@ class CPUSingleCycle(
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize: Int = 1 * 1024,
   memoryFile: String = "",
+  ramFile: String = "",
   numGPIO: Int = 8,
 ) extends Module {
   val io = IO(new Bundle {
-    val led0          = Output(Bool())    // LED 0 is the heartbeat
-    val GPIO0External = Analog(numGPIO.W) // GPIO external port
+    val led0            = Output(Bool())       // LED 0 is the heartbeat
+    val GPIO0External   = Analog(numGPIO.W)    // GPIO external port
+    val UART0SerialPort = new UARTSerialPort() // UART0 serial port
   })
 
-  // State of the CPU Stall
   val stall = WireDefault(false.B)
 
   // Heartbeat LED
@@ -53,7 +54,7 @@ class CPUSingleCycle(
   instructionMemory.io.memPort.readAddr := 0.U
 
   // Instantiate and initialize the Data memory
-  val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize))
+  val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize, ramFile))
   dataMemory.io.dualPort.writeEnable  := false.B
   dataMemory.io.dualPort.writeData    := 0.U
   dataMemory.io.dualPort.readAddress  := 0.U
@@ -68,6 +69,12 @@ class CPUSingleCycle(
   // Instantiate and connect the Timer
   val timer0 = Module(new Timer(bitWidth, cpuFrequency))
 
+  // Instantiate and connect the UART
+  val fifoLength  = 128
+  val rxOverclock = 16
+  val UART0       = Module(new Uart(fifoLength, rxOverclock))
+  UART0.io.serialPort <> io.UART0SerialPort
+
   // Instantiate and initialize the Memory IO Manager
   val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize))
   memoryIOManager.io.MemoryIOPort.readRequest  := false.B
@@ -81,8 +88,8 @@ class CPUSingleCycle(
   // Connect MMIO to the devices
   memoryIOManager.io.DataMemPort <> dataMemory.io.dualPort
   memoryIOManager.io.GPIO0Port <> GPIO0.io.GPIOPort
+  memoryIOManager.io.UART0Port <> UART0.io.dataPort
   memoryIOManager.io.Timer0Port <> timer0.io.timerPort
-
 
   // --------------- CPU Control --------------- //
 

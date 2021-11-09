@@ -45,33 +45,10 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     val MemoryIOPort = new MMIOPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))
     val Timer0Port   = Flipped(new TimerPort(bitWidth))
+    val UART0Port    = Flipped(new UARTPort())
     val DataMemPort  = Flipped(new MemoryPortDual(bitWidth, sizeBytes))
     val stall        = Output(Bool())
   })
-
-  /** Generates a stall signal with a parametrically-sized latency
-    *
-    * @param latency
-    *   is the amount of cycles the stall will take, UInt
-    * @param readRequest
-    *   is a read request be evaluated, Bool
-    * @param writeRequest
-    *   is a write request be evaluated, Bool
-    *
-    * @return
-    *   a Bool that is asserted when the stall is active
-    */
-  def stallGen(latency: UInt, readRequest: Bool, writeRequest: Bool): Bool = {
-    val DACK = RegInit(0.U(2.W))
-    val DHIT = Wire(Bool())
-    DACK := Mux(
-      DACK > 0.U,
-      DACK - 1.U,
-      Mux((readRequest || writeRequest), latency, 0.U),
-    )
-    DHIT := ((readRequest || writeRequest) && DACK =/= 1.U)
-    DHIT
-  }
 
   val dataOut      = WireDefault(0.U(bitWidth.W))
   val readAddress  = io.MemoryIOPort.readAddr
@@ -85,6 +62,11 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   io.Timer0Port.dataIn      := 0.U
   io.Timer0Port.writeEnable := false.B
 
+  val clockDivisor = RegInit(0.U(bitWidth.W))
+  io.UART0Port.clockDivisor  := clockDivisor
+  io.UART0Port.txQueue.valid := false.B
+  io.UART0Port.txQueue.bits  := 0.U
+  io.UART0Port.rxQueue.ready := false.B
 
   io.DataMemPort.writeEnable  := false.B
   io.DataMemPort.writeData    := 0.U
@@ -93,7 +75,16 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   io.DataMemPort.dataSize     := 0.U
   io.DataMemPort.writeMask    := 0.U
 
-  io.stall := 0.U
+  // Stall Management
+  val stallLatency = WireDefault(0.U(4.W))
+  val stallEnable  = WireDefault(false.B)
+  val DACK         = RegInit(0.U(2.W))
+  DACK := Mux(
+    DACK > 0.U,
+    DACK - 1.U,
+    Mux((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest), stallLatency, 0.U),
+  )
+  io.stall := ((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest) && DACK =/= 1.U && stallEnable)
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U && io.MemoryIOPort.readRequest) {
@@ -113,7 +104,38 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
 
   /* --- UART0 --- */
   when(readAddress(31, 12) === 0x3000_0L.U || writeAddress(31, 12) === 0x3000_0L.U) {
-    dataOut := 0.U
+    // Reads
+    when(io.MemoryIOPort.readRequest) {
+      when(readAddress(7, 0) === 0x04.U) {
+        /* RX */
+        when(io.UART0Port.rxQueue.valid) {
+          io.UART0Port.rxQueue.ready := true.B
+          dataOut                    := io.UART0Port.rxQueue.bits
+        }
+      }
+        /* Status */
+        .elsewhen(readAddress(7, 0) === 0x0c.U) {
+          dataOut := Cat(io.UART0Port.txFull, io.UART0Port.rxFull, io.UART0Port.txEmpty, io.UART0Port.rxEmpty)
+        }
+        /* Clock divisor */
+        .elsewhen(readAddress(7, 0) === 0x10.U) {
+          dataOut := clockDivisor
+        }
+        /* Invalid */
+        .otherwise(dataOut := 0.U)
+    }
+    // Writes (TX)
+    when(io.MemoryIOPort.writeRequest) {
+      when(writeAddress(7, 0) === 0x00.U) {
+        /* TX */
+        io.UART0Port.txQueue.valid := true.B
+        io.UART0Port.txQueue.bits  := io.MemoryIOPort.writeData(7, 0)
+      }
+        /* clock divisor */
+        .elsewhen(writeAddress(7, 0) === 0x10.U) {
+          clockDivisor := io.MemoryIOPort.writeData(7, 0)
+        }
+    }
   }
 
   // GPIO0
@@ -164,7 +186,8 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   /* --- Data Memory --- */
   when(readAddress(31, 28) === 0x8.U || writeAddress(31, 28) === 0x8.U) {
     // Stall core for 1 cycle
-    io.stall                   := stallGen(1.U, io.MemoryIOPort.writeRequest, io.MemoryIOPort.readRequest)
+    stallLatency               := 1.U
+    stallEnable                := true.B
     io.DataMemPort.readAddress := Cat(Fill(4, 0.U), readAddress(27, 0))
 
     switch(io.MemoryIOPort.dataSize) {

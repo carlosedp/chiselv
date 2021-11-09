@@ -76,3 +76,5 @@ tmp
 /*.f
 /*.vcd
 /obj_dir
+/*.mem
+/chiselv
