@@ -62,11 +62,11 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   io.Timer0Port.dataIn      := 0.U
   io.Timer0Port.writeEnable := false.B
 
-  val clockDivisor = RegInit(0.U(bitWidth.W))
-  io.UART0Port.clockDivisor  := clockDivisor
-  io.UART0Port.txQueue.valid := false.B
-  io.UART0Port.txQueue.bits  := 0.U
-  io.UART0Port.rxQueue.ready := false.B
+  io.UART0Port.txQueue.valid      := false.B
+  io.UART0Port.txQueue.bits       := 0.U
+  io.UART0Port.rxQueue.ready      := false.B
+  io.UART0Port.clockDivisor.bits  := 0.U
+  io.UART0Port.clockDivisor.valid := false.B
 
   io.DataMemPort.writeEnable  := false.B
   io.DataMemPort.writeData    := 0.U
@@ -117,10 +117,6 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
         .elsewhen(readAddress(7, 0) === 0x0c.U) {
           dataOut := Cat(io.UART0Port.txFull, io.UART0Port.rxFull, io.UART0Port.txEmpty, io.UART0Port.rxEmpty)
         }
-        /* Clock divisor */
-        .elsewhen(readAddress(7, 0) === 0x10.U) {
-          dataOut := clockDivisor
-        }
         /* Invalid */
         .otherwise(dataOut := 0.U)
     }
@@ -133,7 +129,8 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
       }
         /* clock divisor */
         .elsewhen(writeAddress(7, 0) === 0x10.U) {
-          clockDivisor := io.MemoryIOPort.writeData(7, 0)
+          io.UART0Port.clockDivisor.valid := true.B
+          io.UART0Port.clockDivisor.bits  := io.MemoryIOPort.writeData(7, 0)
         }
     }
   }

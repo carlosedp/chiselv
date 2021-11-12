@@ -35,7 +35,7 @@ class UARTPort() extends Bundle {
   val txEmpty      = Output(Bool())
   val rxFull       = Output(Bool())
   val txFull       = Output(Bool())
-  val clockDivisor = Input(UInt(8.W))
+  val clockDivisor = Flipped(Valid(UInt(8.W)))
 }
 
 class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
@@ -48,6 +48,11 @@ class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
 
   val sampleClk        = RegInit(0.U(1.W))
   val sampleClkCounter = RegInit(0.U(8.W))
+  val clockDivisor     = RegInit(0.U(8.W))
+
+  when(io.dataPort.clockDivisor.valid) {
+    clockDivisor := io.dataPort.clockDivisor.bits
+  }
 
   val txQueue = Module(new Queue(UInt(8.W), fifoLength))
   val rxQueue = Module(new Queue(UInt(8.W), fifoLength))
@@ -57,10 +62,10 @@ class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
   io.dataPort.rxFull  := (rxQueue.io.count === fifoLength.U)
   io.dataPort.txFull  := (txQueue.io.count === fifoLength.U)
 
-  val uartEnabled = io.dataPort.clockDivisor.orR
+  val uartEnabled = clockDivisor.orR
 
   when(uartEnabled) {
-    when(sampleClkCounter === io.dataPort.clockDivisor) {
+    when(sampleClkCounter === clockDivisor) {
       sampleClk        := 1.U
       sampleClkCounter := 0.U
     }.otherwise {

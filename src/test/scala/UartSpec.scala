@@ -50,7 +50,8 @@ class UartSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
     test(new Uart(64, rxOverclock)).withAnnotations(Seq(WriteVcdAnnotation)) { u =>
       u.clock.setTimeout(10000)
 
-      u.io.dataPort.clockDivisor.poke(divider.U)
+      u.io.dataPort.clockDivisor.valid.poke(true.B)
+      u.io.dataPort.clockDivisor.bits.poke(divider.U)
 
       u.io.dataPort.rxQueue.ready.poke(false.B)
 

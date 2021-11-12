@@ -79,7 +79,6 @@ int main(int argc, char **argv)
 // 		if (top->io_terminate)
 // 		{
 // 			VL_PRINTF("Simulation terminated!\n");
-			
 // 			VL_PRINTF("REG%d %x" VL_PRI64 "X\r\n", 0, top->Toplevel__DOT__CPU__DOT__registerBank__DOT__regs_0);
 // 			VL_PRINTF("REG%d %x" VL_PRI64 "X\r\n", 1, top->Toplevel__DOT__CPU__DOT__registerBank__DOT__regs_1);
 // 			VL_PRINTF("REG%d %x" VL_PRI64 "X\r\n", 2, top->Toplevel__DOT__CPU__DOT__registerBank__DOT__regs_2);
