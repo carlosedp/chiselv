@@ -15,6 +15,8 @@ Global / semanticdbEnabled                                 := true
 Global / semanticdbVersion                                 := "4.4.28" //scalafixSemanticdb.revision // Force version due to compatibility issues
 Global / onChangedBuildSource                              := ReloadOnSourceChanges
 
+mainClass in (Compile, run) := Some("chiselv.Toplevel")
+
 lazy val chiselv = (project in file("."))
   .settings(
     name         := "chiselv",

@@ -23,6 +23,9 @@ BOARD := bypass
 chisel: check-board-vars clean ## Generates Verilog code from Chisel sources using SBT
 	${SBT} "run --target:fpga -board ${BOARD} -cpufreq 50000000 -td $(generated_files) -invreset false"
 
+rvfi: clean ## Generates Verilog code for RISC-V Formal tests
+	${SBT} "runMain chiselv.RVFITop"
+
 chisel_tests:
 	${SBT} "test"
 
