@@ -17,7 +17,7 @@ class CPUSingleCycleWrapperDemo(
   ramFile: String,
   numGPIO: Int,
   // baudRate: Int,
-) extends CPUSingleCycle(
+) extends SOC(
     cpuFrequency,
     bitWidth,
     instructionMemorySize,
@@ -25,10 +25,9 @@ class CPUSingleCycleWrapperDemo(
     memoryFile,
     ramFile,
     numGPIO,
-    // baudRate,
   ) {
-  val registers = expose(registerBank.regs)
-  val pc        = expose(PC.pc)
+  val registers = expose(core.registerBank.regs)
+  val pc        = expose(core.PC.pc)
 }
 
 class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {

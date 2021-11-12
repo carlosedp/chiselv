@@ -20,6 +20,38 @@ set instructions [ gtkwave::setCurrentTranslateFile ./GTKWave/instruction_map.tx
 set insts [list "_inst"]
 set registers [ gtkwave::setCurrentTranslateFile ./GTKWave/registers.txt ]
 set regs [list "_rd" "_rs1" "_rs2"]
+array set reg_names [list {0[31:0]} {x0(Zero)} \
+                          {1[31:0]} {x1(RA)} \
+                          {2[31:0]} {x2(SP)} \
+                          {3[31:0]} {x3(GP)} \
+                          {4[31:0]} {x4(TP)} \
+                          {5[31:0]} {x5(t0)} \
+                          {6[31:0]} {x6(t1)} \
+                          {7[31:0]} {x7(t2)} \
+                          {8[31:0]} {x8-(s0/fp)} \
+                          {9[31:0]} {x9(s1)} \
+                          {10[31:0]} {x10(a0)} \
+                          {11[31:0]} {x11(a1)} \
+                          {12[31:0]} {x12(a2)} \
+                          {13[31:0]} {x13(a3)} \
+                          {14[31:0]} {x14(a4)} \
+                          {15[31:0]} {x15(a5)} \
+                          {16[31:0]} {x16(a6)} \
+                          {17[31:0]} {x17(a7)} \
+                          {18[31:0]} {x18(s2)} \
+                          {19[31:0]} {x19(s3)} \
+                          {20[31:0]} {x20(s4)} \
+                          {21[31:0]} {x21(s5)} \
+                          {22[31:0]} {x22(s6)} \
+                          {23[31:0]} {x23(s7)} \
+                          {24[31:0]} {x24(s8)} \
+                          {25[31:0]} {x25(s9)} \
+                          {26[31:0]} {x26(s10)} \
+                          {27[31:0]} {x27(s11)} \
+                          {28[31:0]} {x28(t3)} \
+                          {29[31:0]} {x29(t4)} \
+                          {30[31:0]} {x30(t5)} \
+                          {31[31:0]} {x31(t6)} ]
 
 ################################################################################
 # Don't touch from here down
@@ -63,6 +95,7 @@ proc add_signals { filter color filterOut} {
     global nsigs
     global instructions
     global registers
+    global reg_names
     global regs
     global insts
 
@@ -101,7 +134,7 @@ proc add_signals { filter color filterOut} {
         if {[string first regs_ $v] != -1} {
         set name [string range [lsearch -inline [split $v .] {regs_*}] 5 end]
         gtkwave::highlightSignalsFromList "$v"
-        gtkwave::/Edit/Alias_Highlighted_Trace x$name
+        gtkwave::/Edit/Alias_Highlighted_Trace $reg_names($name)
         gtkwave::/Edit/UnHighlight_All
 
         }

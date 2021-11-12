@@ -5,8 +5,8 @@ import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
-class MemoryPortSingle(val bitWidth: Int, val addressSize: Long) extends Bundle {
-  val readAddr = Input(UInt(log2Ceil(addressSize).W))
+class InstructionMemPort(val bitWidth: Int, val sizeBytes: Long) extends Bundle {
+  val readAddr = Input(UInt(log2Ceil(sizeBytes).W))
   val readData = Output(UInt(bitWidth.W))
 }
 
@@ -17,7 +17,7 @@ class InstructionMemory(
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {
-    val memPort = new MemoryPortSingle(bitWidth, sizeBytes)
+    val memPort = new InstructionMemPort(bitWidth, sizeBytes)
   })
 
   // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools

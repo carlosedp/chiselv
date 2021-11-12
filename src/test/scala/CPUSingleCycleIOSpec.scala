@@ -16,17 +16,17 @@ class CPUSingleCycleIOWrapper(
   instructionMemorySize: Int,
   memorySize: Int,
   memoryFile: String,
-) extends CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
-  val registers    = expose(registerBank.regs)
-  val memWriteAddr = expose(memoryIOManager.io.MemoryIOPort.writeAddr)
-  val memWriteData = expose(memoryIOManager.io.MemoryIOPort.writeData)
-  val memReadAddr  = expose(memoryIOManager.io.MemoryIOPort.readAddr)
-  val memReadData  = expose(memoryIOManager.io.MemoryIOPort.readData)
+) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
+  val registers    = expose(core.registerBank.regs)
+  val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
+  val memWriteData = expose(core.memoryIOManager.io.MemoryIOPort.writeData)
+  val memReadAddr  = expose(core.memoryIOManager.io.MemoryIOPort.readAddr)
+  val memReadData  = expose(core.memoryIOManager.io.MemoryIOPort.readData)
 
-  val GPIO0_value     = expose(GPIO0.GPIO)
-  val GPIO0_direction = expose(GPIO0.direction)
+  val GPIO0_value     = expose(core.GPIO0.GPIO)
+  val GPIO0_direction = expose(core.GPIO0.direction)
 
-  val timerCounter = expose(timer0.counter)
+  val timerCounter = expose(core.timer0.counter)
 }
 
 class CPUSingleCycleIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {

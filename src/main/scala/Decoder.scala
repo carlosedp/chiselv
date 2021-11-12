@@ -12,7 +12,7 @@ class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val rd       = Output(UInt(5.W))        // Rd is the 5 bit destiny register
   val rs1      = Output(UInt(5.W))        // Rs1 is the 5 bit source register 1
   val rs2      = Output(UInt(5.W))        // Rs2 is the 5 bit source register 2
-  val imm      = Output(UInt(bitWidth.W)) // Imm is the 32 bit immediate
+  val imm      = Output(SInt(bitWidth.W)) // Imm is the 32 bit immediate
   val toALU    = Output(Bool())           // ToALU is a flag to indicate if the instruction is to be executed in the ALU
   val branch   = Output(Bool())           // Branch is a flag to indicate if the instruction should jump and link. Update PC
   val use_imm  = Output(Bool())           // Use_imm is a flag to indicate if the instruction has an immediate
@@ -97,7 +97,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
   io.DecoderPort.rd       := 0.U
   io.DecoderPort.rs1      := 0.U
   io.DecoderPort.rs2      := 0.U
-  io.DecoderPort.imm      := 0.U
+  io.DecoderPort.imm      := 0.S
   io.DecoderPort.inst     := signals(1)
   io.DecoderPort.toALU    := signals(2)
   io.DecoderPort.branch   := signals(3)
@@ -144,14 +144,15 @@ class Decoder(bitWidth: Int = 32) extends Module {
     * @return
     *   the imm value
     */
-  def ImmGenerator(regType: InstructionType.Type, inst: UInt): UInt = regType match {
-    case INST_R => 0.U
-    case INST_I => Cat(Fill(20, inst(31)), inst(31, 20))
-    case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7))
-    case INST_B => Cat(Fill(19, inst(31)), inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W))
-    case INST_U => Cat(inst(31, 12), Fill(12, 0.U))
-    case INST_J => Cat(Fill(11, inst(31)), inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21), 0.U(1.W))
-    case INST_Z => Cat(Fill(27, 0.U), inst(19, 15)) // for csri
-    case _      => 0.U
+  def ImmGenerator(regType: InstructionType.Type, inst: UInt): SInt = regType match {
+    case INST_R => 0.S
+    case INST_I => Cat(Fill(20, inst(31)), inst(31, 20)).asSInt()
+    case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7)).asSInt()
+    case INST_B => Cat(Fill(19, inst(31)), inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W)).asSInt()
+    case INST_U => Cat(inst(31, 12), Fill(12, 0.U)).asSInt()
+    case INST_J =>
+      Cat(Fill(11, inst(31)), inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21), 0.U(1.W)).asSInt()
+    case INST_Z => Cat(Fill(27, 0.U), inst(19, 15)).asSInt() // for csri
+    case _      => 0.S
   }
 }

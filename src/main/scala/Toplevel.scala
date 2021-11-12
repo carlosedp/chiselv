@@ -27,9 +27,9 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
     val dataMemorySize        = 64 * 1024
     val numGPIO               = 8
 
-    val CPU =
+    val SOC =
       Module(
-        new CPUSingleCycle(
+        new SOC(
           cpuFrequency = cpuFrequency,
           bitWidth = bitWidth,
           instructionMemorySize = instructionMemorySize,
@@ -39,12 +39,12 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
           numGPIO = numGPIO,
         )
       )
-    // }
+
     // Connect IO
-    io.led0 := CPU.io.led0
-    io.GPIO0 <> CPU.io.GPIO0External
-    io.UART0tx                := CPU.io.UART0SerialPort.tx
-    CPU.io.UART0SerialPort.rx := io.UART0rx
+    io.led0 := SOC.io.led0
+    io.GPIO0 <> SOC.io.GPIO0External
+    io.UART0tx                := SOC.io.UART0SerialPort.tx
+    SOC.io.UART0SerialPort.rx := io.UART0rx
   }
 }
 
