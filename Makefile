@@ -1,6 +1,4 @@
 SHELL = bash
-# Project name
-project = toplevel
 
 generated_files = generated
 
@@ -14,7 +12,11 @@ ifndef SBTLOCAL
 else
 	SBT=sbt
 endif
-VERILATOR=verilator
+
+# Define utility applications
+# VERILATOR= docker $(DOCKERARGS) hdlc/verilator verilator	# Docker Verilator
+VERILATOR=verilator  # Local Verilator
+YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
 
 # Default board PLL
 BOARD := bypass
@@ -32,9 +34,11 @@ chisel_tests:
 check: chisel_tests ## Run Chisel tests
 test: chisel_tests
 
+# This section defines the Verilator simulation and demo application to be used
+# Adjust the rom and ram files below to match your test
 romfile = gcc/helloUART/main-rom.mem
 ramfile = gcc/helloUART/main-ram.mem
-verilator: chisel
+verilator: chisel ## Generate Verilator simulation
 	@rm -rf obj_dir
 	$(VERILATOR) -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
 	@make -C obj_dir -f VToplevel.mk -j`nproc`
@@ -42,13 +46,15 @@ verilator: chisel
 	@cp $(romfile) progload.mem
 	@cp $(ramfile) progload-RAM.mem
 
-verirun:
+verirun: ## Run Verilator simulation with ROM and RAM files to be loaded
 	@cp $(romfile) progload.mem
 	@cp $(ramfile) progload-RAM.mem
 	./chiselv
 
-dot:
-	yosys -p "read_verilog Toplevel.v; proc; opt; show -colors 2 -width -format dot -prefix chiselv -signed Toplevel"
+dot: chisel ## Generate dot files for Core
+	@touch progload.mem progload-RAM.mem
+	$(YOSYS) -p "read_verilog ./generated/*.v; proc; opt; show -colors 2 -width -format dot -prefix chiselv -signed SOC"
+	@rm progload.mem progload-RAM.mem
 
 fmt: ## Formats code using scalafmt and scalafix
 	${SBT} lint
@@ -64,7 +70,6 @@ clean:   ## Clean all generated files
 	@rm -rf obj_dir test_run_dir target
 	@rm -rf $(generated_files)
 	@rm -rf out
-	@rm -f $(project)
 	@rm -f chiselv
 	@rm -f *.mem
 

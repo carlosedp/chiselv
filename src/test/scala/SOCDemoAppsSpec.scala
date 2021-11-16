@@ -7,8 +7,8 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-// Extend the Control module to add the observer for sub-module signals
-class CPUSingleCycleWrapperDemo(
+// Extend the SOC module to add the observer for sub-module signals
+class SOCWrapperDemo(
   cpuFrequency: Int,
   bitWidth: Int,
   instructionMemorySize: Int,
@@ -40,7 +40,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
 
   def defaultDut(memoryfile: String, ramFile: String = "") =
     test(
-      new CPUSingleCycleWrapperDemo(
+      new SOCWrapperDemo(
         cpuFrequency,
         bitWidth,
         instructionMemorySize,

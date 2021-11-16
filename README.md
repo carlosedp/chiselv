@@ -1,6 +1,6 @@
 # ChiselV - A RISC-V Processor in Chisel
 
-```sh
+```txt
 (..,,***)
  ( #,,****)             MM''''''YMM dP       oo                   dP M''MMMMM''M
   (,,.,,***)            M' .mmm. 'M 88                            88 M  MMMMM  M
@@ -27,8 +27,8 @@
 
 [![Scala CI](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml/badge.svg)](https://github.com/carlosedp/chiselv/actions/workflows/scala.yml)
 
-This project is a learning exercise for both writing a RISC-V core and also
-better understand [Chisel](https://www.chisel-lang.org/), an HDL language based on Scala.
+This project is a learning exercise for digital design, writing a RISC-V core and also
+have a deeper understanding of [Chisel](https://www.chisel-lang.org/), an HDL language based on Scala.
 
 Currently the target builds a RV32I core.
 
@@ -45,9 +45,11 @@ The `BOARD` argument must match one of the `pll_BOARD.v]` files in `/src/main/re
 The core can be simulated in Verilator using the commands:
 
 ```sh
-make verilator   # this will build the core, generate the Verilog files and Verilator project
+make verilator   # this will build the SOC, generate the Verilog files and Verilator project
 make verirun     # This will copy the UART demo (RAM/ROM) from gcc/helloUART and run Verilator
 ```
+
+The demo application can be adjusted in the Makefile to point to the dir and files for ROM and RAM.
 
 ## Building for FPGAs
 
