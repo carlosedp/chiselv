@@ -93,7 +93,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   // --------------------- Test Helpers ---------------------
   def aluHelper(a: BigInt, b: BigInt, op: Type): BigInt =
     op match {
-      case ADD  => a + b & 0xffffffffL
+      case ADD  => to32Bit(a + b)
       case SUB  => a - b
       case AND  => a & b
       case OR   => a | b
@@ -102,19 +102,19 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       case SRL  => a.toInt >>> b.toInt
       case SLL  => a.toInt << b.toInt
       case SLT  => (if (a.toInt < b.toInt) 1 else 0)
-      case SLTU => (if ((a.toInt & 0xffffffffL) < (b.toInt & 0xffffffffL)) 1 else 0)
-      case EQ   => (if ((a.toInt & 0xffffffffL) == (b.toInt & 0xffffffffL)) 1 else 0)
-      case NEQ  => (if ((a.toInt & 0xffffffffL) != (b.toInt & 0xffffffffL)) 1 else 0)
+      case SLTU => (if (to32Bit(a) < to32Bit(b)) 1 else 0)
+      case EQ   => (if (to32Bit(a) == to32Bit(b)) 1 else 0)
+      case NEQ  => (if (to32Bit(a) != to32Bit(b)) 1 else 0)
       case GTE  => (if (a.toInt >= b.toInt) 1 else 0)
-      case GTEU => (if ((a.toInt & 0xffffffffL) >= (b.toInt & 0xffffffffL)) 1 else 0)
+      case GTEU => (if (to32Bit(a) >= to32Bit(b)) 1 else 0)
       case _    => 0 // Never happens
     }
 
   def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
     dut.io.ALUPort.inst.poke(op)
-    dut.io.ALUPort.a.poke((i & 0xffffffffL).U)
-    dut.io.ALUPort.b.poke((j & 0xffffffffL).U)
+    dut.io.ALUPort.a.poke(toUInt(i))
+    dut.io.ALUPort.b.poke(toUInt(j))
     dut.clock.step()
     // println(s"Output is ${dut.io.ALUPort.x.peek()}")
     dut.io.ALUPort.x.peek().litValue should be(out)
@@ -122,7 +122,10 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   def testCycle(dut: ALU, op: Type) =
     cases.foreach { i =>
       cases.foreach { j =>
-        testDut(i, j, (aluHelper(i, j, op) & 0xffffffffL), op, dut)
+        testDut(i, j, to32Bit(aluHelper(i, j, op)), op, dut)
       }
     }
+
+  def to32Bit(i: BigInt) = i & 0xffffffffL
+  def toUInt(i: BigInt)  = to32Bit(i).asUInt(32.W)
 }
