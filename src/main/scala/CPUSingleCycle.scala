@@ -23,10 +23,6 @@ class CPUSingleCycle(
 
   val stall = WireDefault(false.B)
 
-  // Heartbeat LED
-  val blink = Module(new Blinky(cpuFrequency))
-  io.led0 := blink.io.led0
-
   // Instantiate and initialize the Register Bank
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
