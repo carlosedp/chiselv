@@ -71,13 +71,13 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   }
   // --------------------- Test Helpers ---------------------
   def validateResult(
-    c: Decoder,
-    inst: Instruction.Type,
-    rd: Int,
-    rs1: Int,
-    rs2: Int,
-    imm: Int,
-    toALU: Bool,
+    c:      Decoder,
+    inst:   Instruction.Type,
+    rd:     Int,
+    rs1:    Int,
+    rs2:    Int,
+    imm:    Int,
+    toALU:  Bool,
     branch: Bool,
   ) = {
     c.io.DecoderPort.inst.expect(inst)

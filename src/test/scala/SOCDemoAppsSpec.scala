@@ -9,13 +9,13 @@ import matchers._
 
 // Extend the SOC module to add the observer for sub-module signals
 class SOCWrapperDemo(
-  cpuFrequency: Int,
-  bitWidth: Int,
+  cpuFrequency:          Int,
+  bitWidth:              Int,
   instructionMemorySize: Int,
-  memorySize: Int,
-  memoryFile: String,
-  ramFile: String,
-  numGPIO: Int,
+  memorySize:            Int,
+  memoryFile:            String,
+  ramFile:               String,
+  numGPIO:               Int,
   // baudRate: Int,
 ) extends SOC(
     cpuFrequency,

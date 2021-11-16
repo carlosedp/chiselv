@@ -15,10 +15,10 @@ class MemoryPortDual(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val writeEnable  = Input(Bool())
 }
 class DualPortRAM(
-  bitWidth: Int = 32,
-  sizeBytes: Long = 1,
+  bitWidth:   Int = 32,
+  sizeBytes:  Long = 1,
   memoryFile: String = "",
-  debugMsg: Boolean = false,
+  debugMsg:   Boolean = false,
 ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle() {

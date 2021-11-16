@@ -29,11 +29,11 @@ class RVFIPort extends Bundle {
 }
 
 class RVFICPUWrapper(
-  cpuFrequency: Int = 50000000,
-  bitWidth: Int = 32,
+  cpuFrequency:          Int = 50000000,
+  bitWidth:              Int = 32,
   instructionMemorySize: Int = 64 * 1024,
-  dataMemorySize: Int = 64 * 1024,
-  numGPIO: Int = 8,
+  dataMemorySize:        Int = 64 * 1024,
+  numGPIO:               Int = 8,
 ) extends CPUSingleCycle(
     cpuFrequency,
     bitWidth,
@@ -61,7 +61,7 @@ class RVFICPUWrapper(
   }
 
   // Connect RVFI interface outputs
-  rvfi_valid := !reset.asBool()
+  rvfi_valid := !reset.asBool() && !stall
   when(rvfi_valid) {
     rvfi_order := rvfi_order + 1.U
   }

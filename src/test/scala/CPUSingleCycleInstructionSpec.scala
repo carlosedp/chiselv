@@ -11,11 +11,11 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleInstWrapper(
-  cpuFrequency: Int,
-  bitWidth: Int,
+  cpuFrequency:          Int,
+  bitWidth:              Int,
   instructionMemorySize: Int,
-  memorySize: Int,
-  memoryFile: String,
+  memorySize:            Int,
+  memoryFile:            String,
 ) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
