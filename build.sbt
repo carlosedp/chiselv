@@ -16,11 +16,12 @@ Global / semanticdbVersion                                 := "4.4.28" //scalafi
 Global / onChangedBuildSource                              := ReloadOnSourceChanges
 
 Compile / run / mainClass := Some("chiselv.Toplevel")
+Test / logBuffered        := false
 
 lazy val chiselv = (project in file("."))
   .settings(
     name         := "chiselv",
-    version      := "0.0.1",
+    version      := "1.0.0",
     scalaVersion := "2.13.6",
   )
 
@@ -30,7 +31,7 @@ val defaultVersions = Map(
   "chiseltest"       -> "0.5-SNAPSHOT",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
-  "scalautils"       -> "0.5.0",
+  "scalautils"       -> "0.7.0",
 )
 
 // Import libraries
