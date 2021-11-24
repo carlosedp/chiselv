@@ -73,6 +73,10 @@ clean:   ## Clean all generated files
 	@rm -f chiselv
 	@rm -f *.mem
 
+cleancache: clean  ## Clean all downloaded dependencies and cache
+	@rm -rf project/project
+	@rm -rf project/target
+
 help:
 	@echo "Makefile targets:"
 	@echo ""

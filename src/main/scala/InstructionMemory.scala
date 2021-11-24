@@ -1,7 +1,6 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
@@ -19,9 +18,6 @@ class InstructionMemory(
   val io = IO(new Bundle() {
     val memPort = new InstructionMemPort(bitWidth, sizeBytes)
   })
-
-  // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
-  annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
 
   val mem = Mem(words, UInt(bitWidth.W))
   // Divide memory address by 4 to get the word due to pc+4 addressing

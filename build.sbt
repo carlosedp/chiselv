@@ -36,12 +36,12 @@ val defaultVersions = Map(
 
 // Import libraries
 libraryDependencies ++= Seq(
-  "edu.berkeley.cs"  %% "chisel3"    % defaultVersions("chisel3"),
-  ("edu.berkeley.cs" %% "chiseltest" % defaultVersions("chiseltest") % "test").changing(),
-  "org.scalatest"    %% "scalatest"  % defaultVersions("scalatest")  % "test",
-  "com.carlosedp"    %% "scalautils" % defaultVersions("scalautils"),
-  "com.lihaoyi"      %% "os-lib"     % "0.7.8",
-  "edu.berkeley.cs"  %% "firrtl"     % "1.5-SNAPSHOT"
+  "edu.berkeley.cs" %% "chisel3"    % defaultVersions("chisel3"),
+  "edu.berkeley.cs" %% "chiseltest" % defaultVersions("chiseltest") % "test",
+  "org.scalatest"   %% "scalatest"  % defaultVersions("scalatest")  % "test",
+  "com.carlosedp"   %% "scalautils" % defaultVersions("scalautils"),
+  "com.lihaoyi"     %% "os-lib"     % "0.7.8",
+  "edu.berkeley.cs" %% "firrtl"     % "1.5-SNAPSHOT" // Force using SNAPSHOT until next RC is cut (memory synth)
 )
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % defaultVersions("organize-imports")
 addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % defaultVersions("chisel3")).cross(CrossVersion.full))

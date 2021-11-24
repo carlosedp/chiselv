@@ -1,7 +1,6 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
@@ -33,11 +32,7 @@ class DualPortRAM(
     println(s"  Addr Width: " + io.dualPort.readAddress.getWidth + " bit")
   }
 
-  // This is required to have readmem outside `ifndef SYNTHESIS` and be synthesized by FPGA tools
-  annotate(new ChiselAnnotation { override def toFirrtl = firrtl.annotations.MemorySynthInit })
-
   val mem = SyncReadMem(words, UInt(bitWidth.W))
-  // val dedupBlock = WireDefault(mem.hashCode.U) // Prevents deduping this memory module
 
   // Divide memory address by 4 to get the word due to pc+4 addressing
   val readAddress  = io.dualPort.readAddress >> 2
