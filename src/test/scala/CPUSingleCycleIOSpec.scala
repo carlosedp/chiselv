@@ -2,12 +2,8 @@ package chiselv
 
 import chiseltest._
 import chiseltest.experimental._
-import org.scalatest._
-
 import com.carlosedp.scalautils.riscvassembler._
-
-import java.io.{File, PrintWriter}
-import java.nio.file.{Files, Paths, DirectoryNotEmptyException}
+import org.scalatest._
 
 import flatspec._
 import matchers._
@@ -18,7 +14,7 @@ class CPUSingleCycleIOWrapper(
   bitWidth:              Int,
   instructionMemorySize: Int,
   memorySize:            Int,
-  memoryFile:            String,
+  memoryFile:            String
 ) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
   val registers    = expose(core.registerBank.regs)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -45,35 +41,32 @@ class CPUSingleCycleIOSpec
   val instructionMemorySize = 1 * 1024
   val memorySize            = 1 * 1024
   val ms                    = cpuFrequency / 1000
-  var memoryfile            = ""
-  val tmpdir                = "tmphex"
+  var memoryfile: os.Path = _
+  val tmpdir = "tmphex"
 
   before {
-    Files.createDirectories(Paths.get(tmpdir));
+    os.makeDir.all(os.pwd / tmpdir)
   }
   after {
     try {
-      Files.deleteIfExists(Paths.get(tmpdir));
+      os.remove(os.pwd / tmpdir)
     } catch {
-      case _: DirectoryNotEmptyException =>
-      // println("Directory not empty")
+      case _: Exception => // not empty, ignore
     }
   }
   override def beforeEach(): Unit =
-    memoryfile =
-      Paths.get(tmpdir, scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex").toString()
-  override def afterEach(): Unit = {
-    val _ = new File(memoryfile).delete()
-  }
+    memoryfile = os.pwd / tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
+  override def afterEach(): Unit =
+    os.remove.all(memoryfile)
 
   def defaultDut(prog: String) = {
     val hex = RISCVAssembler.fromString(prog)
-    new PrintWriter(new File(memoryfile)) { write(hex); close }
-    test(new CPUSingleCycleIOWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
+    os.write(memoryfile, hex)
+    test(new CPUSingleCycleIOWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile.toString))
       .withAnnotations(
         Seq(
           WriteVcdAnnotation,
-          VerilatorBackendAnnotation,
+          VerilatorBackendAnnotation
         )
       )
   }

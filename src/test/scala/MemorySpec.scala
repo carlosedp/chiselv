@@ -4,8 +4,6 @@ import chisel3._
 import chiseltest._
 import org.scalatest._
 
-import java.io.{File, PrintWriter}
-
 import flatspec._
 import matchers._
 
@@ -64,8 +62,8 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
   it should "load from file and read multiple instructions" in {
     val filename = "MemorySpecTestFile.hex"
     // Create memory test file with 32bit address space
-    new PrintWriter(new File(filename)) { write("00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n"); close }
-
+    val file = os.pwd / "MemorySpecTestFile.hex"
+    os.write(file, "00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n")
     test(new InstructionMemory(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.memPort.readAddr.poke(0.U)
       c.clock.step()
@@ -83,6 +81,6 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
       c.io.memPort.readAddr.poke(1.U)
       c.clock.step()
     }
-    new File(filename).delete()
+    os.remove.all(file)
   }
 }
