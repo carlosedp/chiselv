@@ -69,6 +69,6 @@ class GPIOInOut(bitWidth: Int = 32, numGPIO: Int = 8) extends BlackBox(Map("WIDT
        |  assign dataOut = dataIO;
        |
        |endmodule
-       |""".stripMargin,
+       |""".stripMargin
   )
 }

@@ -78,7 +78,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     rs2:    Int,
     imm:    Int,
     toALU:  Bool,
-    branch: Bool,
+    branch: Bool
   ) = {
     c.io.DecoderPort.inst.expect(inst)
     c.io.DecoderPort.rd.peek().litValue should be(rd)
@@ -96,14 +96,14 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
           "b0000000%05d%05d000%05d0110011",
           rs2.toBinaryString.toInt,
           rs1.toBinaryString.toInt,
-          rd.toBinaryString.toInt,
+          rd.toBinaryString.toInt
         )
       case ANDI =>
         String.format(
           "b%12s%05d111%05d0010011",
           imm.toBinaryString.takeRight(12),
           rs1.toBinaryString.toInt,
-          rd.toBinaryString.toInt,
+          rd.toBinaryString.toInt
         )
     }
 }

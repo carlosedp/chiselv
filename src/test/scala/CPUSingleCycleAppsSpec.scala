@@ -13,7 +13,7 @@ class CPUSingleCycleWrapperApps(
   bitWidth:              Int,
   instructionMemorySize: Int,
   memorySize:            Int,
-  memoryFile:            String,
+  memoryFile:            String
 ) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
   val registers    = expose(core.registerBank.regs)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -37,7 +37,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       .withAnnotations(
         Seq(
           WriteVcdAnnotation,
-          VerilatorBackendAnnotation,
+          VerilatorBackendAnnotation
         )
       )
 

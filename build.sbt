@@ -22,7 +22,7 @@ lazy val chiselv = (project in file("."))
   .settings(
     name         := "chiselv",
     version      := "1.0.0",
-    scalaVersion := "2.13.6",
+    scalaVersion := "2.13.6"
   )
 
 // Default library versions
@@ -31,15 +31,18 @@ val defaultVersions = Map(
   "chiseltest"       -> "0.5-SNAPSHOT",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
-  "scalautils"       -> "0.7.0",
+  "scalautils"       -> "0.8-SNAPSHOT"
 )
 
 // Import libraries
-libraryDependencies += "edu.berkeley.cs"  %% "chisel3"    % defaultVersions("chisel3")
-libraryDependencies += ("edu.berkeley.cs" %% "chiseltest" % defaultVersions("chiseltest") % "test").changing()
-
-libraryDependencies += "org.scalatest"                     %% "scalatest"        % defaultVersions("scalatest") % "test"
-libraryDependencies += "com.carlosedp"                     %% "scalautils"       % defaultVersions("scalautils")
+libraryDependencies ++= Seq(
+  "edu.berkeley.cs"  %% "chisel3"    % defaultVersions("chisel3"),
+  ("edu.berkeley.cs" %% "chiseltest" % defaultVersions("chiseltest") % "test").changing(),
+  "org.scalatest"    %% "scalatest"  % defaultVersions("scalatest")  % "test",
+  "com.carlosedp"    %% "scalautils" % defaultVersions("scalautils"),
+  "com.lihaoyi"      %% "os-lib"     % "0.7.8",
+  "edu.berkeley.cs"  %% "firrtl"     % "1.5-SNAPSHOT"
+)
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % defaultVersions("organize-imports")
 addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % defaultVersions("chisel3")).cross(CrossVersion.full))
 
@@ -54,6 +57,7 @@ addCommandAlias("deps", "dependencyUpdates")
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases"),
+  "Sonatype New OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots"
 )
 
 scalacOptions ++= Seq(
@@ -64,5 +68,5 @@ scalacOptions ++= Seq(
   "-Xcheckinit",
   "-Xfatal-warnings",
   "-Ywarn-dead-code",
-  "-Ywarn-unused",
+  "-Ywarn-unused"
 )

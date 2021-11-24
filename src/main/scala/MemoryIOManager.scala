@@ -82,7 +82,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   DACK := Mux(
     DACK > 0.U,
     DACK - 1.U,
-    Mux((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest), stallLatency, 0.U),
+    Mux((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest), stallLatency, 0.U)
   )
   io.stall := ((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest) && DACK =/= 1.U && stallEnable)
 
@@ -256,7 +256,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
           Mux(writeMask(3), dataToWrite(3 * 8 + 7, 3 * 8), io.DataMemPort.readData(3 * 8 + 7, 3 * 8)),
           Mux(writeMask(2), dataToWrite(2 * 8 + 7, 2 * 8), io.DataMemPort.readData(2 * 8 + 7, 2 * 8)),
           Mux(writeMask(1), dataToWrite(1 * 8 + 7, 1 * 8), io.DataMemPort.readData(1 * 8 + 7, 1 * 8)),
-          Mux(writeMask(0), dataToWrite(0 * 8 + 7, 0 * 8), io.DataMemPort.readData(0 * 8 + 7, 0 * 8)),
+          Mux(writeMask(0), dataToWrite(0 * 8 + 7, 0 * 8), io.DataMemPort.readData(0 * 8 + 7, 0 * 8))
         )
         io.DataMemPort.writeData := dataIn
         dataOut                  := dataIn

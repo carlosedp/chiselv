@@ -19,7 +19,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
     test(new GPIOWrapper(32, 8)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
-        VerilatorBackendAnnotation,
+        VerilatorBackendAnnotation
       )
     )
 

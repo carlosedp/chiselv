@@ -10,7 +10,7 @@ class SOC(
   dataMemorySize:        Int = 1 * 1024,
   memoryFile:            String = "",
   ramFile:               String = "",
-  numGPIO:               Int = 8,
+  numGPIO:               Int = 8
 ) extends Module {
   val io = IO(new Bundle {
     val led0            = Output(Bool())       // LED 0 is the heartbeat
