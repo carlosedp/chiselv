@@ -1,5 +1,6 @@
 package chiselv
 
+import chisel3._
 import chisel3.experimental.ChiselEnum
 
 object Instruction extends ChiselEnum {
@@ -21,5 +22,12 @@ object Instruction extends ChiselEnum {
 }
 
 object InstructionType extends ChiselEnum {
-  val IN_ERR, INST_R, INST_I, INST_S, INST_B, INST_U, INST_J, INST_Z = Value
+  val INST_I = Value((1 << 0).U)
+  val INST_S = Value((1 << 1).U)
+  val INST_B = Value((1 << 2).U)
+  val INST_U = Value((1 << 3).U)
+  val INST_J = Value((1 << 4).U)
+  val INST_Z = Value((1 << 5).U)
+  val INST_R = Value((1 << 6).U)
+  val IN_ERR = Value((1 << 7).U)
 }
