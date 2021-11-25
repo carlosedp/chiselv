@@ -17,8 +17,7 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
   val pll = Module(new PLL0(board))
   pll.io.clki := clock
   // Define if reset should be inverted based on board switch
-  val customReset = Wire(Bool())
-  customReset := (if (invReset) ~reset.asBool() else reset)
+  val customReset = if (invReset) ~reset.asBool() else reset
 
   // Instantiate the Core connecting using the PLL clock
   withClockAndReset(pll.io.clko, customReset) {
