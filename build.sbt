@@ -31,7 +31,7 @@ val defaultVersions = Map(
   "chiseltest"       -> "0.5-SNAPSHOT",
   "scalatest"        -> "3.2.10",
   "organize-imports" -> "0.5.0",
-  "scalautils"       -> "0.8-SNAPSHOT"
+  "scalautils"       -> "0.7.2"
 )
 
 // Import libraries

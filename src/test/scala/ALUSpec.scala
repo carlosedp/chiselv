@@ -1,9 +1,9 @@
 package chiselv
 
+import com.carlosedp.scalautils.ObjectUtils.NumericManipulation
 import chisel3._
 import chiseltest._
 import org.scalatest._
-
 import Instruction._
 import flatspec._
 import matchers._
@@ -93,7 +93,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   // --------------------- Test Helpers ---------------------
   def aluHelper(a: BigInt, b: BigInt, op: Type): BigInt =
     op match {
-      case ADD  => to32Bit(a + b)
+      case ADD  => (a + b).to32Bit
       case SUB  => a - b
       case AND  => a & b
       case OR   => a | b
@@ -102,11 +102,11 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       case SRL  => a.toInt >>> b.toInt
       case SLL  => a.toInt << b.toInt
       case SLT  => (if (a.toInt < b.toInt) 1 else 0)
-      case SLTU => (if (to32Bit(a) < to32Bit(b)) 1 else 0)
-      case EQ   => (if (to32Bit(a) == to32Bit(b)) 1 else 0)
-      case NEQ  => (if (to32Bit(a) != to32Bit(b)) 1 else 0)
+      case SLTU => (if (a.to32Bit < b.to32Bit) 1 else 0)
+      case EQ   => (if (a.to32Bit == b.to32Bit) 1 else 0)
+      case NEQ  => (if (a.to32Bit != b.to32Bit) 1 else 0)
       case GTE  => (if (a.toInt >= b.toInt) 1 else 0)
-      case GTEU => (if (to32Bit(a) >= to32Bit(b)) 1 else 0)
+      case GTEU => (if (a.to32Bit >= b.to32Bit) 1 else 0)
       case _    => 0 // Never happens
     }
 
@@ -122,10 +122,9 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   def testCycle(dut: ALU, op: Type) =
     cases.foreach { i =>
       cases.foreach { j =>
-        testDut(i, j, to32Bit(aluHelper(i, j, op)), op, dut)
+        testDut(i, j, aluHelper(i, j, op).to32Bit, op, dut)
       }
     }
 
-  def to32Bit(i: BigInt) = i & 0xffffffffL
-  def toUInt(i: BigInt)  = to32Bit(i).asUInt(32.W)
+  def toUInt(i: BigInt) = i.to32Bit.asUInt(32.W)
 }

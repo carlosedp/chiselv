@@ -227,7 +227,7 @@ class CPUSingleCycleInstructionSpec
       c.registers(2).peek().litValue should be(0x12345000)
       c.clock.step(1) // addi
       c.registers(2).peek().litValue should be(0x12345678)
-      c.clock.step(1) //addi
+      c.clock.step(1) // addi
       c.registers(3).peek().litValue should be(0xffffffff)
       // Check memory address offset 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
@@ -236,15 +236,15 @@ class CPUSingleCycleInstructionSpec
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(1 + memWriteLatency) //sh
+      c.clock.step(1 + memWriteLatency) // sh
       // Check memory address 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(1 + memWriteLatency) //sh
+      c.clock.step(1 + memWriteLatency) // sh
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
       c.memWriteData.peek().litValue should be(0x5678L)
-      c.clock.step(1 + memWriteLatency) //sh
+      c.clock.step(1 + memWriteLatency) // sh
       // Check memory address 0x30
       c.clock.step(1) // lw - stall
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
@@ -283,7 +283,7 @@ class CPUSingleCycleInstructionSpec
       c.registers(2).peek().litValue should be(0x12345000)
       c.clock.step(1) // addi
       c.registers(2).peek().litValue should be(0x12345678)
-      c.clock.step(1) //addi
+      c.clock.step(1) // addi
       c.registers(3).peek().litValue should be(0xffffffff)
       // Check memory address offset 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
@@ -292,19 +292,19 @@ class CPUSingleCycleInstructionSpec
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(1 + memWriteLatency) //sb
+      c.clock.step(1 + memWriteLatency) // sb
       // Check memory address 0x30
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(1 + memWriteLatency) //sb
+      c.clock.step(1 + memWriteLatency) // sb
       // Check memory address offset 0x34
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(1 + memWriteLatency) //sb
+      c.clock.step(1 + memWriteLatency) // sb
       // Check memory address offset 0x33
       c.memWriteAddr.peek().litValue should be(0x80000000L + 0x33)
       c.memWriteData.peek().litValue should be(0x78L)
-      c.clock.step(1 + memWriteLatency) //sb
+      c.clock.step(1 + memWriteLatency) // sb
       // Check memory address 0x30
       c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
       c.clock.step(1) // lw
