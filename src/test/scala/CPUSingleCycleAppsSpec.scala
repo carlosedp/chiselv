@@ -9,13 +9,17 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleWrapperApps(
-  cpuFrequency:          Int,
-  bitWidth:              Int,
-  instructionMemorySize: Int,
-  memorySize:            Int,
-  memoryFile:            String
-) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
+  memoryFile: String
+) extends SOC(
+    cpuFrequency = 25000000,
+    bitWidth = 32,
+    instructionMemorySize = 1 * 1024,
+    dataMemorySize = 1 * 1024,
+    memoryFile = memoryFile,
+    numGPIO = 0
+  ) {
   val registers    = expose(core.registerBank.regs)
+  val pc           = expose(core.PC.pc)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
   val memWriteData = expose(core.memoryIOManager.io.MemoryIOPort.writeData)
   val memReadAddr  = expose(core.memoryIOManager.io.MemoryIOPort.readAddr)
@@ -25,19 +29,14 @@ class CPUSingleCycleWrapperApps(
 class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "CPUSingleCycleApps"
 
-  val cpuFrequency          = 25000000
-  val bitWidth              = 32
-  val instructionMemorySize = 1 * 1024
-  val memorySize            = 1 * 1024
-  val writeLatency          = 2
-  val readLatency           = 1
+  val writeLatency = 2
+  val readLatency  = 1
 
   def defaultDut(memoryfile: String) =
-    test(new CPUSingleCycleWrapperApps(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile))
+    test(new CPUSingleCycleWrapperApps(memoryFile = memoryfile))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation,
-          VerilatorBackendAnnotation
+          WriteVcdAnnotation
         )
       )
 

@@ -14,7 +14,6 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     test(new DualPortRAM(32, 1 * 1024)).withAnnotations(
       Seq(
         WriteVcdAnnotation
-        // VerilatorBackendAnnotation,
       )
     ) { c =>
       c.io.dualPort.writeEnable.poke(true.B)

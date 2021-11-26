@@ -10,12 +10,15 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleInstWrapper(
-  cpuFrequency:          Int,
-  bitWidth:              Int,
-  instructionMemorySize: Int,
-  memorySize:            Int,
-  memoryFile:            String
-) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
+  memoryFile: String
+) extends SOC(
+    cpuFrequency = 25000000,
+    bitWidth = 32,
+    instructionMemorySize = 1 * 1024,
+    dataMemorySize = 1 * 1024,
+    memoryFile = memoryFile,
+    numGPIO = 0
+  ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -30,27 +33,23 @@ class CPUSingleCycleInstructionSpec
   with BeforeAndAfterEach
   with BeforeAndAfter
   with should.Matchers {
-  val cpuFrequency          = 25000000
-  val bitWidth              = 32
-  val instructionMemorySize = 1 * 1024
-  val memorySize            = 1 * 1024
-  val memReadLatency        = 1
-  val memWriteLatency       = 1
+  val memReadLatency  = 1
+  val memWriteLatency = 1
   var memoryfile: os.Path = _
-  val tmpdir = "tmphex"
+  val tmpdir = os.pwd / "tmphex"
 
   before {
-    os.makeDir.all(os.pwd / tmpdir)
+    os.makeDir.all(tmpdir)
   }
   after {
     try {
-      os.remove(os.pwd / tmpdir)
+      os.remove(tmpdir)
     } catch {
       case _: Exception => // not empty, ignore
     }
   }
   override def beforeEach(): Unit =
-    memoryfile = os.pwd / tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
+    memoryfile = tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
   override def afterEach(): Unit =
     os.remove.all(memoryfile)
 
@@ -58,11 +57,10 @@ class CPUSingleCycleInstructionSpec
     // Generate the hex file from asm source
     val hex = RISCVAssembler.fromString(prog)
     os.write(memoryfile, hex)
-    test(new CPUSingleCycleInstWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile.toString))
+    test(new CPUSingleCycleInstWrapper(memoryfile.relativeTo(os.pwd).toString))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation,
-          VerilatorBackendAnnotation
+          WriteVcdAnnotation
         )
       )
   }

@@ -18,8 +18,7 @@ class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Match
   def defaultDut() =
     test(new TimerWrapper(32, cpuFrequency)).withAnnotations(
       Seq(
-        // WriteVcdAnnotation,
-        // VerilatorBackendAnnotation,
+        // WriteVcdAnnotation
       )
     )
 

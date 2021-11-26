@@ -13,8 +13,7 @@ class MemoryIOManagerSpec extends AnyFlatSpec with ChiselScalatestTester with sh
   def defaultDut() =
     test(new MemoryIOManager(32, 50000000, 1024)).withAnnotations(
       Seq(
-        WriteVcdAnnotation,
-        VerilatorBackendAnnotation
+        WriteVcdAnnotation
       )
     )
 

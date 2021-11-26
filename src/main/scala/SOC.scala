@@ -50,5 +50,7 @@ class SOC(
   core.io.instructionMemPort <> instructionMemory.io.memPort
   core.io.dataMemPort <> dataMemory.io.dualPort
   core.io.UART0Port <> UART0.io.dataPort
-  core.io.GPIO0External <> io.GPIO0External
+  if (numGPIO > 0) {
+    core.io.GPIO0External <> io.GPIO0External
+  }
 }

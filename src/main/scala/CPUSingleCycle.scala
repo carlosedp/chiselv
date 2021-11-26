@@ -45,13 +45,6 @@ class CPUSingleCycle(
   val decoder = Module(new Decoder(bitWidth))
   decoder.io.DecoderPort.op := 0.U
 
-  // Instantiate and connect GPIO
-  val GPIO0 = Module(new GPIO(bitWidth, numGPIO))
-  GPIO0.io.externalPort <> io.GPIO0External
-
-  // Instantiate and connect the Timer
-  val timer0 = Module(new Timer(bitWidth, cpuFrequency))
-
   // Instantiate and initialize the Memory IO Manager
   val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize))
   memoryIOManager.io.MemoryIOPort.readRequest  := false.B
@@ -61,12 +54,20 @@ class CPUSingleCycle(
   memoryIOManager.io.MemoryIOPort.writeData    := 0.U
   memoryIOManager.io.MemoryIOPort.dataSize     := 0.U
   memoryIOManager.io.MemoryIOPort.writeMask    := 0.U
-
   // Connect MMIO to the devices
-  memoryIOManager.io.GPIO0Port <> GPIO0.io.GPIOPort
-  memoryIOManager.io.Timer0Port <> timer0.io.timerPort
   memoryIOManager.io.DataMemPort <> io.dataMemPort
   memoryIOManager.io.UART0Port <> io.UART0Port
+
+  // Instantiate and connect GPIO
+  val GPIO0 = Module(new GPIO(bitWidth, numGPIO))
+  memoryIOManager.io.GPIO0Port <> GPIO0.io.GPIOPort
+  if (numGPIO > 0) {
+    GPIO0.io.externalPort <> io.GPIO0External
+  }
+
+  // Instantiate and connect the Timer
+  val timer0 = Module(new Timer(bitWidth, cpuFrequency))
+  memoryIOManager.io.Timer0Port <> timer0.io.timerPort
 
   // --------------- CPU Control --------------- //
   // State of the CPU Stall

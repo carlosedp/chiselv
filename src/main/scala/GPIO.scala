@@ -22,13 +22,21 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   val GPIO      = RegInit(0.U(bitWidth.W))
   val direction = RegInit(0.U(bitWidth.W)) // 0 = input, 1 = output
 
-  val InOut = Module(new GPIOInOut(numGPIO))
-  InOut.io.dataIn          := GPIO
-  InOut.io.dir             := direction
   io.GPIOPort.stall        := false.B
-  io.GPIOPort.valueOut     := InOut.io.dataOut
   io.GPIOPort.directionOut := direction
-  io.externalPort <> InOut.io.dataIO
+
+  // Only instantiate GPIO external interface if needed
+  // this avoids using Verilator backend on tests that don't need it
+  if (numGPIO > 0) {
+    val InOut = Module(new GPIOInOut(numGPIO))
+    io.GPIOPort.valueOut := InOut.io.dataOut
+    InOut.io.dataIn      := GPIO
+    InOut.io.dir         := direction
+    io.externalPort <> InOut.io.dataIO
+  } else {
+    io.GPIOPort.valueOut := 0.U
+    io.externalPort      := DontCare
+  }
 
   when(io.GPIOPort.writeValue) {
     GPIO := io.GPIOPort.dataIn

@@ -10,13 +10,17 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleIOWrapper(
-  cpuFrequency:          Int,
-  bitWidth:              Int,
-  instructionMemorySize: Int,
-  memorySize:            Int,
-  memoryFile:            String
-) extends SOC(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryFile) {
+  memoryFile: String
+) extends SOC(
+    cpuFrequency = 25000000,
+    bitWidth = 32,
+    instructionMemorySize = 1 * 1024,
+    dataMemorySize = 1 * 1024,
+    memoryFile = memoryFile,
+    numGPIO = 8
+  ) {
   val registers    = expose(core.registerBank.regs)
+  val pc           = expose(core.PC.pc)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
   val memWriteData = expose(core.memoryIOManager.io.MemoryIOPort.writeData)
   val memReadAddr  = expose(core.memoryIOManager.io.MemoryIOPort.readAddr)
@@ -24,8 +28,7 @@ class CPUSingleCycleIOWrapper(
 
   val GPIO0_value     = expose(core.GPIO0.GPIO)
   val GPIO0_direction = expose(core.GPIO0.direction)
-
-  val timerCounter = expose(core.timer0.counter)
+  val timerCounter    = expose(core.timer0.counter)
 }
 
 class CPUSingleCycleIOSpec
@@ -34,13 +37,8 @@ class CPUSingleCycleIOSpec
   with BeforeAndAfterEach
   with BeforeAndAfter
   with should.Matchers {
-  behavior of "GPIO"
-
-  val cpuFrequency          = 25000000
-  val bitWidth              = 32
-  val instructionMemorySize = 1 * 1024
-  val memorySize            = 1 * 1024
-  val ms                    = cpuFrequency / 1000
+  val cpuFrequency = 25000000
+  val ms           = cpuFrequency / 1000
   var memoryfile: os.Path = _
   val tmpdir = "tmphex"
 
@@ -62,14 +60,16 @@ class CPUSingleCycleIOSpec
   def defaultDut(prog: String) = {
     val hex = RISCVAssembler.fromString(prog)
     os.write(memoryfile, hex)
-    test(new CPUSingleCycleIOWrapper(cpuFrequency, bitWidth, instructionMemorySize, memorySize, memoryfile.toString))
+    test(new CPUSingleCycleIOWrapper(memoryFile = memoryfile.toString))
       .withAnnotations(
         Seq(
           WriteVcdAnnotation,
-          VerilatorBackendAnnotation
+          VerilatorBackendAnnotation // GPIO needs Verilator backend
         )
       )
   }
+
+  behavior of "GPIO"
 
   it should "write to GPIO0" in {
     val prog = """
