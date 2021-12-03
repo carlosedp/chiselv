@@ -1,6 +1,8 @@
-SHELL = bash
-
+# Source and target files/directories
+project = $(shell grep object build.sc |grep -v extends |sed s/object//g |xargs)
+scala_files = $(wildcard src/main/scala/*.scala)
 generated_files = generated
+BUILDTOOL ?= sbt 							# Can also be mill
 
 # Define the SBT command (Docker or local)
 DOCKERARGS  = run --rm -v $(PWD):/src -w /src
@@ -20,16 +22,30 @@ YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
 
 # Default board PLL
 BOARD := bypass
+BOARDPARAMS=-board ${BOARD} -cpufreq 50000000 -invreset false
+CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
-chisel: check-board-vars clean ## Generates Verilog code from Chisel sources using SBT
-	${SBT} "run --target:fpga -board ${BOARD} -cpufreq 50000000 -td $(generated_files) -invreset false"
+chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT
 
-rvfi: clean ## Generates Verilog code for RISC-V Formal tests
-	${SBT} "runMain chiselv.RVFITop"
+$(generated_files): $(scala_files) build.sbt
+	@rm -rf $(generated_files)
+	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)
+	@if [ $(BUILDTOOL) = "sbt" ]; then \
+		${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
+    elif [ $(BUILDTOOL) = "mill" ]; then \
+		scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
+	fi
 
 chisel_tests:
-	${SBT} "test"
+	@if [ $(BUILDTOOL) = "sbt" ]; then \
+		${SBT} "test"; \
+    elif [ $(BUILDTOOL) = "mill" ]; then \
+		scripts/mill $(project).test; \
+	fi
+
+rvfi: clean ## Generates Verilog code for RISC-V Formal tests
+	${SBT} "runMain chiselv.RVFITop --target:fpga -td $(generated_files) $(BOARDPARAMS)"
 
 check: chisel_tests ## Run Chisel tests
 test: chisel_tests
@@ -38,7 +54,7 @@ test: chisel_tests
 # Adjust the rom and ram files below to match your test
 romfile = gcc/helloUART/main-rom.mem
 ramfile = gcc/helloUART/main-ram.mem
-verilator: chisel ## Generate Verilator simulation
+verilator: $(generated_files) ## Generate Verilator simulation
 	@rm -rf obj_dir
 	$(VERILATOR) -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
 	@make -C obj_dir -f VToplevel.mk -j`nproc`
@@ -51,9 +67,11 @@ verirun: ## Run Verilator simulation with ROM and RAM files to be loaded
 	@cp $(ramfile) progload-RAM.mem
 	./chiselv
 
-dot: chisel ## Generate dot files for Core
+MODULE ?= Toplevel
+dot: $(generated_files) ## Generate dot files for Core
+	@echo "Generating graphviz dot file for module \"$(MODULE)\". For a different module, pass the argument as \"make dot MODULE=mymod\"."
 	@touch progload.mem progload-RAM.mem
-	$(YOSYS) -p "read_verilog ./generated/*.v; proc; opt; show -colors 2 -width -format dot -prefix chiselv -signed SOC"
+	@$(YOSYS) -p "read_verilog ./generated/*.v; proc; opt; show -colors 2 -width -format dot -prefix $(MODULE) -signed $(MODULE)"
 	@rm progload.mem progload-RAM.mem
 
 fmt: ## Formats code using scalafmt and scalafix
@@ -67,6 +85,11 @@ check-board-vars:
 	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)
 
 clean:   ## Clean all generated files
+	@if [ $(BUILDTOOL) = "sbt" ]; then \
+		${SBT} "clean"; \
+    elif [ $(BUILDTOOL) = "mill" ]; then \
+		scripts/mill clean; \
+	fi
 	@rm -rf obj_dir test_run_dir target
 	@rm -rf $(generated_files)
 	@rm -rf out
@@ -83,5 +106,5 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "[:##]"}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$4}'
 	@echo ""
 
-.PHONY: chisel clean prog help verilator
+.PHONY: clean prog help
 .DEFAULT_GOAL := help
