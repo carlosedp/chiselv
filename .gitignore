@@ -79,3 +79,4 @@ tmp
 /*.mem
 /chiselv
 /tmphex/*
+/*.dot
