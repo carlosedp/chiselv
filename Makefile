@@ -29,7 +29,7 @@ CHISELPARAMS = --target:fpga -td $(generated_files)
 # Targets
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT
 
-$(generated_files): $(scala_files) build.sbt
+$(generated_files): $(scala_files) build.sc build.sbt
 	@rm -rf $(generated_files)
 	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
