@@ -9,46 +9,26 @@ import matchers._
 
 // Extend the SOC module to add the observer for sub-module signals
 class SOCWrapperDemo(
-  cpuFrequency:          Int,
-  bitWidth:              Int,
-  instructionMemorySize: Int,
-  memorySize:            Int,
-  memoryFile:            String,
-  ramFile:               String,
-  numGPIO:               Int
+  memoryFile: String,
+  ramFile:    String
   // baudRate: Int,
 ) extends SOC(
-    cpuFrequency,
-    bitWidth,
-    instructionMemorySize,
-    memorySize,
-    memoryFile,
-    ramFile,
-    numGPIO
+    cpuFrequency = 10000,
+    instructionMemorySize = 64 * 1024,
+    dataMemorySize = 64 * 1024,
+    memoryFile = memoryFile,
+    ramFile = ramFile
   ) {
   val registers = expose(core.registerBank.regs)
   val pc        = expose(core.PC.pc)
 }
 
 class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "CPULEDDemoSpec"
-
-  val cpuFrequency          = 10000
-  val bitWidth              = 32
-  val instructionMemorySize = 64 * 1024
-  val memorySize            = 64 * 1024
-
   def defaultDut(memoryfile: String, ramFile: String = "") =
     test(
       new SOCWrapperDemo(
-        cpuFrequency,
-        bitWidth,
-        instructionMemorySize,
-        memorySize,
         memoryfile,
-        ramFile,
-        8
-        // 1200,
+        ramFile
       )
     )
       .withAnnotations(
@@ -57,6 +37,8 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
           VerilatorBackendAnnotation
         )
       )
+
+  behavior of "CPULEDDemoSpec"
 
   it should "lit a LED connected to GPIO from gcc program" in {
     val filename = "./gcc/simpleLED/main.mem"

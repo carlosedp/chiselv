@@ -25,6 +25,13 @@ class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
   io.regPort.rs1 := regs(io.regPort.rs1_addr)
   io.regPort.rs2 := regs(io.regPort.rs2_addr)
   when(io.regPort.writeEnable && io.regPort.regwr_addr =/= 0.U && !io.regPort.stall) {
+    // Write-first mode
+    when(io.regPort.rs1_addr === io.regPort.regwr_addr) {
+      io.regPort.rs1 := io.regPort.regwr_data
+    }.elsewhen(io.regPort.rs2_addr === io.regPort.regwr_addr) {
+      io.regPort.rs2 := io.regPort.regwr_data
+    }
+
     regs(io.regPort.regwr_addr) := io.regPort.regwr_data
   }
 }

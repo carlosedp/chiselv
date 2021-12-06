@@ -23,8 +23,8 @@ class SOC(
   io.led0 := blink.io.led0
 
   // Instantiate and initialize the Instruction memory
-  val instructionMemory = Module(new InstructionMemory(bitWidth, instructionMemorySize, memoryFile))
-  instructionMemory.io.memPort.readAddr := 0.U
+  val instructionMemory = Module(new InstructionSyncMemory(bitWidth, instructionMemorySize, memoryFile))
+  // instructionMemory.io.memPort.readAddr := 0.U
 
   // Instantiate and initialize the Data memory
   val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize, ramFile))
@@ -41,10 +41,8 @@ class SOC(
   val UART0       = Module(new Uart(fifoLength, rxOverclock))
   UART0.io.serialPort <> io.UART0SerialPort
 
-  // Instantiate our core
-  val core = Module(
-    new CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, dataMemorySize, numGPIO)
-  )
+  // val core = Module(new CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, dataMemorySize, numGPIO))
+  val core = Module(new CPUPipelined(cpuFrequency, bitWidth, instructionMemorySize, dataMemorySize, numGPIO))
 
   // Connect the core to the devices
   core.io.instructionMemPort <> instructionMemory.io.memPort

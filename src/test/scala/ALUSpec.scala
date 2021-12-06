@@ -1,9 +1,10 @@
 package chiselv
 
-import com.carlosedp.scalautils.ObjectUtils.NumericManipulation
 import chisel3._
 import chiseltest._
+import com.carlosedp.scalautils.ObjectUtils.NumericManipulation
 import org.scalatest._
+
 import Instruction._
 import flatspec._
 import matchers._
