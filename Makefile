@@ -23,8 +23,8 @@ YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
 # Default board PLL
 BOARD := bypass
 BOARDPARAMS=-board ${BOARD} -cpufreq 50000000 -invreset false
-CHISELPARAMS = --target:fpga -td $(generated_files)
 # CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
+CHISELPARAMS = --target:fpga -td $(generated_files)
 
 # Targets
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT

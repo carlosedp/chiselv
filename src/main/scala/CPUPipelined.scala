@@ -1,6 +1,7 @@
 package chiselv
 
 import chisel3._
+import chisel3.util._
 import chisel3.experimental._
 
 import Instruction._
@@ -84,26 +85,39 @@ class CPUPipelined(
   val executeIMM         = RegInit(0.S(bitWidth.W))
   val executeInstruction = RegInit(ERR_INST)
   val executeToALU       = RegInit(false.B)
+  val executeIsLoad      = RegInit(false.B)
+  val executeIsStore     = RegInit(false.B)
   val executeBranch      = RegInit(false.B)
   val executeJump        = RegInit(false.B)
   val executeUseIMM      = RegInit(false.B)
 
-  val memoryPC        = RegInit(0.U(bitWidth.W))
-  val memoryPC4       = RegInit(0.U(bitWidth.W))
-  val memoryRD        = RegInit(0.U(bitWidth.W))
-  val memoryALUResult = RegInit(0.S(bitWidth.W))
-  val memoryWriteReg  = RegInit(false.B)
+  val memoryPC          = RegInit(0.U(bitWidth.W))
+  val memoryPC4         = RegInit(0.U(bitWidth.W))
+  val memoryRS1         = RegInit(0.S(bitWidth.W))
+  val memoryRS2         = RegInit(0.S(bitWidth.W))
+  val memoryIMM         = RegInit(0.S(bitWidth.W))
+  val memoryRD          = RegInit(0.U(bitWidth.W))
+  val memoryInstruction = RegInit(ERR_INST)
+  val memoryIsLoad      = RegInit(false.B)
+  val memoryIsStore     = RegInit(false.B)
+  val memoryRegData     = RegInit(0.S(bitWidth.W))
+  val memoryWriteReg    = RegInit(false.B)
 
-  val writeBackPC        = RegInit(0.U(bitWidth.W))
-  val writeBackPC4       = RegInit(0.U(bitWidth.W))
-  val writeBackRD        = RegInit(0.U(bitWidth.W))
-  val writeBackALUResult = RegInit(0.S(bitWidth.W))
-  val writeBackWriteReg  = RegInit(false.B)
+  val writeBackPC       = RegInit(0.U(bitWidth.W))
+  val writeBackPC4      = RegInit(0.U(bitWidth.W))
+  val writeBackRD       = RegInit(0.U(bitWidth.W))
+  val writeBackRegData  = RegInit(0.S(bitWidth.W))
+  val writeBackWriteReg = RegInit(false.B)
+
+  dontTouch(memoryPC)
+  dontTouch(writeBackPC)
+  dontTouch(memoryPC4)
+  dontTouch(writeBackPC4)
 
   // State of the CPU Stall
   stall := memoryIOManager.io.stall
 
-  // --------------------------- Instruction Fetch ------------------- //
+  // --------------------------- Fetch Stage ------------------- //
 
   when(!stall) {
     // If CPU is stalled, do not advance PC
@@ -113,40 +127,36 @@ class CPUPipelined(
 
   // Connect PC output to instruction memory
   io.instructionMemPort.readAddr := PC.io.pcPort.PC
-  decodePC                       := PC.io.pcPort.PC
-  decodeOp                       := io.instructionMemPort.readData
-  decodePC4                      := PC.io.pcPort.PC4
+  when(!stall) {
+    decodeOp  := io.instructionMemPort.readData
+    decodePC  := PC.io.pcPort.PC
+    decodePC4 := PC.io.pcPort.PC4
+  }
 
-  // --------------------------- Instruction Decode ------------------ //
+  // --------------------------- Decode Stage ------------------ //
 
   // Connect the instruction memory to the decoder
   decoder.io.DecoderPort.op        := decodeOp
   registerBank.io.regPort.rs1_addr := decoder.io.DecoderPort.rs1
   registerBank.io.regPort.rs2_addr := decoder.io.DecoderPort.rs2
-  executeInstruction               := decoder.io.DecoderPort.inst
-  executeToALU                     := decoder.io.DecoderPort.toALU
-  executeBranch                    := decoder.io.DecoderPort.branch
-  executeJump                      := decoder.io.DecoderPort.jump
-  executeUseIMM                    := decoder.io.DecoderPort.use_imm
+  when(!stall) {
+    executeInstruction := decoder.io.DecoderPort.inst
+    executeToALU       := decoder.io.DecoderPort.toALU
+    executeIsLoad      := decoder.io.DecoderPort.is_load
+    executeIsStore     := decoder.io.DecoderPort.is_store
+    executeBranch      := decoder.io.DecoderPort.branch
+    executeJump        := decoder.io.DecoderPort.jump
+    executeUseIMM      := decoder.io.DecoderPort.use_imm
 
-  executeRD  := decoder.io.DecoderPort.rd
-  executeIMM := decoder.io.DecoderPort.imm
-  executeRS1 := registerBank.io.regPort.rs1
-  executeRS2 := registerBank.io.regPort.rs2
-  executePC  := decodePC
-  executePC4 := decodePC4
+    executeRD  := decoder.io.DecoderPort.rd
+    executeIMM := decoder.io.DecoderPort.imm
+    executeRS1 := registerBank.io.regPort.rs1
+    executeRS2 := registerBank.io.regPort.rs2
+    executePC  := decodePC
+    executePC4 := decodePC4
+  }
 
-  // Avoid the compiler from optimizing out the registers (temporary)
-  dontTouch(executePC)
-  dontTouch(executePC4)
-  dontTouch(executeRS1)
-  dontTouch(executeRS2)
-  dontTouch(executeRD)
-  dontTouch(executeIMM)
-  dontTouch(executeToALU)
-  dontTouch(executeUseIMM)
-
-  // --------------------------- Execute ----------------------------- //
+  // --------------------------- Execute Stage ----------------------------- //
 
   // ALU Operations
   when(executeToALU) {
@@ -157,26 +167,36 @@ class CPUPipelined(
       executeIMM,
       executeRS2
     ).asUInt
-    memoryPC        := executePC
-    memoryPC4       := executePC4
-    memoryRD        := executeRD
-    memoryALUResult := ALU.io.ALUPort.x.asSInt
-    memoryWriteReg  := true.B
-    // Avoid the compiler from optimizing out the registers (temporary)
-    dontTouch(memoryRD)
-    dontTouch(memoryPC)
-    dontTouch(memoryPC4)
-    dontTouch(memoryALUResult)
-  }
-    .elsewhen(executeInstruction === LUI) {
-      memoryWriteReg  := true.B
-      memoryRD        := executeRD
-      memoryALUResult := executeIMM
-      memoryPC        := executePC
-      memoryPC4       := executePC4
+    when(!stall) {
+      memoryRegData  := ALU.io.ALUPort.x.asSInt
+      memoryWriteReg := true.B
     }
-    .otherwise(memoryWriteReg := false.B)
+  }.elsewhen(executeInstruction === LUI) {
+    when(!stall) {
+      memoryRegData  := executeIMM
+      memoryWriteReg := true.B
+    }
+  }.elsewhen(executeInstruction === AUIPC) {
+    ALU.io.ALUPort.inst := ADD
+    ALU.io.ALUPort.a    := executePC
+    ALU.io.ALUPort.b    := executeIMM.asUInt
+    when(!stall) {
+      memoryRegData  := ALU.io.ALUPort.x.asSInt
+      memoryWriteReg := true.B
+    }
+  }.otherwise(when(!stall)(memoryWriteReg := false.B))
 
+  when(!stall) {
+    memoryPC          := executePC
+    memoryPC4         := executePC4
+    memoryRD          := executeRD
+    memoryRS1         := executeRS1
+    memoryRS2         := executeRS2
+    memoryIMM         := executeIMM
+    memoryInstruction := executeInstruction
+    memoryIsLoad      := executeIsLoad
+    memoryIsStore     := executeIsStore
+  }
   // Branch Operations
   // when(executeBranch) {
   //   ALU.io.ALUPort.a := executeRS1.asUInt
@@ -224,115 +244,103 @@ class CPUPipelined(
   //   }
 
   // }.otherwise(flushPipe := false.B)
-  // // LUI
 
-  // --------------------------- Memory Access ----------------------- //
-  writeBackPC        := memoryPC
-  writeBackPC4       := memoryPC4
-  writeBackRD        := memoryRD
-  writeBackALUResult := memoryALUResult
-  writeBackWriteReg  := memoryWriteReg
-  // Avoid the compiler from optimizing out the registers (temporary)
-  dontTouch(writeBackRD)
-  dontTouch(writeBackPC)
-  dontTouch(writeBackPC4)
-  dontTouch(writeBackALUResult)
+  // --------------------------- Memory Stage ----------------------- //
 
-  // --------------------------- WriteBack --------------------------- //
+  // Loads & Stores
+  when(memoryIsLoad || memoryIsStore) {
+    val destAddress = (memoryRS1 + memoryIMM).asUInt
+    memoryIOManager.io.MemoryIOPort.writeAddr := destAddress
+    memoryIOManager.io.MemoryIOPort.readAddr  := destAddress
+  }
+
+  when(memoryIsLoad) {
+    val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
+    val dataOut  = WireDefault(0.S(32.W))
+
+    // Load Word
+    when(memoryInstruction === LW) {
+      dataSize := 3.U
+      dataOut  := memoryIOManager.io.MemoryIOPort.readData.asSInt
+    }
+    // Load Halfword
+    when(memoryInstruction === LH) {
+      dataSize := 2.U
+      dataOut := Cat(
+        Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
+        memoryIOManager.io.MemoryIOPort.readData(15, 0)
+      ).asSInt
+    }
+    // Load Halfword Unsigned
+    when(memoryInstruction === LHU) {
+      dataSize := 2.U
+      dataOut  := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
+    }
+    // Load Byte
+    when(memoryInstruction === LB) {
+      dataSize := 1.U
+      dataOut := Cat(
+        Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
+        memoryIOManager.io.MemoryIOPort.readData(7, 0)
+      ).asSInt
+    }
+    // Load Byte Unsigned
+    when(memoryInstruction === LBU) {
+      dataSize := 1.U
+      dataOut  := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
+    }
+    memoryIOManager.io.MemoryIOPort.readRequest := memoryIsLoad
+    memoryIOManager.io.MemoryIOPort.dataSize    := dataSize
+    when(!stall) {
+      writeBackRegData  := dataOut
+      writeBackWriteReg := true.B
+    }
+  }.elsewhen(memoryIsStore) {
+    // Define if operation is a load or store
+    memoryIOManager.io.MemoryIOPort.writeRequest := memoryIsStore
+
+    // Stores
+    val dataOut  = WireDefault(0.U(32.W))
+    val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
+
+    // Store Word
+    when(memoryInstruction === SW) {
+      dataOut  := memoryRS2.asUInt
+      dataSize := 3.U
+    }
+    // Store Halfword
+    when(memoryInstruction === SH) {
+      dataOut  := Cat(Fill(16, 0.U), memoryRS2(15, 0).asUInt)
+      dataSize := 2.U
+    }
+    // Store Byte
+    when(memoryInstruction === SB) {
+      dataOut  := Cat(Fill(24, 0.U), memoryRS2(7, 0).asUInt)
+      dataSize := 1.U
+    }
+    memoryIOManager.io.MemoryIOPort.dataSize  := dataSize
+    memoryIOManager.io.MemoryIOPort.writeData := dataOut
+    when(!stall) {
+      writeBackRegData  := memoryRegData
+      writeBackWriteReg := memoryWriteReg
+    }
+  }.otherwise {
+    when(!stall) {
+      writeBackRegData  := memoryRegData
+      writeBackWriteReg := memoryWriteReg
+    }
+  }
+
+  when(!stall) {
+    writeBackPC  := memoryPC
+    writeBackPC4 := memoryPC4
+    writeBackRD  := memoryRD
+  }
+
+  // --------------------------- WriteBack  Stage --------------------------- //
 
   registerBank.io.regPort.writeEnable := writeBackWriteReg
   registerBank.io.regPort.regwr_addr  := writeBackRD
-  registerBank.io.regPort.regwr_data  := writeBackALUResult
+  registerBank.io.regPort.regwr_data  := writeBackRegData
 
 }
-
-//   // AUIPC
-//   when(decoder.io.DecoderPort.inst === AUIPC) {
-//     registerBank.io.regPort.writeEnable := true.B
-//     ALU.io.ALUPort.inst                 := ADD
-//     ALU.io.ALUPort.a                    := FetchPC
-//     ALU.io.ALUPort.b :=
-//       decoder.io.DecoderPort.imm.asUInt()
-//     registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt
-//   }
-
-//   // Loads & Stores
-//   when(decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store) {
-//     // Use the ALU to get the resulting address
-//     ALU.io.ALUPort.inst := ADD
-//     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
-//     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm.asUInt()
-
-//     memoryIOManager.io.MemoryIOPort.writeAddr := ALU.io.ALUPort.x
-//     memoryIOManager.io.MemoryIOPort.readAddr  := ALU.io.ALUPort.x
-//   }
-
-//   when(decoder.io.DecoderPort.is_load) {
-//     val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
-//     val dataOut  = WireDefault(0.S(32.W))
-
-//     // Load Word
-//     when(decoder.io.DecoderPort.inst === LW) {
-//       dataSize := 3.U
-//       dataOut  := memoryIOManager.io.MemoryIOPort.readData.asSInt
-//     }
-//     // Load Halfword
-//     when(decoder.io.DecoderPort.inst === LH) {
-//       dataSize := 2.U
-//       dataOut := Cat(
-//         Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
-//         memoryIOManager.io.MemoryIOPort.readData(15, 0),
-//       ).asSInt
-//     }
-//     // Load Halfword Unsigned
-//     when(decoder.io.DecoderPort.inst === LHU) {
-//       dataSize := 2.U
-//       dataOut  := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
-//     }
-//     // Load Byte
-//     when(decoder.io.DecoderPort.inst === LB) {
-//       dataSize := 1.U
-//       dataOut := Cat(
-//         Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
-//         memoryIOManager.io.MemoryIOPort.readData(7, 0),
-//       ).asSInt
-//     }
-//     // Load Byte Unsigned
-//     when(decoder.io.DecoderPort.inst === LBU) {
-//       dataSize := 1.U
-//       dataOut  := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
-//     }
-//     memoryIOManager.io.MemoryIOPort.readRequest := decoder.io.DecoderPort.is_load
-//     memoryIOManager.io.MemoryIOPort.dataSize    := dataSize
-//     registerBank.io.regPort.writeEnable         := true.B
-//     registerBank.io.regPort.regwr_data          := dataOut
-//   }
-
-//   when(decoder.io.DecoderPort.is_store) {
-//     // Define if operation is a load or store
-//     memoryIOManager.io.MemoryIOPort.writeRequest := decoder.io.DecoderPort.is_store
-
-//     // Stores
-//     val dataOut  = WireDefault(0.U(32.W))
-//     val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
-
-//     // Store Word
-//     when(decoder.io.DecoderPort.inst === SW) {
-//       dataOut  := registerBank.io.regPort.rs2.asUInt
-//       dataSize := 3.U
-//     }
-//     // Store Halfword
-//     when(decoder.io.DecoderPort.inst === SH) {
-//       dataOut  := Cat(Fill(16, 0.U), registerBank.io.regPort.rs2(15, 0).asUInt)
-//       dataSize := 2.U
-//     }
-//     // Store Byte
-//     when(decoder.io.DecoderPort.inst === SB) {
-//       dataOut  := Cat(Fill(24, 0.U), registerBank.io.regPort.rs2(7, 0).asUInt)
-//       dataSize := 1.U
-//     }
-//     memoryIOManager.io.MemoryIOPort.dataSize  := dataSize
-//     memoryIOManager.io.MemoryIOPort.writeData := dataOut
-//   }
-//   cpuState := CPUState.Fetch
-// }
