@@ -6,13 +6,27 @@
 #define CLEAR "\033[2K"
 
 volatile int heapcheck = 0xdeadbeef;
+
+void header(void) {
+  printf("ChiselV, a RISC-V RV32I Core\n");
+  uint32_t proc_freq = *(volatile unsigned long *)(SYSCON_BASE + SYS_REG_CLKINFO) / 1000 / 1000;
+  uint32_t num_gpio = *(volatile unsigned long *)(SYSCON_BASE + SYS_REG_NUMGPIO0);
+  printf("clock: %dMHz\n", proc_freq);
+  printf("uart0: %d\n", UART0_BAUD);
+  printf("gpio0: %d IO\n", num_gpio);
+  printf("-----\n");
+}
+
 int main(void)
 {
   uart_init();
-  pinMode(0, OUTPUT);
   // Turn on LED to say we're alive
+  pinMode(0, OUTPUT);
   digitalWrite(0, HIGH);
 
+  // Print the header with core info
+  header();
+  // Print the banner
   printf(logocv);
   printf("> ");
   while (1)

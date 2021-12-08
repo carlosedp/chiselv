@@ -1,3 +1,4 @@
+#include "io.h"
 #include "uart.h"
 /*
  * Core UART functions to implement for a port

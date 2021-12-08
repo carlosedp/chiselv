@@ -46,7 +46,7 @@ class CPUSingleCycle(
   decoder.io.DecoderPort.op := 0.U
 
   // Instantiate and initialize the Memory IO Manager
-  val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize))
+  val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize, numGPIO))
   memoryIOManager.io.MemoryIOPort.readRequest  := false.B
   memoryIOManager.io.MemoryIOPort.writeRequest := false.B
   memoryIOManager.io.MemoryIOPort.readAddr     := 0.U

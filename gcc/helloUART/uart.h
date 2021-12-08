@@ -1,16 +1,7 @@
 #pragma once
-
 /*
  * Core UART header to implement for a port
  */
-
-typedef unsigned int uint32_t;
-typedef int int32_t;
-typedef unsigned char uint8_t;
-typedef char int8_t;
-
-#define SYSCON_BASE 0x00001000 /* System control regs */
-#define SYS_REG_CLKINFO 0x08 /* Clock information */
 
 #define UART0_BASE 0x30000000
 #define UART0_BAUD 115200

@@ -40,7 +40,7 @@ class MMIOPort(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val dataSize     = Input(UInt(2.W))
 }
 
-class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024) extends Module {
+class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024, numGPIO0: Int = 0) extends Module {
   val io = IO(new Bundle {
     val MemoryIOPort = new MMIOPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))
@@ -91,7 +91,7 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     // Dummy output - (0x0000_1000)
     when(readAddress(11, 0) === 0x0L.U)(dataOut := 0xbaad_cafeL.U)
     // Clock frequency - (0x0000_1008)
-    when(readAddress(11, 0) === 0x8L.U)(dataOut := clockFreq.asUInt(bitWidth.W))
+    when(readAddress(11, 0) === 0x8L.U)(dataOut := clockFreq.asUInt())
     // Has UART0 - (0x0000_1010)
     when(readAddress(11, 0) === 0x10L.U)(dataOut := 1.U)
     // Has GPIO0 - (0x0000_1018)
@@ -100,6 +100,9 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
     when(readAddress(11, 0) === 0x20L.U)(dataOut := 0.U)
     // Has Timer0 - (0x0000_1024)
     when(readAddress(11, 0) === 0x24L.U)(dataOut := 1.U)
+    // Num GPIOs in GPIO0 - (0x0000_1028)
+    when(readAddress(11, 0) === 0x28L.U)(dataOut := numGPIO0.asUInt())
+
   }
 
   /* --- UART0 --- */

@@ -76,7 +76,7 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board artya7-35t -cpufreq 15000000"
+      extraargs: "--target:fpga -board artya7-35t -cpufreq 25000000"
 
 targets:
   lint:

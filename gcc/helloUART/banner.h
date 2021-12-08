@@ -22,7 +22,7 @@ char *logorv =
     "rrrrrrrrrrrrrrrrrrrrrr  rrrrrrrrrrrrrrrrrrrrrr\n"
     "\n"
     "       INSTRUCTION SETS WANT TO BE FREE\n\n"
-    "Hello from ChiselV, a RISC-V Processor!\n\n";
+    "Welcome to ChiselV!                    \n\n";
 
 char *logocv =
 "(..,,**)                                                                       \n"
@@ -48,4 +48,4 @@ char *logocv =
 "                                /...((((***                                     \n"
 "                                  ,(*/*                                         \n"
 "                                                                                \n"
-"Hello from ChiselV, a RISC-V Processor!                                         \n";
+"Welcome to ChiselV!                                                             \n";

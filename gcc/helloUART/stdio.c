@@ -30,6 +30,7 @@
 
 #include <stdarg.h>
 #include "stdio.h"
+#include "io.h"
 #include "uart.h"
 
 // high-level functions use the getchar/putchar
