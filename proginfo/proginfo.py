@@ -22,8 +22,10 @@ def main():
 
 # Utility Functions
 
-def findFile(f):
+def findFile(f, filter=""):
     r = glob.glob("../**/" + f, recursive=True)
+    if filter != "":
+        r = [s for s in r if filter in s]
     if not r:
         print("ERROR: Could not find file " + f)
         exit(1)

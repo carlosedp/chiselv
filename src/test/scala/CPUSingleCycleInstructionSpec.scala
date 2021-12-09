@@ -69,9 +69,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate ADD/ADDI instructions" in {
     val prog = """
-      addi x1, x1, 1
-      addi x2, x2, 1
-      add x3, x1, x2
+    addi x1, x1, 1
+    addi x2, x2, 1
+    add x3, x1, x2
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
