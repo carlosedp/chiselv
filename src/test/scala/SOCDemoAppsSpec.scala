@@ -19,6 +19,7 @@ class SOCWrapperDemo(
   // baudRate: Int,
 ) extends SOC(
     cpuFrequency,
+    entryPoint = 0,
     bitWidth,
     instructionMemorySize,
     memorySize,

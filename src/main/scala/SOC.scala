@@ -5,6 +5,7 @@ import chisel3.experimental._
 
 class SOC(
   cpuFrequency:          Int,
+  entryPoint:            Long,
   bitWidth:              Int = 32,
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize:        Int = 1 * 1024,
@@ -41,15 +42,19 @@ class SOC(
   val UART0       = Module(new Uart(fifoLength, rxOverclock))
   UART0.io.serialPort <> io.UART0SerialPort
 
+  // Instantiate the Syscon Module
+  val syscon = Module(new Syscon(32, cpuFrequency, numGPIO, entryPoint, instructionMemorySize, dataMemorySize))
+
   // Instantiate our core
   val core = Module(
-    new CPUSingleCycle(cpuFrequency, bitWidth, instructionMemorySize, dataMemorySize, numGPIO)
+    new CPUSingleCycle(cpuFrequency, entryPoint, bitWidth, instructionMemorySize, dataMemorySize, numGPIO)
   )
 
   // Connect the core to the devices
   core.io.instructionMemPort <> instructionMemory.io.memPort
   core.io.dataMemPort <> dataMemory.io.dualPort
   core.io.UART0Port <> UART0.io.dataPort
+  core.io.SysconPort <> syscon.io.SysconPort
   if (numGPIO > 0) {
     core.io.GPIO0External <> io.GPIO0External
   }

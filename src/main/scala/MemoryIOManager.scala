@@ -40,13 +40,14 @@ class MMIOPort(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val dataSize     = Input(UInt(2.W))
 }
 
-class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 1024, numGPIO0: Int = 0) extends Module {
+class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module {
   val io = IO(new Bundle {
     val MemoryIOPort = new MMIOPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))
     val Timer0Port   = Flipped(new TimerPort(bitWidth))
     val UART0Port    = Flipped(new UARTPort())
     val DataMemPort  = Flipped(new MemoryPortDual(bitWidth, sizeBytes))
+    val SysconPort   = Flipped(new SysconPort(bitWidth))
     val stall        = Output(Bool())
   })
 
@@ -75,6 +76,8 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
   io.DataMemPort.dataSize     := 0.U
   io.DataMemPort.writeMask    := 0.U
 
+  io.SysconPort.Address := 0.U
+
   // Stall Management
   val stallLatency = WireDefault(0.U(4.W))
   val stallEnable  = WireDefault(false.B)
@@ -88,21 +91,8 @@ class MemoryIOManager(bitWidth: Int = 32, clockFreq: Long, sizeBytes: Long = 102
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U && io.MemoryIOPort.readRequest) {
-    // Dummy output - (0x0000_1000)
-    when(readAddress(11, 0) === 0x0L.U)(dataOut := 0xbaad_cafeL.U)
-    // Clock frequency - (0x0000_1008)
-    when(readAddress(11, 0) === 0x8L.U)(dataOut := clockFreq.asUInt())
-    // Has UART0 - (0x0000_1010)
-    when(readAddress(11, 0) === 0x10L.U)(dataOut := 1.U)
-    // Has GPIO0 - (0x0000_1018)
-    when(readAddress(11, 0) === 0x18L.U)(dataOut := 1.U)
-    // Has PWM0 - (0x0000_1020)
-    when(readAddress(11, 0) === 0x20L.U)(dataOut := 0.U)
-    // Has Timer0 - (0x0000_1024)
-    when(readAddress(11, 0) === 0x24L.U)(dataOut := 1.U)
-    // Num GPIOs in GPIO0 - (0x0000_1028)
-    when(readAddress(11, 0) === 0x28L.U)(dataOut := numGPIO0.asUInt())
-
+    io.SysconPort.Address := readAddress(11, 0)
+    dataOut               := io.SysconPort.DataOut
   }
 
   /* --- UART0 --- */

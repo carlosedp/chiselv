@@ -8,6 +8,7 @@ import Instruction._
 
 class CPUSingleCycle(
   cpuFrequency:          Int,
+  entryPoint:            Long,
   bitWidth:              Int = 32,
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize:        Int = 1 * 1024,
@@ -17,6 +18,7 @@ class CPUSingleCycle(
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
 
     val UART0Port          = Flipped(new UARTPort()) // UART0 data port
+    val SysconPort         = Flipped(new SysconPort(bitWidth))
     val instructionMemPort = Flipped(new InstructionMemPort(bitWidth, instructionMemorySize))
     val dataMemPort        = Flipped(new MemoryPortDual(bitWidth, dataMemorySize))
   })
@@ -30,7 +32,7 @@ class CPUSingleCycle(
   registerBank.io.regPort.stall       := stall
 
   // Instantiate and initialize the Program Counter
-  val PC = Module(new ProgramCounter(bitWidth))
+  val PC = Module(new ProgramCounter(bitWidth, entryPoint))
   PC.io.pcPort.writeEnable := false.B
   PC.io.pcPort.dataIn      := 0.U
   PC.io.pcPort.writeAdd    := false.B
@@ -46,7 +48,7 @@ class CPUSingleCycle(
   decoder.io.DecoderPort.op := 0.U
 
   // Instantiate and initialize the Memory IO Manager
-  val memoryIOManager = Module(new MemoryIOManager(bitWidth, cpuFrequency, dataMemorySize, numGPIO))
+  val memoryIOManager = Module(new MemoryIOManager(bitWidth, dataMemorySize))
   memoryIOManager.io.MemoryIOPort.readRequest  := false.B
   memoryIOManager.io.MemoryIOPort.writeRequest := false.B
   memoryIOManager.io.MemoryIOPort.readAddr     := 0.U
@@ -57,6 +59,7 @@ class CPUSingleCycle(
   // Connect MMIO to the devices
   memoryIOManager.io.DataMemPort <> io.dataMemPort
   memoryIOManager.io.UART0Port <> io.UART0Port
+  memoryIOManager.io.SysconPort <> io.SysconPort
 
   // Instantiate and connect GPIO
   val GPIO0 = Module(new GPIO(bitWidth, numGPIO))

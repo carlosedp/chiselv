@@ -12,6 +12,7 @@ class CPUSingleCycleWrapperApps(
   memoryFile: String
 ) extends SOC(
     cpuFrequency = 25000000,
+    entryPoint = 0,
     bitWidth = 32,
     instructionMemorySize = 1 * 1024,
     dataMemorySize = 1 * 1024,

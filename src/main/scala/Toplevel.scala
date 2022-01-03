@@ -30,6 +30,7 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
       Module(
         new SOC(
           cpuFrequency = cpuFrequency,
+          entryPoint = 0x00000000,
           bitWidth = bitWidth,
           instructionMemorySize = instructionMemorySize,
           dataMemorySize = dataMemorySize,

@@ -13,6 +13,9 @@ typedef char int8_t;
 #define SYS_REG_HASPWM0 0x20   /* Has PWM0 */
 #define SYS_REG_HASTIMER0 0x24   /* Has TIMER0 */
 #define SYS_REG_NUMGPIO0 0x28   /* Num IO GPIO0 */
+#define SYS_REG_BOOTADDR 0x2C   /* Boot address */
+#define SYS_REG_ROMSIZE 0x30   /* ROM Size */
+#define SYS_REG_RAMSIZE 0x34   /* RAM Size */
 
 #define GPIO0_BASE 0x30001000
 #define GPIO0_DIR 0x00
