@@ -17,7 +17,6 @@ Global / semanticdbVersion                                 := scalafixSemanticdb
 Global / onChangedBuildSource                              := ReloadOnSourceChanges
 
 Compile / run / mainClass := Some("chiselv.Toplevel")
-Test / logBuffered        := false
 
 lazy val chiselv = (project in file("."))
   .settings(
