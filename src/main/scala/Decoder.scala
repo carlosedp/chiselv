@@ -124,7 +124,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
       0.S  // padding for InstructionType
     )
   )
-  io.DecoderPort.inst     := signals.inst
+  io.DecoderPort.inst     := signals.inst.asTypeOf(new Instruction.Type)
   io.DecoderPort.toALU    := signals.to_alu
   io.DecoderPort.branch   := signals.branch
   io.DecoderPort.use_imm  := signals.use_imm

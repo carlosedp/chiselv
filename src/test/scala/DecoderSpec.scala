@@ -25,7 +25,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       // ?????????????????000?????0010011
       c.io.DecoderPort.op.poke(makeBin("andi x7, x24, -1"))
       c.clock.step()
-      validateResult(c, ANDI, 7, 24, 0, -1, true.B, false.B)
+      validateResult(c, ANDI, 7, 24, 31, -1, true.B, false.B)
     }
   }
   it should "Decode an SB instruction (type S)" in {
@@ -33,14 +33,14 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       //  Template: b?????????????????000?????0100011
       c.io.DecoderPort.op.poke(makeBin("sb x10, -81(x21)"))
       c.clock.step()
-      validateResult(c, SB, 0, 21, 10, -81, false.B, false.B)
+      validateResult(c, SB, 15, 21, 10, -81, false.B, false.B)
     }
   }
   it should "Decode an BEQ instruction (type B)" in {
     test(new Decoder()) { c =>
       c.io.DecoderPort.op.poke(makeBin("beq x21, x10, -1366"))
       c.clock.step()
-      validateResult(c, BEQ, 0, 21, 10, -1366, false.B, true.B)
+      validateResult(c, BEQ, 11, 21, 10, -1366, false.B, true.B)
     }
   }
   it should "Decode an LUI instruction (type U)" in {
@@ -50,8 +50,8 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       c.clock.step()
       c.io.DecoderPort.inst.expect(LUI)
       c.io.DecoderPort.rd.peek().litValue should be(23)
-      c.io.DecoderPort.rs1.peek().litValue should be(0)
-      c.io.DecoderPort.rs2.peek().litValue should be(0)
+      c.io.DecoderPort.rs1.peek().litValue should be(21)
+      c.io.DecoderPort.rs2.peek().litValue should be(10)
       c.io.DecoderPort.imm.peek().litValue should be(-1431658496L)
       c.io.DecoderPort.toALU.expect(false.B)
       c.io.DecoderPort.branch.expect(false.B)
@@ -62,7 +62,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
       //  Template: b?????????????????????????1101111
       c.io.DecoderPort.op.poke(makeBin("jal x21, -699052"))
       c.clock.step()
-      validateResult(c, JAL, 21, 0, 0, -699052, false.B, false.B)
+      validateResult(c, JAL, 21, 10, 20, -699052, false.B, false.B)
     }
   }
 
