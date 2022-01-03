@@ -32,7 +32,7 @@ lazy val versions = new {
   val chiseltest      = "0.5.0-RC2"
   val scalatest       = "3.2.10"
   val organizeimports = "0.5.0"
-  val scalautils      = "0.7.2"
+  val scalautils      = "0.8.0"
   val oslib           = "0.8.0"
 }
 
