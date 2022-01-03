@@ -1,5 +1,4 @@
 # Source and target files/directories
-project = $(shell grep object build.sc |grep -v extends |sed s/object//g |xargs)
 scala_files = $(wildcard src/main/scala/*.scala)
 generated_files = generated
 BUILDTOOL ?= sbt 							# Can also be mill
@@ -16,9 +15,10 @@ else
 endif
 
 # Define utility applications
-# VERILATOR= docker $(DOCKERARGS) hdlc/verilator verilator	# Docker Verilator
-VERILATOR=verilator  # Local Verilator
 YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
+VERILATORARGS = --name verilator --hostname verilator --rm -it --entrypoint= -v $(PWD):/work -w /work
+VERILATOR=  # Local Verilator
+# VERILATOR = docker $(DOCKERARGS) $(VERILATORARGS) verilator/verilator
 
 # Default board PLL
 BOARD := bypass
@@ -35,6 +35,7 @@ $(generated_files): $(scala_files) build.sbt
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
 		${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
     elif [ $(BUILDTOOL) = "mill" ]; then \
+		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
 		scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
 	fi
 
@@ -42,6 +43,7 @@ chisel_tests:
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
 		${SBT} "test"; \
     elif [ $(BUILDTOOL) = "mill" ]; then \
+		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
 		scripts/mill $(project).test; \
 	fi
 
@@ -52,21 +54,19 @@ check: chisel_tests ## Run Chisel tests
 test: chisel_tests
 
 # This section defines the Verilator simulation and demo application to be used
+verilator: $(generated_files) ## Generate Verilator simulation
+	@rm -rf obj_dir
+	$(VERILATOR) verilator -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
+	make -C obj_dir -f VToplevel.mk -j`nproc`
+	@cp obj_dir/chiselv .
+
 # Adjust the rom and ram files below to match your test
 romfile = gcc/helloUART/main-rom.mem
 ramfile = gcc/helloUART/main-ram.mem
-verilator: $(generated_files) ## Generate Verilator simulation
-	@rm -rf obj_dir
-	$(VERILATOR) -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
-	@make -C obj_dir -f VToplevel.mk -j`nproc`
-	@cp obj_dir/chiselv .
-	@cp $(romfile) progload.mem
-	@cp $(ramfile) progload-RAM.mem
-
 verirun: ## Run Verilator simulation with ROM and RAM files to be loaded
 	@cp $(romfile) progload.mem
 	@cp $(ramfile) progload-RAM.mem
-	./chiselv
+	@bash -c "trap 'reset' EXIT; ./chiselv"
 
 MODULE ?= Toplevel
 dot: $(generated_files) ## Generate dot files for Core

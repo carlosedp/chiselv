@@ -34,26 +34,26 @@ Currently the target builds a RV32I core.
 
 ## Generating Verilog
 
-Verilog code can be generated from Chisel by using the `chisel` Makefile target. It requires a `-board` parameter so the correct PLL is included in the design. If it's not provided, a bypass PLL will be used.
+Verilog code can be generated from Chisel sources by using the `chisel` Makefile target. If a `-board` parameter is passed, the target board PLL is included in the design. If it's not provided, a bypass PLL will be used.
 
 ```sh
 make chisel BOARD=artya7-35
 ```
 
-The `BOARD` argument must match one of the `pll_BOARD.v]` files in `/src/main/resources` directory.
+The `BOARD` argument must match one of the `pll_BOARD.v` files in `/src/main/resources` directory.
 
 The core can be simulated in Verilator using the commands:
 
 ```sh
 make verilator   # this will build the SOC, generate the Verilog files and Verilator project
-make verirun     # This will copy the UART demo (RAM/ROM) from gcc/helloUART and run Verilator
+make verirun     # This will copy the UART demo (RAM/ROM) binaries from gcc/helloUART and run Verilator
 ```
 
 The demo application can be adjusted in the Makefile to point to the dir and files for ROM and RAM.
 
 ## Building for FPGAs
 
-The standard build process uses locally installed tools like Java (for Chisel generation), Yosys, NextPNR, Vivado and others. It's recommended to use [Fusesoc](https://github.com/olofk/fusesoc) for building the complete workflow by using containers thru a command launcher.
+The standard build process uses locally installed tools like Java (for Chisel generation), Yosys, NextPNR, Vivado and others. It's recommended to use [Fusesoc](https://github.com/olofk/fusesoc) for building the complete workflow by using containers thru a command launcher. In this case, the FPGA tools doesn't need to be installed locally.
 
 ### Fusesoc build and generation
 

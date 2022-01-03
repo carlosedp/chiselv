@@ -3,16 +3,17 @@
 ThisBuild / organization := "com.carlosedp"
 ThisBuild / description  := "ChiselV is a RISC-V core written in Chisel"
 ThisBuild / homepage     := Some(url("https://carlosedp.com"))
-ThisBuild / licenses     := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+ThisBuild / licenses     := Seq("BSD 3-Clause" -> url("https://github.com/carlosedp/chiselv/blob/main/LICENSE"))
 ThisBuild / scmInfo := Some(
   ScmInfo(url("https://github.com/carlosedp/chiselv"), "git@github.com:carlosedp/chiselv.git")
 )
 ThisBuild / developers := List(
   Developer("carlosedp", "Carlos Eduardo de Paula", "carlosedp@gmail.com", url("https://github.com/carlosedp"))
 )
+
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
 Global / semanticdbEnabled                                 := true
-Global / semanticdbVersion                                 := "4.4.28" //scalafixSemanticdb.revision // Force version due to compatibility issues
+Global / semanticdbVersion                                 := scalafixSemanticdb.revision
 Global / onChangedBuildSource                              := ReloadOnSourceChanges
 
 Compile / run / mainClass := Some("chiselv.Toplevel")
@@ -22,29 +23,31 @@ lazy val chiselv = (project in file("."))
   .settings(
     name         := "chiselv",
     version      := "1.0.0",
-    scalaVersion := "2.13.6"
+    scalaVersion := "2.13.7"
   )
 
 // Default library versions
-val defaultVersions = Map(
-  "chisel3"          -> "3.5.0-RC1",
-  "chiseltest"       -> "0.5-SNAPSHOT",
-  "scalatest"        -> "3.2.10",
-  "organize-imports" -> "0.5.0",
-  "scalautils"       -> "0.7.2"
-)
+lazy val versions = new {
+  val chisel3 = "3.5.0-RC2"
+  // val firrtl          = "1.5-SNAPSHOT"
+  val chiseltest      = "0.5.0-RC2"
+  val scalatest       = "3.2.10"
+  val organizeimports = "0.5.0"
+  val scalautils      = "0.7.2"
+  val oslib           = "0.8.0"
+}
 
 // Import libraries
 libraryDependencies ++= Seq(
-  "edu.berkeley.cs" %% "chisel3"    % defaultVersions("chisel3"),
-  "edu.berkeley.cs" %% "chiseltest" % defaultVersions("chiseltest") % "test",
-  "org.scalatest"   %% "scalatest"  % defaultVersions("scalatest")  % "test",
-  "com.carlosedp"   %% "scalautils" % defaultVersions("scalautils"),
-  "com.lihaoyi"     %% "os-lib"     % "0.7.8",
-  "edu.berkeley.cs" %% "firrtl"     % "1.5-SNAPSHOT" // Force using SNAPSHOT until next RC is cut (memory synth)
+  "edu.berkeley.cs" %% "chisel3"    % versions.chisel3,
+  "edu.berkeley.cs" %% "chiseltest" % versions.chiseltest % "test",
+  "org.scalatest"   %% "scalatest"  % versions.scalatest  % "test",
+  "com.carlosedp"   %% "scalautils" % versions.scalautils,
+  "com.lihaoyi"     %% "os-lib"     % versions.oslib
+  // "edu.berkeley.cs" %% "firrtl"     % versions.firrtl // Force using SNAPSHOT until next RC is cut (memory synth)
 )
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % defaultVersions("organize-imports")
-addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % defaultVersions("chisel3")).cross(CrossVersion.full))
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % versions.organizeimports
+addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % versions.chisel3).cross(CrossVersion.full))
 
 // Aliases
 addCommandAlias("com", "all compile test:compile")
