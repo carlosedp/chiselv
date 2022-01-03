@@ -91,26 +91,8 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U && io.MemoryIOPort.readRequest) {
-<<<<<<< HEAD
     io.SysconPort.Address := readAddress(11, 0)
     dataOut               := io.SysconPort.DataOut
-=======
-    // Dummy output - (0x0000_1000)
-    when(readAddress(11, 0) === 0x0L.U)(dataOut := 0xbaad_cafeL.U)
-    // Clock frequency - (0x0000_1008)
-    when(readAddress(11, 0) === 0x8L.U)(dataOut := clockFreq.asUInt)
-    // Has UART0 - (0x0000_1010)
-    when(readAddress(11, 0) === 0x10L.U)(dataOut := 1.U)
-    // Has GPIO0 - (0x0000_1018)
-    when(readAddress(11, 0) === 0x18L.U)(dataOut := 1.U)
-    // Has PWM0 - (0x0000_1020)
-    when(readAddress(11, 0) === 0x20L.U)(dataOut := 0.U)
-    // Has Timer0 - (0x0000_1024)
-    when(readAddress(11, 0) === 0x24L.U)(dataOut := 1.U)
-    // Num GPIOs in GPIO0 - (0x0000_1028)
-    when(readAddress(11, 0) === 0x28L.U)(dataOut := numGPIO0.asUInt)
-
->>>>>>> 5be2cdb (bump)
   }
 
   /* --- UART0 --- */
