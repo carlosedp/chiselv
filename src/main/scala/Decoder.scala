@@ -51,7 +51,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
         // Shifts
         BitPat("b0000000??????????001?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ##    BitPat(SLL.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.N() ##  BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
         BitPat("b0000000??????????001?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ##   BitPat(SLLI.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.Y() ##   BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
-        BitPat("b0100000??????????101?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ##    BitPat(SRL.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.N() ##  BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
+        BitPat("b0000000??????????101?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ##    BitPat(SRL.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.N() ##  BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
         BitPat("b0000000??????????101?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ##   BitPat(SRLI.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.Y() ##   BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
         BitPat("b0100000??????????101?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ##    BitPat(SRA.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.N() ##  BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
         BitPat("b0100000??????????101?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ##   BitPat(SRAI.litValue.U(Instruction.getWidth.W)) ##  BitPat.Y() ##  BitPat.N()  ## BitPat.Y() ##   BitPat.N() ##  BitPat.N()  ##  BitPat.N(),
@@ -104,7 +104,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
     ,
                                                         BitPat(IN_ERR.litValue.U(InstructionType.getWidth.W)) ## BitPat(ERR_INST.litValue.U(Instruction.getWidth.W)) ## BitPat.dontCare(6) // Default values
       // format: on
-      ),
+      )
     )
     .asTypeOf(new DecType)
 
@@ -120,9 +120,9 @@ class Decoder(bitWidth: Int = 32) extends Module {
       ImmGenerator(INST_U, io.DecoderPort.op),
       ImmGenerator(INST_J, io.DecoderPort.op),
       ImmGenerator(INST_Z, io.DecoderPort.op),
-      0.U, // padding for InstructionType
-      0.U // padding for InstructionType
-    ),
+      0.S, // padding for InstructionType
+      0.S  // padding for InstructionType
+    )
   )
   io.DecoderPort.inst     := signals.inst
   io.DecoderPort.toALU    := signals.to_alu
