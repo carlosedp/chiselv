@@ -27,8 +27,7 @@ lazy val chiselv = (project in file("."))
 
 // Default library versions
 lazy val versions = new {
-  val chisel3 = "3.5.0-RC2"
-  // val firrtl          = "1.5-SNAPSHOT"
+  val chisel3         = "3.5.0-RC2"
   val chiseltest      = "0.5.0-RC2"
   val scalatest       = "3.2.10"
   val organizeimports = "0.5.0"
@@ -43,7 +42,6 @@ libraryDependencies ++= Seq(
   "org.scalatest"   %% "scalatest"  % versions.scalatest  % "test",
   "com.carlosedp"   %% "scalautils" % versions.scalautils,
   "com.lihaoyi"     %% "os-lib"     % versions.oslib
-  // "edu.berkeley.cs" %% "firrtl"     % versions.firrtl // Force using SNAPSHOT until next RC is cut (memory synth)
 )
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % versions.organizeimports
 addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % versions.chisel3).cross(CrossVersion.full))
