@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.experimental.ChiselEnum
 
 object Instruction extends ChiselEnum {
-  val ERR_INST,
+  val ERR,
   // RV32I
   ADD, ADDI, SUB, LUI, AUIPC,                  // Arithmetic
   SLL, SLLI, SRL, SRLI, SRA, SRAI,             // Shifts

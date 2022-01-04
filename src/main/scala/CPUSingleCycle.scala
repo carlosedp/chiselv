@@ -39,7 +39,7 @@ class CPUSingleCycle(
 
   // Instantiate and initialize the ALU
   val ALU = Module(new ALU(bitWidth))
-  ALU.io.ALUPort.inst := ERR_INST
+  ALU.io.ALUPort.inst := ERR
   ALU.io.ALUPort.a    := 0.U
   ALU.io.ALUPort.b    := 0.U
 
