@@ -27,8 +27,8 @@ class Decoder(bitWidth: Int = 32) extends Module {
   })
 
   class DecType extends Bundle {
-    val inst_type = UInt(InstructionType.getWidth.W)
-    val inst      = UInt(Instruction.getWidth.W)
+    val inst_type = InstructionType()
+    val inst      = Instruction()
     val to_alu    = Bool()
     val branch    = Bool()
     val use_imm   = Bool()
@@ -36,76 +36,77 @@ class Decoder(bitWidth: Int = 32) extends Module {
     val is_load   = Bool()
     val is_store  = Bool()
   }
-  val signals = decode
-    .decoder(
-      io.DecoderPort.op,
-      decode.TruthTable(
+
+  val signals = decode.decodeAs(
+    (new DecType),
+    io.DecoderPort.op,
+    decode.TruthTable(
         // format: off
         Array(
-        /*                                                     inst_type,                                     ##        inst                                       ##  to_alu    ##  branch    ##  use_imm   ##   jump     ##  is_load   ## is_store */
+        /*                                                inst_type,   ##    inst        ##  to_alu    ##  branch    ##  use_imm   ##   jump     ##  is_load   ## is_store */
         // Arithmetic
-        BitPat("b0000000??????????000?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(ADD.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????000?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(ADDI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0100000??????????000?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SUB.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????????????0110111")  -> BitPat(INST_U.litValue.U(InstructionType.getWidth.W)) ## BitPat(LUI.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????????????0010111")  -> BitPat(INST_U.litValue.U(InstructionType.getWidth.W)) ## BitPat(AUIPC.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????000?????0110011")  -> BitPat(INST_R) ## BitPat(ADD)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????000?????0010011")  -> BitPat(INST_I) ## BitPat(ADDI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????000?????0110011")  -> BitPat(INST_R) ## BitPat(SUB)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????????????0110111")  -> BitPat(INST_U) ## BitPat(LUI)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????????????0010111")  -> BitPat(INST_U) ## BitPat(AUIPC)  ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Shifts
-        BitPat("b0000000??????????001?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLL.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????001?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLLI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????101?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SRL.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????101?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(SRLI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0100000??????????101?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SRA.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0100000??????????101?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(SRAI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????001?????0110011")  -> BitPat(INST_R) ## BitPat(SLL)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????001?????0010011")  -> BitPat(INST_I) ## BitPat(SLLI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????101?????0110011")  -> BitPat(INST_R) ## BitPat(SRL)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????101?????0010011")  -> BitPat(INST_I) ## BitPat(SRLI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????101?????0110011")  -> BitPat(INST_R) ## BitPat(SRA)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????101?????0010011")  -> BitPat(INST_I) ## BitPat(SRAI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Logical
-        BitPat("b0000000??????????100?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(XOR.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????100?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(XORI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????110?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(OR.litValue.U(Instruction.getWidth.W))     ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????110?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(ORI.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????111?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(AND.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????111?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(ANDI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????100?????0110011")  -> BitPat(INST_R) ## BitPat(XOR)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????100?????0010011")  -> BitPat(INST_I) ## BitPat(XORI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????110?????0110011")  -> BitPat(INST_R) ## BitPat(OR)     ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????0010011")  -> BitPat(INST_I) ## BitPat(ORI)    ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????111?????0110011")  -> BitPat(INST_R) ## BitPat(AND)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????0010011")  -> BitPat(INST_I) ## BitPat(ANDI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Compare
-        BitPat("b0000000??????????010?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLT.litValue.U(Instruction.getWidth.W))    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????010?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLTI.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b0000000??????????011?????0110011")  -> BitPat(INST_R.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLTU.litValue.U(Instruction.getWidth.W))   ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????011?????0010011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(SLTIU.litValue.U(Instruction.getWidth.W))  ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????010?????0110011")  -> BitPat(INST_R) ## BitPat(SLT)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????010?????0010011")  -> BitPat(INST_I) ## BitPat(SLTI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????011?????0110011")  -> BitPat(INST_R) ## BitPat(SLTU)   ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????011?????0010011")  -> BitPat(INST_I) ## BitPat(SLTIU)  ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Branches
-        BitPat("b?????????????????000?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BEQ.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????001?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BNE.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????100?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BLT.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????101?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BGE.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????110?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BLTU.litValue.U(Instruction.getWidth.W))   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????111?????1100011")  -> BitPat(INST_B.litValue.U(InstructionType.getWidth.W)) ## BitPat(BGEU.litValue.U(Instruction.getWidth.W))   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????000?????1100011")  -> BitPat(INST_B) ## BitPat(BEQ)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????001?????1100011")  -> BitPat(INST_B) ## BitPat(BNE)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????100?????1100011")  -> BitPat(INST_B) ## BitPat(BLT)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????101?????1100011")  -> BitPat(INST_B) ## BitPat(BGE)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????1100011")  -> BitPat(INST_B) ## BitPat(BLTU)   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????1100011")  -> BitPat(INST_B) ## BitPat(BGEU)   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Jump & link
-        BitPat("b?????????????????????????1101111")  -> BitPat(INST_J.litValue.U(InstructionType.getWidth.W)) ## BitPat(JAL.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????000?????1100111")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(JALR.litValue.U(Instruction.getWidth.W))   ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????????????1101111")  -> BitPat(INST_J) ## BitPat(JAL)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????000?????1100111")  -> BitPat(INST_I) ## BitPat(JALR)   ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
         // Sync
-        BitPat("b0000????????00000000000000001111")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(FENCE.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b00000000000000000000001000001111")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(FENCEI.litValue.U(Instruction.getWidth.W)) ## BitPat.N() ## BitPat.N() ##  BitPat.Y()## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000????????00000000000000001111")  -> BitPat(INST_I) ## BitPat(FENCE)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b00000000000000000000001000001111")  -> BitPat(INST_I) ## BitPat(FENCEI) ## BitPat.N() ## BitPat.N() ##  BitPat.Y()## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Environment
-        BitPat("b00000000000000000000000001110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(ECALL.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b00000000000100000000000001110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(EBREAK.litValue.U(Instruction.getWidth.W)) ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b00000000000000000000000001110011")  -> BitPat(INST_I) ## BitPat(ECALL)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b00000000000100000000000001110011")  -> BitPat(INST_I) ## BitPat(EBREAK) ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // CSR
-        BitPat("b?????????????????001?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRW.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????010?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRS.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????011?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRC.litValue.U(Instruction.getWidth.W))  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????101?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRWI.litValue.U(Instruction.getWidth.W)) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????110?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRSI.litValue.U(Instruction.getWidth.W)) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
-        BitPat("b?????????????????111?????1110011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(CSRRCI.litValue.U(Instruction.getWidth.W)) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????001?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRW)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????010?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRS)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????011?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRC)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????101?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRWI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRSI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRCI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
         // Loads
-        BitPat("b?????????????????000?????0000011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(LB.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
-        BitPat("b?????????????????001?????0000011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(LH.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
-        BitPat("b?????????????????100?????0000011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(LBU.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
-        BitPat("b?????????????????101?????0000011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(LHU.litValue.U(Instruction.getWidth.W))    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
-        BitPat("b?????????????????010?????0000011")  -> BitPat(INST_I.litValue.U(InstructionType.getWidth.W)) ## BitPat(LW.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????000?????0000011")  -> BitPat(INST_I) ## BitPat(LB)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????001?????0000011")  -> BitPat(INST_I) ## BitPat(LH)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????100?????0000011")  -> BitPat(INST_I) ## BitPat(LBU)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????101?????0000011")  -> BitPat(INST_I) ## BitPat(LHU)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????010?????0000011")  -> BitPat(INST_I) ## BitPat(LW)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
         // Stores
-        BitPat("b?????????????????000?????0100011")  -> BitPat(INST_S.litValue.U(InstructionType.getWidth.W)) ## BitPat(SB.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
-        BitPat("b?????????????????001?????0100011")  -> BitPat(INST_S.litValue.U(InstructionType.getWidth.W)) ## BitPat(SH.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
-        BitPat("b?????????????????010?????0100011")  -> BitPat(INST_S.litValue.U(InstructionType.getWidth.W)) ## BitPat(SW.litValue.U(Instruction.getWidth.W))     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y()
-      ),                                                BitPat(IN_ERR.litValue.U(InstructionType.getWidth.W)) ## BitPat(ERR.litValue.U(Instruction.getWidth.W))    ## BitPat.dontCare(6) // Default values
+        BitPat("b?????????????????000?????0100011")  -> BitPat(INST_S) ## BitPat(SB)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
+        BitPat("b?????????????????001?????0100011")  -> BitPat(INST_S) ## BitPat(SH)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
+        BitPat("b?????????????????010?????0100011")  -> BitPat(INST_S) ## BitPat(SW)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y()
+      ),                                                BitPat(IN_ERR) ## BitPat(ERR)    ## BitPat.dontCare(6) // Default values
       // format: on
-      )
     )
-    .asTypeOf(new DecType)
+  )
+  // .asTypeOf(new DecType)
 
   io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
   io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
@@ -123,7 +124,8 @@ class Decoder(bitWidth: Int = 32) extends Module {
       0.S  // padding for InstructionType
     )
   )
-  io.DecoderPort.inst     := signals.inst.asTypeOf(new Instruction.Type)
+
+  io.DecoderPort.inst     := signals.inst
   io.DecoderPort.toALU    := signals.to_alu
   io.DecoderPort.branch   := signals.branch
   io.DecoderPort.use_imm  := signals.use_imm
