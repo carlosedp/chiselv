@@ -1,10 +1,10 @@
 package chiselv
 
 import chisel3._
-import chisel3.util.{BitPat, _}
-
-import Instruction._
-import InstructionType._
+import chisel3.util._
+import chisel3.util.experimental.decode
+import chiselv.Instruction._
+import chiselv.InstructionType._
 
 class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val op       = Input(UInt(bitWidth.W))  // Op is the 32 bit instruction read received for decoding
@@ -26,116 +26,112 @@ class Decoder(bitWidth: Int = 32) extends Module {
     val DecoderPort = new DecoderPort(bitWidth)
   })
 
-  val signals =
-    ListLookup(
-      io.DecoderPort.op,
-      // format: off
-      List(                                                  IN_ERR, ERR_INST, false.B,  false.B, false.B,  false.B,  false.B,  false.B), // Default values
-      Array(
-        /*                                                   inst_type,  inst   to_alu   branch   use_imm   jump      is_load   is_store*/
-        // Arithmetic
-        BitPat("b0000000??????????000?????0110011")  -> List(INST_R,      ADD,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????000?????0010011")  -> List(INST_I,     ADDI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0100000??????????000?????0110011")  -> List(INST_R,      SUB,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????????????0110111")  -> List(INST_U,      LUI, false.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????????????0010111")  -> List(INST_U,    AUIPC, false.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        // Shifts
-        BitPat("b0000000??????????001?????0110011")  -> List(INST_R,      SLL,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b0000000??????????001?????0010011")  -> List(INST_I,     SLLI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0100000??????????101?????0110011")  -> List(INST_R,      SRL,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b0000000??????????101?????0010011")  -> List(INST_I,     SRLI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0100000??????????101?????0110011")  -> List(INST_R,      SRA,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b0100000??????????101?????0010011")  -> List(INST_I,     SRAI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        // Logical
-        BitPat("b0000000??????????100?????0110011")  -> List(INST_R,      XOR, true.B,   false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????100?????0010011")  -> List(INST_I,     XORI, true.B,   false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0000000??????????110?????0110011")  -> List(INST_R,       OR, true.B,   false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????110?????0010011")  -> List(INST_I,      ORI, true.B,   false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0000000??????????111?????0110011")  -> List(INST_R,      AND, true.B,   false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????111?????0010011")  -> List(INST_I,     ANDI, true.B,   false.B, true.B,   false.B,  false.B,  false.B),
-        // Compare
-        BitPat("b0000000??????????010?????0110011")  -> List(INST_R,     SLT,  true.B,   false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????010?????0010011")  -> List(INST_I,    SLTI,  true.B,   false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0000000??????????011?????0110011")  -> List(INST_R,    SLTU,  true.B,   false.B, false.B,  false.B,  false.B,  false.B),
-        BitPat("b?????????????????011?????0010011")  -> List(INST_I,   SLTIU,  true.B,   false.B, true.B,   false.B,  false.B,  false.B),
-        // Branches
-        BitPat("b?????????????????000?????1100011")  -> List(INST_B,     BEQ, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????001?????1100011")  -> List(INST_B,     BNE, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????100?????1100011")  -> List(INST_B,     BLT, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????101?????1100011")  -> List(INST_B,     BGE, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????110?????1100011")  -> List(INST_B,    BLTU, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b?????????????????111?????1100011")  -> List(INST_B,    BGEU, false.B,    true.B, true.B,   false.B,  false.B,  false.B),
-        // Jump & link
-        BitPat("b?????????????????????????1101111")  -> List(INST_J,     JAL, false.B,   false.B, true.B,    true.B,  false.B,  false.B),
-        BitPat("b?????????????????000?????1100111")  -> List(INST_I,    JALR, false.B,   false.B, true.B,    true.B,  false.B,  false.B),
-        // Sync
-        BitPat("b0000????????00000000000000001111")  -> List(INST_I,   FENCE, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        BitPat("b00000000000000000000001000001111")  -> List(INST_I,  FENCEI, false.B,   false.B,  true.B,   false.B, false.B,  false.B),
-        // Environment
-        BitPat("b00000000000000000000000001110011")  -> List(INST_I,   ECALL, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        BitPat("b00000000000100000000000001110011")  -> List(INST_I,  EBREAK, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        // CSR
-        BitPat("b?????????????????001?????1110011")  -> List(INST_I,   CSRRW, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        BitPat("b?????????????????010?????1110011")  -> List(INST_I,   CSRRS, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        BitPat("b?????????????????011?????1110011")  -> List(INST_I,   CSRRC, false.B,   false.B, false.B,   false.B, false.B,  false.B),
-        BitPat("b?????????????????101?????1110011")  -> List(INST_I,  CSRRWI, false.B,   false.B, true.B,    false.B, false.B,  false.B),
-        BitPat("b?????????????????110?????1110011")  -> List(INST_I,  CSRRSI, false.B,   false.B, true.B,    false.B, false.B,  false.B),
-        BitPat("b?????????????????111?????1110011")  -> List(INST_I,  CSRRCI, false.B,   false.B, true.B,    false.B, false.B,  false.B),
-        // Loads
-        BitPat("b?????????????????000?????0000011")  -> List(INST_I,      LB, false.B,   false.B, true.B,    false.B,  true.B,  false.B),
-        BitPat("b?????????????????001?????0000011")  -> List(INST_I,      LH, false.B,   false.B, true.B,    false.B,  true.B,  false.B),
-        BitPat("b?????????????????100?????0000011")  -> List(INST_I,     LBU, false.B,   false.B, true.B,    false.B,  true.B,  false.B),
-        BitPat("b?????????????????101?????0000011")  -> List(INST_I,     LHU, false.B,   false.B, true.B,    false.B,  true.B,  false.B),
-        BitPat("b?????????????????010?????0000011")  -> List(INST_I,      LW, false.B,   false.B, true.B,    false.B,  true.B,  false.B),
-        // Stores
-        BitPat("b?????????????????000?????0100011")  -> List(INST_S,      SB, false.B,   false.B, true.B,    false.B, false.B,   true.B),
-        BitPat("b?????????????????001?????0100011")  -> List(INST_S,      SH, false.B,   false.B, true.B,    false.B, false.B,   true.B),
-        BitPat("b?????????????????010?????0100011")  -> List(INST_S,      SW, false.B,   false.B, true.B,    false.B, false.B,   true.B),
-      )
-    ) // format: on
-
-  io.DecoderPort.rd       := 0.U
-  io.DecoderPort.rs1      := 0.U
-  io.DecoderPort.rs2      := 0.U
-  io.DecoderPort.imm      := 0.S
-  io.DecoderPort.inst     := signals(1)
-  io.DecoderPort.toALU    := signals(2)
-  io.DecoderPort.branch   := signals(3)
-  io.DecoderPort.use_imm  := signals(4)
-  io.DecoderPort.jump     := signals(5)
-  io.DecoderPort.is_load  := signals(6)
-  io.DecoderPort.is_store := signals(7)
-
-  switch(signals(0)) {
-    is(INST_R) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
-    }
-    is(INST_I) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.imm := ImmGenerator(INST_I, io.DecoderPort.op)
-    }
-    is(INST_S) {
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
-      io.DecoderPort.imm := ImmGenerator(INST_S, io.DecoderPort.op)
-    }
-    is(INST_B) {
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
-      io.DecoderPort.imm := ImmGenerator(INST_B, io.DecoderPort.op)
-    }
-    is(INST_U) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.imm := ImmGenerator(INST_U, io.DecoderPort.op)
-    }
-    is(INST_J) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.imm := ImmGenerator(INST_J, io.DecoderPort.op)
-    }
+  class DecType extends Bundle {
+    val inst_type = InstructionType()
+    val inst      = Instruction()
+    val to_alu    = Bool()
+    val branch    = Bool()
+    val use_imm   = Bool()
+    val jump      = Bool()
+    val is_load   = Bool()
+    val is_store  = Bool()
   }
+
+  val signals = decode.decodeAs(
+    (new DecType),
+    io.DecoderPort.op,
+    decode.TruthTable(
+        // format: off
+        Array(
+        /*                                                inst_type,   ##    inst        ##  to_alu    ##  branch    ##  use_imm   ##   jump     ##  is_load   ## is_store */
+        // Arithmetic
+        BitPat("b0000000??????????000?????0110011")  -> BitPat(INST_R) ## BitPat(ADD)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????000?????0010011")  -> BitPat(INST_I) ## BitPat(ADDI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????000?????0110011")  -> BitPat(INST_R) ## BitPat(SUB)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????????????0110111")  -> BitPat(INST_U) ## BitPat(LUI)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????????????0010111")  -> BitPat(INST_U) ## BitPat(AUIPC)  ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Shifts
+        BitPat("b0000000??????????001?????0110011")  -> BitPat(INST_R) ## BitPat(SLL)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????001?????0010011")  -> BitPat(INST_I) ## BitPat(SLLI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????101?????0110011")  -> BitPat(INST_R) ## BitPat(SRL)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????101?????0010011")  -> BitPat(INST_I) ## BitPat(SRLI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????101?????0110011")  -> BitPat(INST_R) ## BitPat(SRA)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0100000??????????101?????0010011")  -> BitPat(INST_I) ## BitPat(SRAI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Logical
+        BitPat("b0000000??????????100?????0110011")  -> BitPat(INST_R) ## BitPat(XOR)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????100?????0010011")  -> BitPat(INST_I) ## BitPat(XORI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????110?????0110011")  -> BitPat(INST_R) ## BitPat(OR)     ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????0010011")  -> BitPat(INST_I) ## BitPat(ORI)    ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????111?????0110011")  -> BitPat(INST_R) ## BitPat(AND)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????0010011")  -> BitPat(INST_I) ## BitPat(ANDI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Compare
+        BitPat("b0000000??????????010?????0110011")  -> BitPat(INST_R) ## BitPat(SLT)    ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????010?????0010011")  -> BitPat(INST_I) ## BitPat(SLTI)   ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b0000000??????????011?????0110011")  -> BitPat(INST_R) ## BitPat(SLTU)   ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????011?????0010011")  -> BitPat(INST_I) ## BitPat(SLTIU)  ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Branches
+        BitPat("b?????????????????000?????1100011")  -> BitPat(INST_B) ## BitPat(BEQ)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????001?????1100011")  -> BitPat(INST_B) ## BitPat(BNE)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????100?????1100011")  -> BitPat(INST_B) ## BitPat(BLT)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????101?????1100011")  -> BitPat(INST_B) ## BitPat(BGE)    ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????1100011")  -> BitPat(INST_B) ## BitPat(BLTU)   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????1100011")  -> BitPat(INST_B) ## BitPat(BGEU)   ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Jump & link
+        BitPat("b?????????????????????????1101111")  -> BitPat(INST_J) ## BitPat(JAL)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????000?????1100111")  -> BitPat(INST_I) ## BitPat(JALR)   ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.Y() ## BitPat.N() ## BitPat.N(),
+        // Sync
+        BitPat("b0000????????00000000000000001111")  -> BitPat(INST_I) ## BitPat(FENCE)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b00000000000000000000001000001111")  -> BitPat(INST_I) ## BitPat(FENCEI) ## BitPat.N() ## BitPat.N() ##  BitPat.Y()## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Environment
+        BitPat("b00000000000000000000000001110011")  -> BitPat(INST_I) ## BitPat(ECALL)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b00000000000100000000000001110011")  -> BitPat(INST_I) ## BitPat(EBREAK) ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // CSR
+        BitPat("b?????????????????001?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRW)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????010?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRS)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????011?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRC)  ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????101?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRWI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????110?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRSI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        BitPat("b?????????????????111?????1110011")  -> BitPat(INST_I) ## BitPat(CSRRCI) ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.N(),
+        // Loads
+        BitPat("b?????????????????000?????0000011")  -> BitPat(INST_I) ## BitPat(LB)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????001?????0000011")  -> BitPat(INST_I) ## BitPat(LH)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????100?????0000011")  -> BitPat(INST_I) ## BitPat(LBU)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????101?????0000011")  -> BitPat(INST_I) ## BitPat(LHU)    ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        BitPat("b?????????????????010?????0000011")  -> BitPat(INST_I) ## BitPat(LW)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.Y() ## BitPat.N(),
+        // Stores
+        BitPat("b?????????????????000?????0100011")  -> BitPat(INST_S) ## BitPat(SB)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
+        BitPat("b?????????????????001?????0100011")  -> BitPat(INST_S) ## BitPat(SH)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y(),
+        BitPat("b?????????????????010?????0100011")  -> BitPat(INST_S) ## BitPat(SW)     ## BitPat.N() ## BitPat.N() ## BitPat.Y() ## BitPat.N() ## BitPat.N() ## BitPat.Y()
+      ),                                                BitPat(IN_ERR) ## BitPat(ERR)    ## BitPat.dontCare(6) // Default values
+      // format: on
+    )
+  )
+  // .asTypeOf(new DecType)
+
+  io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
+  io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
+  io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
+  io.DecoderPort.imm := Mux1H(
+    signals.inst_type,
+    Seq(
+      ImmGenerator(INST_I, io.DecoderPort.op),
+      ImmGenerator(INST_S, io.DecoderPort.op),
+      ImmGenerator(INST_B, io.DecoderPort.op),
+      ImmGenerator(INST_U, io.DecoderPort.op),
+      ImmGenerator(INST_J, io.DecoderPort.op),
+      ImmGenerator(INST_Z, io.DecoderPort.op),
+      0.S, // padding for InstructionType
+      0.S  // padding for InstructionType
+    )
+  )
+
+  io.DecoderPort.inst     := signals.inst
+  io.DecoderPort.toALU    := signals.to_alu
+  io.DecoderPort.branch   := signals.branch
+  io.DecoderPort.use_imm  := signals.use_imm
+  io.DecoderPort.jump     := signals.jump
+  io.DecoderPort.is_load  := signals.is_load
+  io.DecoderPort.is_store := signals.is_store
 
   /** ImmGenerator generates the immadiate value depending on the instruction type
     *

@@ -1,9 +1,9 @@
 package chiselv
 
-import chisel3.experimental.ChiselEnum
+import chisel3.experimental.{ChiselEnum, ChiselEnum1H}
 
 object Instruction extends ChiselEnum {
-  val ERR_INST,
+  val ERR,
   // RV32I
   ADD, ADDI, SUB, LUI, AUIPC,                  // Arithmetic
   SLL, SLLI, SRL, SRLI, SRA, SRAI,             // Shifts
@@ -20,6 +20,6 @@ object Instruction extends ChiselEnum {
   = Value
 }
 
-object InstructionType extends ChiselEnum {
-  val IN_ERR, INST_R, INST_I, INST_S, INST_B, INST_U, INST_J, INST_Z = Value
+object InstructionType extends ChiselEnum1H {
+  val INST_I, INST_S, INST_B, INST_U, INST_J, INST_Z, INST_R, IN_ERR = Value
 }
