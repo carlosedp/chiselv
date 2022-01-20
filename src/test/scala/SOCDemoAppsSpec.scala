@@ -64,7 +64,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
     defaultDut(filename) { c =>
       c.clock.setTimeout(10000)
       c.clock.step(1) // Step from initial PC
-      while (c.pc.peek().litValue != 0x0) {
+      while (c.pc.peekInt() != 0x0) {
         c.clock.step(1)
       }
     }
@@ -85,7 +85,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
     defaultDut(filename, filename_ram) { c =>
       c.clock.setTimeout(30000)
       c.clock.step(25000)
-    // while (c.pc.peek().litValue != 0x90) { // 0x90 is the address of _halt
+    // while (c.pc.peekInt() != 0x90) { // 0x90 is the address of _halt
     //   c.clock.step(1)
     // }
     }

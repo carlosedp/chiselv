@@ -85,36 +85,36 @@ class CPUSingleCycleIOSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
-      c.registers(4).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
+      c.registers(2).peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
+      c.registers(4).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x30001000)
+      c.registers(1).peekInt() should be(0x30001000)
       c.clock.step(1) // addi
-      c.registers(5).peek().litValue should be(0xffffffff)
+      c.registers(5).peekInt() should be(0xffffffff)
       c.clock.step(1) // addi
-      c.registers(3).peek().litValue should be(1)
+      c.registers(3).peekInt() should be(1)
       c.clock.step(1) // addi
-      c.registers(4).peek().litValue should be(7)
+      c.registers(4).peekInt() should be(7)
       // Check memory address 0x30001000L for direction (GPIO0)
-      c.memWriteAddr.peek().litValue should be(0x30001000L)
-      c.memWriteData.peek().litValue should be(0xffffffffL)
+      c.memWriteAddr.peekInt() should be(0x30001000L)
+      c.memWriteData.peekInt() should be(0xffffffffL)
       c.clock.step(1) // sw
       c.clock.step(1) // add
-      c.GPIO0_direction.peek().litValue should be(0xffffffffL)
-      c.registers(2).peek().litValue should be(1)
-      c.memWriteAddr.peek().litValue should be(0x30001004L)
-      c.memWriteData.peek().litValue should be(1)
+      c.GPIO0_direction.peekInt() should be(0xffffffffL)
+      c.registers(2).peekInt() should be(1)
+      c.memWriteAddr.peekInt() should be(0x30001004L)
+      c.memWriteData.peekInt() should be(1)
       c.clock.step(1) // sw
-      c.GPIO0_value.peek().litValue should be(1)
+      c.GPIO0_value.peekInt() should be(1)
       c.clock.step(1) // jal
       c.clock.step(1) // add
-      c.registers(2).peek().litValue should be(2)
-      c.memWriteAddr.peek().litValue should be(0x30001004L)
-      c.memWriteData.peek().litValue should be(2)
+      c.registers(2).peekInt() should be(2)
+      c.memWriteAddr.peekInt() should be(0x30001004L)
+      c.memWriteData.peekInt() should be(2)
       c.clock.step(1) // sw
-      c.GPIO0_value.peek().litValue should be(2)
+      c.GPIO0_value.peekInt() should be(2)
     }
   }
 
@@ -129,25 +129,25 @@ class CPUSingleCycleIOSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
-      c.timerCounter.peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
+      c.registers(2).peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
+      c.timerCounter.peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x30003000)
+      c.registers(1).peekInt() should be(0x30003000)
       c.clock.step(1) // addi
-      c.registers(2).peek().litValue should be(2)
+      c.registers(2).peekInt() should be(2)
       // Check read from memory address 0x30003000L
-      c.memReadAddr.peek().litValue should be(0x30003000L)
-      c.memReadData.peek().litValue should be(0)
+      c.memReadAddr.peekInt() should be(0x30003000L)
+      c.memReadData.peekInt() should be(0)
       c.clock.step(1) // lw
-      c.registers(3).peek().litValue should be(0)
+      c.registers(3).peekInt() should be(0)
       c.clock.step(1)      // bne
       c.clock.step(2 * ms) // wait 2ms
-      c.timerCounter.peek().litValue should be(2)
-      c.registers(3).peek().litValue should be(2)
+      c.timerCounter.peekInt() should be(2)
+      c.registers(3).peekInt() should be(2)
       c.clock.step(1) // addi
-      c.registers(4).peek().litValue should be(1)
+      c.registers(4).peekInt() should be(1)
     }
   }
 
@@ -164,35 +164,35 @@ class CPUSingleCycleIOSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
-      c.timerCounter.peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
+      c.registers(2).peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
+      c.timerCounter.peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x30003000)
+      c.registers(1).peekInt() should be(0x30003000)
       c.clock.step(1) // addi
-      c.registers(2).peek().litValue should be(1)
+      c.registers(2).peekInt() should be(1)
       // Check read from memory address 0x30003000L
-      c.memReadAddr.peek().litValue should be(0x30003000L)
-      c.memReadData.peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
+      c.memReadAddr.peekInt() should be(0x30003000L)
+      c.memReadData.peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
       c.clock.step(ms) // wait 1ms
-      c.timerCounter.peek().litValue should be(1)
-      c.registers(3).peek().litValue should be(1)
+      c.timerCounter.peekInt() should be(1)
+      c.registers(3).peekInt() should be(1)
       c.clock.step(1)
       c.clock.step(1)
       c.clock.step(1) // sw
       // Check write to memory address 0x30003000L (reset)
-      c.memWriteAddr.peek().litValue should be(0x30003000L)
-      c.memWriteData.peek().litValue should be(0)
-      c.timerCounter.peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
+      c.memWriteAddr.peekInt() should be(0x30003000L)
+      c.memWriteData.peekInt() should be(0)
+      c.timerCounter.peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
       c.clock.step(ms) // wait 1ms
-      c.timerCounter.peek().litValue should be(1)
+      c.timerCounter.peekInt() should be(1)
       c.clock.step(1) // lw
       c.clock.step(1) // bne
       c.clock.step(1) // addi
-      c.registers(3).peek().litValue should be(2)
+      c.registers(3).peekInt() should be(2)
     }
   }
 }

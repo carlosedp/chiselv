@@ -1,6 +1,5 @@
 package chiselv
 
-import chisel3._
 import chiseltest._
 import org.scalatest._
 
@@ -19,51 +18,51 @@ class SysconSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
 
   it should "read dummy value from Syscon 0x0" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1000.U)
+      c.io.SysconPort.Address.poke(0x00)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(0xbaad_cafeL.U)
+      c.io.SysconPort.DataOut.peekInt() should be(0xbaad_cafeL)
     }
   }
   it should "read clock speed from Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1008.U)
+      c.io.SysconPort.Address.poke(0x08)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(50000000.U)
+      c.io.SysconPort.DataOut.peekInt() should be(50000000)
     }
   }
   it should "check if UART0 is available in Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1010.U)
+      c.io.SysconPort.Address.poke(0x10)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(1.U)
+      c.io.SysconPort.DataOut.peekInt() should be(1)
     }
   }
   it should "check if GPIO0 is available in Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1018.U)
+      c.io.SysconPort.Address.poke(0x18)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(1.U)
+      c.io.SysconPort.DataOut.peekInt() should be(1)
     }
   }
   it should "check num of GPIO0s in Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1028.U)
+      c.io.SysconPort.Address.poke(0x28)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(8.U)
+      c.io.SysconPort.DataOut.peekInt() should be(8)
     }
   }
   it should "check if Timer0 is available in Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1024.U)
+      c.io.SysconPort.Address.poke(0x24)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect(1.U)
+      c.io.SysconPort.DataOut.peekInt() should be(1)
     }
   }
   it should "check RAM size in Syscon" in {
     defaultDut() { c =>
-      c.io.SysconPort.Address.poke(0x0000_1034.U)
+      c.io.SysconPort.Address.poke(0x34)
       c.clock.step()
-      c.io.SysconPort.DataOut.expect((64 * 1024).U)
+      c.io.SysconPort.DataOut.peekInt() should be((64 * 1024))
     }
   }
 }

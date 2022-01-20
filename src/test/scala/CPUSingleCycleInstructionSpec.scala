@@ -76,15 +76,15 @@ class CPUSingleCycleInstructionSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0)
-      c.registers(3).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
+      c.registers(2).peekInt() should be(0)
+      c.registers(3).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(1)
+      c.registers(1).peekInt() should be(1)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(1)
+      c.registers(2).peekInt() should be(1)
       c.clock.step(1)
-      c.registers(3).peek().litValue should be(2)
+      c.registers(3).peekInt() should be(2)
     }
   }
 
@@ -104,24 +104,24 @@ class CPUSingleCycleInstructionSpec
      """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(1).peek().litValue should be(0x0)
-      c.registers(2).peek().litValue should be(0x0)
-      c.registers(3).peek().litValue should be(0x0)
+      c.registers(1).peekInt() should be(0x0)
+      c.registers(2).peekInt() should be(0x0)
+      c.registers(3).peekInt() should be(0x0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(4)
+      c.registers(1).peekInt() should be(4)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(4)
+      c.registers(2).peekInt() should be(4)
       c.clock.step(1)
-      c.registers(3).peek().litValue should be(2)
-      c.pc.peek().litValue should be(0x0c)
+      c.registers(3).peekInt() should be(2)
+      c.pc.peekInt() should be(0x0c)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0x14)
+      c.pc.peekInt() should be(0x14)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0x1c)
+      c.pc.peekInt() should be(0x1c)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0x24)
+      c.pc.peekInt() should be(0x24)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0x2c)
+      c.pc.peekInt() should be(0x2c)
     }
   }
 
@@ -132,21 +132,21 @@ class CPUSingleCycleInstructionSpec
       jalr x2, x1, -4
       """
     defaultDut(prog) { c =>
-      c.pc.peek().litValue should be(0)
-      c.registers(1).peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0)
+      c.pc.peekInt() should be(0)
+      c.registers(1).peekInt() should be(0)
+      c.registers(2).peekInt() should be(0)
       c.clock.step(1)
-      c.pc.peek().litValue should be(8)
-      c.registers(1).peek().litValue should be(4)
+      c.pc.peekInt() should be(8)
+      c.registers(1).peekInt() should be(4)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0xcL)
+      c.pc.peekInt() should be(0)
+      c.registers(2).peekInt() should be(0xcL)
       c.clock.step(1)
-      c.pc.peek().litValue should be(8)
-      c.registers(1).peek().litValue should be(4)
+      c.pc.peekInt() should be(8)
+      c.registers(1).peekInt() should be(4)
       c.clock.step(1)
-      c.pc.peek().litValue should be(0)
-      c.registers(2).peek().litValue should be(0xcL)
+      c.pc.peekInt() should be(0)
+      c.registers(2).peekInt() should be(0xcL)
     }
   }
 
@@ -156,9 +156,9 @@ class CPUSingleCycleInstructionSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).peek().litValue should be(0x00000000)
+      c.registers(2).peekInt() should be(0x00000000)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0xc0000000)
+      c.registers(2).peekInt() should be(0xc0000000)
     }
   }
 
@@ -169,11 +169,11 @@ class CPUSingleCycleInstructionSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).peek().litValue should be(0x00000000)
+      c.registers(2).peekInt() should be(0x00000000)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0x00001000)
+      c.registers(2).peekInt() should be(0x00001000)
       c.clock.step(1)
-      c.registers(3).peek().litValue should be(0x00001004)
+      c.registers(3).peekInt() should be(0x00001004)
     }
   }
 
@@ -186,22 +186,22 @@ class CPUSingleCycleInstructionSpec
       lw x3, 0(x1)
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000)
       c.clock.step(1) // addi
-      c.registers(1).peek().litValue should be(0x80000014)
+      c.registers(1).peekInt() should be(0x80000014)
       c.clock.step(1) // addi
-      c.registers(2).peek().litValue should be(0x123)
+      c.registers(2).peekInt() should be(0x123)
       // Check memory address 0x14 with offset
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x14)
-      c.memWriteData.peek().litValue should be(0x123)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x14)
+      c.memWriteData.peekInt() should be(0x123)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory address 0x14 with offset
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x14)
-      c.memReadData.peek().litValue should be(0x123)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x14)
+      c.memReadData.peekInt() should be(0x123)
       c.clock.step(2 + memReadLatency) // lw
-      c.registers(3).peek().litValue should be(0x123)
+      c.registers(3).peekInt() should be(0x123)
     }
   }
 
@@ -219,43 +219,43 @@ class CPUSingleCycleInstructionSpec
     lw x5, 52(x1)  // x5 should be 0x56785678
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000)
       c.clock.step(1) // lui
-      c.registers(2).peek().litValue should be(0x12345000)
+      c.registers(2).peekInt() should be(0x12345000)
       c.clock.step(1) // addi
-      c.registers(2).peek().litValue should be(0x12345678)
+      c.registers(2).peekInt() should be(0x12345678)
       c.clock.step(1) // addi
-      c.registers(3).peek().litValue should be(0xffffffff)
+      c.registers(3).peekInt() should be(0xffffffff)
       // Check memory address offset 0x30
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memWriteData.peek().litValue should be(0xffffffffL)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
+      c.memWriteData.peekInt() should be(0xffffffffL)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory address offset 0x34
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
-      c.memWriteData.peek().litValue should be(0x5678L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x34)
+      c.memWriteData.peekInt() should be(0x5678L)
       c.clock.step(1 + memWriteLatency) // sh
       // Check memory address 0x30
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memWriteData.peek().litValue should be(0x5678L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
+      c.memWriteData.peekInt() should be(0x5678L)
       c.clock.step(1 + memWriteLatency) // sh
       // Check memory address offset 0x34
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
-      c.memWriteData.peek().litValue should be(0x5678L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x36)
+      c.memWriteData.peekInt() should be(0x5678L)
       c.clock.step(1 + memWriteLatency) // sh
       // Check memory address 0x30
       c.clock.step(1) // lw - stall
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memReadData.peek().litValue should be(0xffff5678L)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x30)
+      c.memReadData.peekInt() should be(0xffff5678L)
       c.clock.step(1) // lw
       c.clock.step(1) // lw - stall
-      c.registers(4).peek().litValue should be(0xffff5678)
+      c.registers(4).peekInt() should be(0xffff5678)
       // Check memory address 0x34
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x34)
-      c.memReadData.peek().litValue should be(0x56785678L)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x34)
+      c.memReadData.peekInt() should be(0x56785678L)
       c.clock.step(1) // lw
-      c.registers(5).peek().litValue should be(0x56785678)
+      c.registers(5).peekInt() should be(0x56785678)
       c.clock.step(10) // padding
     }
   }
@@ -275,47 +275,47 @@ class CPUSingleCycleInstructionSpec
     lw x5, 52(x1)  // x5 should be 0x00780078
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000)
       c.clock.step(1) // lui
-      c.registers(2).peek().litValue should be(0x12345000)
+      c.registers(2).peekInt() should be(0x12345000)
       c.clock.step(1) // addi
-      c.registers(2).peek().litValue should be(0x12345678)
+      c.registers(2).peekInt() should be(0x12345678)
       c.clock.step(1) // addi
-      c.registers(3).peek().litValue should be(0xffffffff)
+      c.registers(3).peekInt() should be(0xffffffff)
       // Check memory address offset 0x30
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memWriteData.peek().litValue should be(0xffffffffL)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
+      c.memWriteData.peekInt() should be(0xffffffffL)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory address offset 0x34
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x34)
-      c.memWriteData.peek().litValue should be(0x78L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x34)
+      c.memWriteData.peekInt() should be(0x78L)
       c.clock.step(1 + memWriteLatency) // sb
       // Check memory address 0x30
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x30)
-      c.memWriteData.peek().litValue should be(0x78L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
+      c.memWriteData.peekInt() should be(0x78L)
       c.clock.step(1 + memWriteLatency) // sb
       // Check memory address offset 0x34
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x36)
-      c.memWriteData.peek().litValue should be(0x78L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x36)
+      c.memWriteData.peekInt() should be(0x78L)
       c.clock.step(1 + memWriteLatency) // sb
       // Check memory address offset 0x33
-      c.memWriteAddr.peek().litValue should be(0x80000000L + 0x33)
-      c.memWriteData.peek().litValue should be(0x78L)
+      c.memWriteAddr.peekInt() should be(0x80000000L + 0x33)
+      c.memWriteData.peekInt() should be(0x78L)
       c.clock.step(1 + memWriteLatency) // sb
       // Check memory address 0x30
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x30)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x30)
       c.clock.step(1) // lw
-      c.memReadData.peek().litValue should be(0x78ffff78L)
+      c.memReadData.peekInt() should be(0x78ffff78L)
       c.clock.step(1) // lw
-      c.registers(4).peek().litValue should be(0x78ffff78)
+      c.registers(4).peekInt() should be(0x78ffff78)
       // Check memory address 0x34
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x34)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x34)
       c.clock.step(1) // lw
-      c.memReadData.peek().litValue should be(0x00780078L)
+      c.memReadData.peekInt() should be(0x00780078L)
       c.clock.step(1) // lw
-      c.registers(5).peek().litValue should be(0x00780078)
+      c.registers(5).peekInt() should be(0x00780078)
       c.clock.step(10) // padding
     }
   }
@@ -329,23 +329,23 @@ class CPUSingleCycleInstructionSpec
     lw x3, 0(x2)
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peek().litValue should be(0xf0f0f000)
+      c.registers(1).peekInt() should be(0xf0f0f000)
       c.clock.step(1) // addi
-      c.registers(1).peek().litValue should be(0xf0f0f0f0)
+      c.registers(1).peekInt() should be(0xf0f0f0f0)
       c.clock.step(1) // lui
-      c.registers(2).peek().litValue should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.peek().litValue should be(0x80000000L)
-      c.memWriteData.peek().litValue should be(0xf0f0f0f0L)
+      c.memWriteAddr.peekInt() should be(0x80000000L)
+      c.memWriteData.peekInt() should be(0xf0f0f0f0L)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory read at address 0x20 (32)
-      c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0xf0f0f0f0L)
+      c.memReadAddr.peekInt() should be(0x80000000L)
+      c.memReadData.peekInt() should be(0xf0f0f0f0L)
       c.clock.step(1 + memReadLatency) // lw
       // Check loaded data
-      c.registers(3).peek().litValue should be(0xf0f0f0f0)
+      c.registers(3).peekInt() should be(0xf0f0f0f0)
       c.clock.step(5) // Paddding
     }
   }
@@ -360,28 +360,28 @@ class CPUSingleCycleInstructionSpec
       lh x4, 2(x2)
       """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xffff1000)
+      c.registers(1).peekInt() should be(0xffff1000)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xffff1234)
+      c.registers(1).peekInt() should be(0xffff1234)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.peek().litValue should be(0x80000000L)
-      c.memWriteData.peek().litValue should be(0xffff1234L)
+      c.memWriteAddr.peekInt() should be(0x80000000L)
+      c.memWriteData.peekInt() should be(0xffff1234L)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory read at address 0x80000000L
-      c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0x00001234L)
+      c.memReadAddr.peekInt() should be(0x80000000L)
+      c.memReadData.peekInt() should be(0x00001234L)
       c.clock.step(1 + memReadLatency) // lh
       // Check loaded data
-      c.registers(3).peek().litValue should be(0x00001234)
+      c.registers(3).peekInt() should be(0x00001234)
       // Check memory read at address 0x80000002L
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x2)
-      c.memReadData.peek().litValue should be(0x0000ffffL)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x2)
+      c.memReadData.peekInt() should be(0x0000ffffL)
       c.clock.step(1 + memReadLatency) // lh
-      c.registers(4).peek().litValue should be(0xffffffff)
+      c.registers(4).peekInt() should be(0xffffffff)
       c.clock.step(5) // Paddding
     }
   }
@@ -396,28 +396,28 @@ class CPUSingleCycleInstructionSpec
     lhu x4, 2(x2)
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xffff1000)
+      c.registers(1).peekInt() should be(0xffff1000)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xffff1234)
+      c.registers(1).peekInt() should be(0xffff1234)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.peek().litValue should be(0x80000000L)
-      c.memWriteData.peek().litValue should be(0xffff1234L)
+      c.memWriteAddr.peekInt() should be(0x80000000L)
+      c.memWriteData.peekInt() should be(0xffff1234L)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory read at address 0x80000000L
-      c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0x00001234L)
+      c.memReadAddr.peekInt() should be(0x80000000L)
+      c.memReadData.peekInt() should be(0x00001234L)
       c.clock.step(1 + memReadLatency) // lh
       // Check loaded data
-      c.registers(3).peek().litValue should be(0x00001234)
+      c.registers(3).peekInt() should be(0x00001234)
       // Check memory read at address 0x80000002L
-      c.memReadAddr.peek().litValue should be(0x80000000L + 0x2)
-      c.memReadData.peek().litValue should be(0x0000ffffL)
+      c.memReadAddr.peekInt() should be(0x80000000L + 0x2)
+      c.memReadData.peekInt() should be(0x0000ffffL)
       c.clock.step(1 + memReadLatency) // lh
-      c.registers(4).peek().litValue should be(0x0000ffff)
+      c.registers(4).peekInt() should be(0x0000ffff)
       c.clock.step(5) // Paddding
     }
   }
@@ -434,37 +434,37 @@ class CPUSingleCycleInstructionSpec
     lb x6, 3(x2)
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xabcde000)
+      c.registers(1).peekInt() should be(0xabcde000)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xabcde123)
+      c.registers(1).peekInt() should be(0xabcde123)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.peek().litValue should be(0x80000000L)
-      c.memWriteData.peek().litValue should be(0xabcde123L)
+      c.memWriteAddr.peekInt() should be(0x80000000L)
+      c.memWriteData.peekInt() should be(0xabcde123L)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory read at address 0x80000000L
-      c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0x23L)
+      c.memReadAddr.peekInt() should be(0x80000000L)
+      c.memReadData.peekInt() should be(0x23L)
       c.clock.step(1 + memReadLatency) // lb (offset 0)
-      c.registers(3).peek().litValue should be(0x00000023)
+      c.registers(3).peekInt() should be(0x00000023)
       // Check memory read at address 0x80000001L
-      c.memReadAddr.peek().litValue should be(0x80000001L)
-      c.memReadData.peek().litValue should be(0xe1L)
+      c.memReadAddr.peekInt() should be(0x80000001L)
+      c.memReadData.peekInt() should be(0xe1L)
       c.clock.step(1 + memReadLatency) // lb (offset 1)
-      c.registers(4).peek().litValue should be(0xffffffe1)
+      c.registers(4).peekInt() should be(0xffffffe1)
       // Check memory read at address 0x80000002L
-      c.memReadAddr.peek().litValue should be(0x80000002L)
-      c.memReadData.peek().litValue should be(0xcdL)
+      c.memReadAddr.peekInt() should be(0x80000002L)
+      c.memReadData.peekInt() should be(0xcdL)
       c.clock.step(1 + memReadLatency) // lb (offset 2)
-      c.registers(5).peek().litValue should be(0xffffffcd)
+      c.registers(5).peekInt() should be(0xffffffcd)
       // Check memory read at address 0x80000003L
-      c.memReadAddr.peek().litValue should be(0x80000003L)
-      c.memReadData.peek().litValue should be(0xabL)
+      c.memReadAddr.peekInt() should be(0x80000003L)
+      c.memReadData.peekInt() should be(0xabL)
       c.clock.step(1 + memReadLatency) // lb (offset 3)
-      c.registers(6).peek().litValue should be(0xffffffab)
+      c.registers(6).peekInt() should be(0xffffffab)
       // Check loaded data
       c.clock.step(5) // Paddding
     }
@@ -482,37 +482,37 @@ class CPUSingleCycleInstructionSpec
     lbu x6, 3(x2)
     """
     defaultDut(prog) { c =>
-      c.registers(1).peek().litValue should be(0)
+      c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xabcde000)
+      c.registers(1).peekInt() should be(0xabcde000)
       c.clock.step(1)
-      c.registers(1).peek().litValue should be(0xabcde123)
+      c.registers(1).peekInt() should be(0xabcde123)
       c.clock.step(1)
-      c.registers(2).peek().litValue should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000)
       // Check memory write at address 0x80000000L
-      c.memWriteAddr.peek().litValue should be(0x80000000L)
-      c.memWriteData.peek().litValue should be(0xabcde123L)
+      c.memWriteAddr.peekInt() should be(0x80000000L)
+      c.memWriteData.peekInt() should be(0xabcde123L)
       c.clock.step(1 + memWriteLatency) // sw
       // Check memory read at address 0x80000000L
-      c.memReadAddr.peek().litValue should be(0x80000000L)
-      c.memReadData.peek().litValue should be(0x23L)
+      c.memReadAddr.peekInt() should be(0x80000000L)
+      c.memReadData.peekInt() should be(0x23L)
       c.clock.step(1 + memReadLatency) // lb (offset 0)
-      c.registers(3).peek().litValue should be(0x00000023)
+      c.registers(3).peekInt() should be(0x00000023)
       // Check memory read at address 0x80000001L
-      c.memReadAddr.peek().litValue should be(0x80000001L)
-      c.memReadData.peek().litValue should be(0xe1L)
+      c.memReadAddr.peekInt() should be(0x80000001L)
+      c.memReadData.peekInt() should be(0xe1L)
       c.clock.step(1 + memReadLatency) // lb (offset 1)
-      c.registers(4).peek().litValue should be(0x000000e1)
+      c.registers(4).peekInt() should be(0x000000e1)
       // Check memory read at address 0x80000002L
-      c.memReadAddr.peek().litValue should be(0x80000002L)
-      c.memReadData.peek().litValue should be(0xcdL)
+      c.memReadAddr.peekInt() should be(0x80000002L)
+      c.memReadData.peekInt() should be(0xcdL)
       c.clock.step(1 + memReadLatency) // lb (offset 2)
-      c.registers(5).peek().litValue should be(0x000000cd)
+      c.registers(5).peekInt() should be(0x000000cd)
       // Check memory read at address 0x80000003L
-      c.memReadAddr.peek().litValue should be(0x80000003L)
-      c.memReadData.peek().litValue should be(0xabL)
+      c.memReadAddr.peekInt() should be(0x80000003L)
+      c.memReadData.peekInt() should be(0xabL)
       c.clock.step(1 + memReadLatency) // lb (offset 3)
-      c.registers(6).peek().litValue should be(0x000000ab)
+      c.registers(6).peekInt() should be(0x000000ab)
       // Check loaded data
       c.clock.step(5) // Paddding
     }

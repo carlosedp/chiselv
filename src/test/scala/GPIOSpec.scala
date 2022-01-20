@@ -1,9 +1,9 @@
 package chiselv
 
-import chisel3._
 import chiseltest._
 import chiseltest.experimental.expose
 import org.scalatest._
+import com.carlosedp.scalautils.ObjectUtils._
 
 import flatspec._
 import matchers._
@@ -25,32 +25,32 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
 
   it should "read GPIO when as 0 when initialized" in {
     defaultDut() { c =>
-      c.io.GPIOPort.valueOut.peek().litValue should be(0)
-      c.obs_GPIO.peek().litValue should be(0)
-      c.obs_DIRECTION.peek().litValue should be(0)
+      c.io.GPIOPort.valueOut.peekInt() should be(0)
+      c.obs_GPIO.peekInt() should be(0)
+      c.obs_DIRECTION.peekInt() should be(0)
     }
   }
 
   it should "write direction then read" in {
     defaultDut() { c =>
-      c.io.GPIOPort.writeDirection.poke(true.B)
-      c.io.GPIOPort.dataIn.poke("b10101010".U)
+      c.io.GPIOPort.writeDirection.poke(true)
+      c.io.GPIOPort.dataIn.poke("10101010".b)
       c.clock.step()
-      c.obs_DIRECTION.expect("b10101010".U)
-      c.io.GPIOPort.directionOut.expect("b10101010".U)
+      c.obs_DIRECTION.peekInt() should be("10101010".b)
+      c.io.GPIOPort.directionOut.peekInt() should be("10101010".b)
     }
   }
 
   it should "write IO data then read" in {
     defaultDut() { c =>
-      c.io.GPIOPort.writeValue.poke(true.B)
-      c.io.GPIOPort.dataIn.poke("b11111111".U)
+      c.io.GPIOPort.writeValue.poke(true)
+      c.io.GPIOPort.dataIn.poke("11111111".b)
       c.clock.step()
-      c.obs_GPIO.expect("b11111111".U)
-      c.io.GPIOPort.writeDirection.poke(true.B)
-      c.io.GPIOPort.dataIn.poke("b01010101".U)
+      c.obs_GPIO.peekInt() should be("11111111".b)
+      c.io.GPIOPort.writeDirection.poke(true)
+      c.io.GPIOPort.dataIn.poke("01010101".b)
       c.clock.step()
-      c.io.GPIOPort.valueOut.expect("b01010101".U)
+      c.io.GPIOPort.valueOut.peekInt() should be("01010101".b)
       c.clock.step(5)
     }
   }
@@ -59,11 +59,11 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
   //
   // it should "read IO data from input" in {
   //   defaultDut(){ c =>
-  //     c.io.GPIOPort.dataOut.peek().litValue should be(0)
+  //     c.io.GPIOPort.dataOut.peekInt() should be(0)
   //     c.io.GPIOPort.dir.poke(0.U) // Read input
   //     // c.InOut.io.dataIO.poke(1.U) // Write to input pin
   //     c.clock.step()
-  //     c.io.GPIOPort.dataOut.peek().litValue should be(1)
+  //     c.io.GPIOPort.dataOut.peekInt() should be(1)
   //   }
   // }
 
