@@ -123,7 +123,7 @@ class CPUSingleCycle(
     when(ALU.io.ALUPort.x === 1.U) {
       PC.io.pcPort.writeEnable := true.B
       PC.io.pcPort.writeAdd    := true.B
-      PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm.asUInt()
+      PC.io.pcPort.dataIn      := decoder.io.DecoderPort.imm.asUInt
     }
   }
 
@@ -141,12 +141,12 @@ class CPUSingleCycle(
     when(decoder.io.DecoderPort.inst === JAL) {
       // Set PC to jump address
       PC.io.pcPort.writeAdd := true.B
-      PC.io.pcPort.dataIn   := decoder.io.DecoderPort.imm.asUInt()
+      PC.io.pcPort.dataIn   := decoder.io.DecoderPort.imm.asUInt
     }
     when(decoder.io.DecoderPort.inst === JALR) {
       // Set PC to jump address
       PC.io.pcPort.dataIn := Cat(
-        (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm).asUInt()(31, 1),
+        (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm).asUInt(31, 1),
         0.U
       )
     }
@@ -164,7 +164,7 @@ class CPUSingleCycle(
     ALU.io.ALUPort.inst                 := ADD
     ALU.io.ALUPort.a                    := PC.io.pcPort.PC
     ALU.io.ALUPort.b :=
-      decoder.io.DecoderPort.imm.asUInt()
+      decoder.io.DecoderPort.imm.asUInt
     registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt
   }
 
@@ -173,7 +173,7 @@ class CPUSingleCycle(
     // Use the ALU to get the resulting address
     ALU.io.ALUPort.inst := ADD
     ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
-    ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm.asUInt()
+    ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm.asUInt
 
     memoryIOManager.io.MemoryIOPort.writeAddr := ALU.io.ALUPort.x
     memoryIOManager.io.MemoryIOPort.readAddr  := ALU.io.ALUPort.x

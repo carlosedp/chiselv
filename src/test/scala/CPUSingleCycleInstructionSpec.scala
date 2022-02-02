@@ -129,24 +129,18 @@ class CPUSingleCycleInstructionSpec
     val prog = """
       jal x1, +8
       nop
-      jalr x2, x1, -4
+      jalr x2, x1, +2044
       """
     defaultDut(prog) { c =>
       c.pc.peekInt() should be(0)
       c.registers(1).peekInt() should be(0)
       c.registers(2).peekInt() should be(0)
-      c.clock.step(1)
+      c.clock.step(1) // jal (next nop is skipped)
       c.pc.peekInt() should be(8)
       c.registers(1).peekInt() should be(4)
-      c.clock.step(1)
-      c.pc.peekInt() should be(0)
-      c.registers(2).peekInt() should be(0xcL)
-      c.clock.step(1)
-      c.pc.peekInt() should be(8)
-      c.registers(1).peekInt() should be(4)
-      c.clock.step(1)
-      c.pc.peekInt() should be(0)
-      c.registers(2).peekInt() should be(0xcL)
+      c.clock.step(1) // jalr
+      c.pc.peekInt() should be(2048)
+      c.registers(2).peekInt() should be(0xc)
     }
   }
 

@@ -183,7 +183,7 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
     switch(io.MemoryIOPort.dataSize) {
       is(3.U)(dataOut := io.DataMemPort.readData) // Read word
       is(2.U) { // Read halfword
-        switch(io.DataMemPort.readAddress(1).asUInt()) {
+        switch(io.DataMemPort.readAddress(1).asUInt) {
           is(1.U)(dataOut := Cat(Fill(16, 0.U), io.DataMemPort.readData(31, 16).asUInt)) // Read half word 1
           is(0.U)(dataOut := Cat(Fill(16, 0.U), io.DataMemPort.readData(15, 0).asUInt))  // Read half word 0
         }
@@ -212,7 +212,7 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
             writeMask   := "b1111".U
           }
           is(2.U) { // Write halfword
-            switch(io.DataMemPort.writeAddress(1).asUInt()) {
+            switch(io.DataMemPort.writeAddress(1).asUInt) {
               is(1.U) { // Write half word 1
                 dataToWrite := Cat(io.MemoryIOPort.writeData(15, 0).asUInt, Fill(16, 0.U))
                 writeMask   := "b1100".U
