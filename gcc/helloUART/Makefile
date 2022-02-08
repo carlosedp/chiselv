@@ -6,13 +6,13 @@ ASM           := $(SOURCES:%.c=%.s)
 
 USEDOCKER = 1
 DOCKERARGS = run --rm -v $(PWD):/src -w /src
-DOCKERIMG  = docker $(DOCKERARGS) docker.io/carlosedp/crossbuild-rv32i
+DOCKERIMG  = docker $(DOCKERARGS) docker.io/carlosedp/crossbuild-riscv64:latest
 
 CFLAGS=-Wall -mabi=ilp32 -march=rv32i -ffreestanding -fcommon -Os
 LDFLAGS=-T riscv.ld -m elf32lriscv -O binary -Map=main.map
 
 # PREFIX=riscv64-linux-
-PREFIX=riscv32-unknown-elf
+PREFIX=riscv64-linux
 
 ifeq ($(USEDOCKER), 1)
 	OC=$(DOCKERIMG) $(PREFIX)-objcopy
@@ -28,7 +28,7 @@ else
 	HD=hexdump
 endif
 
-all: clean main.elf main-rom.mem main-ram.mem main.hex main.dump
+all: main.elf main-rom.mem main-ram.mem main.hex main.dump
 asm: $(ASM)
 
 %.o: %.c

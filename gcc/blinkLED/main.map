@@ -101,22 +101,20 @@ LOAD ./uart.o
 LOAD ./crt.s.o
 OUTPUT(main.elf elf32-littleriscv)
 
-.comment        0x0000000000000000       0x12
- .comment       0x0000000000000000       0x12 ./io.o
-                                         0x13 (size before relaxing)
- .comment       0x0000000000000012       0x13 ./stdio.o
- .comment       0x0000000000000012       0x13 ./main.o
- .comment       0x0000000000000012       0x13 ./uart.o
+.comment        0x0000000000000000       0x2c
+ .comment       0x0000000000000000       0x2c ./io.o
+                                         0x2d (size before relaxing)
+ .comment       0x000000000000002c       0x2d ./stdio.o
+ .comment       0x000000000000002c       0x2d ./main.o
+ .comment       0x000000000000002c       0x2d ./uart.o
 
-.riscv.attributes
-                0x0000000000000000       0x1c
- .riscv.attributes
-                0x0000000000000000       0x1c ./io.o
- .riscv.attributes
-                0x000000000000001c       0x1c ./stdio.o
- .riscv.attributes
-                0x0000000000000038       0x1c ./main.o
- .riscv.attributes
-                0x0000000000000054       0x1c ./uart.o
- .riscv.attributes
-                0x0000000000000070       0x1a ./crt.s.o
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 ./io.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 ./stdio.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 ./main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 ./uart.o

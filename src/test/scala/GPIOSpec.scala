@@ -2,8 +2,8 @@ package chiselv
 
 import chiseltest._
 import chiseltest.experimental.expose
-import org.scalatest._
 import com.carlosedp.scalautils.ObjectUtils._
+import org.scalatest._
 
 import flatspec._
 import matchers._

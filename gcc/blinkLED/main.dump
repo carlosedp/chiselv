@@ -6,7 +6,6 @@ SYMBOL TABLE:
 00000924 l    d  .text.startup	00000000 .text.startup
 80000000 l    d  .data	00000000 .data
 00000000 l    d  .comment	00000000 .comment
-00000000 l    d  .riscv.attributes	00000000 .riscv.attributes
 00000000 l    df *ABS*	00000000 ./crt.s.o
 00000090 l       .text	00000000 _halt
 00000000 l    df *ABS*	00000000 io.c

@@ -1,54 +1,62 @@
 # Source and target files/directories
 scala_files = $(wildcard src/main/scala/*.scala)
 generated_files = generated
-BUILDTOOL ?= sbt 							# Can also be mill
 
 # Define the SBT command (Docker or local)
 DOCKERARGS  = run --rm -v $(PWD):/src -w /src
+BUILDTOOL ?= sbt 							# Can also be mill
 SBTIMAGE   = docker $(DOCKERARGS) adoptopenjdk:8u282-b08-jre-hotspot
 SBTCMD   = $(SBTIMAGE) curl -Ls https://git.io/sbt > /tmp/sbt && chmod 0775 /tmp/sbt && /tmp/sbt
 SBTLOCAL := $(shell command -v sbt 2> /dev/null)
 ifndef SBTLOCAL
-    SBT=${SBTCMD}
+	SBT=${SBTCMD}
 else
 	SBT=sbt
 endif
 
-# Define utility applications
+# Define utility applications for simulation
 YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
+VERILATORLOCAL := $(shell command -v verilator 2> /dev/null)
 VERILATORARGS = --name verilator --hostname verilator --rm -it --entrypoint= -v $(PWD):/work -w /work
-VERILATOR=  # Local Verilator
-# VERILATOR = docker $(DOCKERARGS) $(VERILATORARGS) verilator/verilator
+ifndef VERILATORLOCAL
+	VERILATOR = docker $(DOCKERARGS) $(VERILATORARGS) gcr.io/hdl-containers/verilator:latest
+else
+	VERILATOR =
+endif
 
-# Default board PLL
+# Set board PLL or bypass if not defined
 BOARD := bypass
-BOARDPARAMS=-board ${BOARD} -cpufreq 50000000 -invreset false
-CHISELPARAMS = --target:fpga -td $(generated_files)
-# CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
+PLLFREQ ?= 50000000
+BOARDPARAMS=-board ${BOARD} -cpufreq ${PLLFREQ} -invreset false
+# CHISELPARAMS = --target:fpga -td $(generated_files)
+CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT
 
-$(generated_files): $(scala_files) build.sbt
+$(generated_files): $(scala_files) build.sbt Makefile
 	@rm -rf $(generated_files)
-	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)
+	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
+	$(SCALABUILD)
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
+		echo ${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
 		${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
-    elif [ $(BUILDTOOL) = "mill" ]; then \
+	elif [ $(BUILDTOOL) = "mill" ]; then \
 		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
+		echo scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
 		scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
 	fi
 
 chisel_tests:
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
 		${SBT} "test"; \
-    elif [ $(BUILDTOOL) = "mill" ]; then \
+	elif [ $(BUILDTOOL) = "mill" ]; then \
 		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
 		scripts/mill $(project).test; \
 	fi
 
 rvfi: clean ## Generates Verilog code for RISC-V Formal tests
-	${SBT} "runMain chiselv.RVFITop --target:fpga -td $(generated_files) $(BOARDPARAMS)"
+	${SBT} "runMain chiselv.RVFITop $(CHISELPARAMS) $(BOARDPARAMS)"
 
 check: chisel_tests ## Run Chisel tests
 test: chisel_tests
@@ -60,12 +68,13 @@ verilator: $(generated_files) ## Generate Verilator simulation
 	make -C obj_dir -f VToplevel.mk -j`nproc`
 	@cp obj_dir/chiselv .
 
-# Adjust the rom and ram files below to match your test
+# Adjust the rom and ram files below to match the desired demo app
 romfile = gcc/helloUART/main-rom.mem
 ramfile = gcc/helloUART/main-ram.mem
-verirun: ## Run Verilator simulation with ROM and RAM files to be loaded
+verirun: verilator ## Run Verilator simulation with ROM and RAM files to be loaded
 	@cp $(romfile) progload.mem
 	@cp $(ramfile) progload-RAM.mem
+	@echo "------------------------------------------------------"
 	@bash -c "trap 'reset' EXIT; ./chiselv"
 
 MODULE ?= Toplevel
@@ -80,15 +89,12 @@ fmt: ## Formats code using scalafmt and scalafix
 
 .PHONY: gcc
 gcc: ## Builds gcc sample code
-	pushd gcc/test ; make ; popd
-
-check-board-vars:
-	@test "$(BOARD)" != "bypass" || (echo "Set BOARD variable to one of the supported boards: " ; cat chiselv.core|grep "\-board" |cut -d '-' -f 2|sed s/\"//g | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s"; echo; echo "Generating design with bypass PLL..."; echo)
+	@for d in `find gcc -name Makefile`;do echo ----\\nBuilding $$d; pushd `dirname $$d`; make; popd; done
 
 clean:   ## Clean all generated files
 	@if [ $(BUILDTOOL) = "sbt" ]; then \
 		${SBT} "clean"; \
-    elif [ $(BUILDTOOL) = "mill" ]; then \
+	elif [ $(BUILDTOOL) = "mill" ]; then \
 		scripts/mill clean; \
 	fi
 	@rm -rf obj_dir test_run_dir target

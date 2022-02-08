@@ -10,12 +10,12 @@ DOCKERIMG  = docker $(DOCKERARGS) carlosedp/crossbuild-riscv64
 CFLAGS=-mabi=ilp32 -march=rv32i
 LDFLAGS=-T riscv.ld -m elf32lriscv -O binary
 
-# OC=riscv64-linux-gnu-objcopy
-# CC=riscv64-linux-gnu-gcc-10
-# LD=riscv64-linux-gnu-ld
-OC=$(DOCKERIMG) riscv64-linux-objcopy
-CC=$(DOCKERIMG) riscv64-linux-gcc
-LD=$(DOCKERIMG) riscv64-linux-ld
+PREFIX=riscv64-linux
+OC=$(DOCKERIMG) $(PREFIX)-objcopy
+OD=$(DOCKERIMG) $(PREFIX)-objdump
+CC=$(DOCKERIMG) $(PREFIX)-gcc
+LD=$(DOCKERIMG) $(PREFIX)-ld
+HD=$(DOCKERIMG) hexdump
 
 all: $(TESTDATA) $(MEMDATA) $(HEXDATA)
 

@@ -11,7 +11,7 @@ ThisBuild / developers := List(
   Developer("carlosedp", "Carlos Eduardo de Paula", "carlosedp@gmail.com", url("https://github.com/carlosedp"))
 )
 
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 Global / semanticdbEnabled                                 := true
 Global / semanticdbVersion                                 := scalafixSemanticdb.revision
 Global / onChangedBuildSource                              := ReloadOnSourceChanges
@@ -22,13 +22,13 @@ lazy val chiselv = (project in file("."))
   .settings(
     name         := "chiselv",
     version      := "1.0.0",
-    scalaVersion := "2.13.7"
+    scalaVersion := "2.13.8"
   )
 
 // Default library versions
 lazy val versions = new {
-  val chisel3         = "3.5.0"
-  val chiseltest      = "0.5-SNAPSHOT"
+  val chisel3         = "3.5.1"
+  val chiseltest      = "0.5.1"
   val scalatest       = "3.2.11"
   val organizeimports = "0.5.0"
   val scalautils      = "0.9.0"
@@ -42,7 +42,6 @@ libraryDependencies ++= Seq(
   "org.scalatest"   %% "scalatest"  % versions.scalatest  % "test",
   "com.carlosedp"   %% "scalautils" % versions.scalautils,
   "com.lihaoyi"     %% "os-lib"     % versions.oslib
-  // "edu.berkeley.cs" %% "firrtl"     % versions.firrtl // Force using SNAPSHOT until next RC is cut (memory synth)
 )
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % versions.organizeimports
 addCompilerPlugin(("edu.berkeley.cs"                        % "chisel3-plugin"   % versions.chisel3).cross(CrossVersion.full))
