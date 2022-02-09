@@ -32,6 +32,8 @@ BOARDPARAMS=-board ${BOARD} -cpufreq ${PLLFREQ} -invreset false
 CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
+all: chisel gcc
+
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT
 
 $(generated_files): $(scala_files) build.sbt Makefile

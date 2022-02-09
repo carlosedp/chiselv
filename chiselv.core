@@ -51,7 +51,7 @@ generate:
   default-chisel:
     generator: chisel
     parameters: &baseparam
-      extraargs: "--target:fpga -board bypass -cpufreq 15000000  --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--target:fpga -board bypass -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
       buildtool: sbt
       copy_core: true
       output:
@@ -64,13 +64,13 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board bypass -cpufreq 15000000  --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--target:fpga -board bypass -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
 
   ulx3s:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board ulx3s -cpufreq 15000000"
+      extraargs: "--target:fpga -board ulx3s -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
 
   artya7-35t:
     generator: chisel

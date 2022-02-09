@@ -8,4 +8,6 @@ ujprog $bitstreamSVF
 
 openocd -f $interfaceConfig -f $boardConfig -c "transport select jtag; init; scan_chain; svf -quiet -progress $bitstreamSVF; exit"
 
-Other programming options are listed here https://github.com/emard/ulx3s/blob/master/doc/MANUAL.md#programming-options
+## Or using openFPGALoader (https://trabucayre.github.io/openFPGALoader/guide/install.html):
+
+openfpgaloader -b arty $bitstream

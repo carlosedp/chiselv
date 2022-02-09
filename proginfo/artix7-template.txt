@@ -3,3 +3,7 @@
 ## To program the board using OpenOCD, use the command:
 
 openocd -f $interfaceConfig -f $boardConfig -c "transport select jtag;init; pld load 0 $bitstream; exit"
+
+## Or using openFPGALoader (https://trabucayre.github.io/openFPGALoader/guide/install.html):
+
+openfpgaloader -b arty $bitstream
