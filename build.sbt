@@ -11,10 +11,9 @@ ThisBuild / developers := List(
   Developer("carlosedp", "Carlos Eduardo de Paula", "carlosedp@gmail.com", url("https://github.com/carlosedp"))
 )
 
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
-Global / semanticdbEnabled                                 := true
-Global / semanticdbVersion                                 := scalafixSemanticdb.revision
-Global / onChangedBuildSource                              := ReloadOnSourceChanges
+Global / semanticdbEnabled    := true
+Global / semanticdbVersion    := scalafixSemanticdb.revision
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 Compile / run / mainClass := Some("chiselv.Toplevel")
 
@@ -30,7 +29,7 @@ lazy val versions = new {
   val chisel3         = "3.5.1"
   val chiseltest      = "0.5.1"
   val scalatest       = "3.2.11"
-  val organizeimports = "0.5.0"
+  val organizeimports = "0.6.0"
   val scalautils      = "0.9.0"
   val oslib           = "0.8.1"
 }
