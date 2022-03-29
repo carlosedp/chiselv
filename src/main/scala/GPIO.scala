@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental._
+import chisel3.experimental.Analog
 import chisel3.util.HasBlackBoxInline // For Analog type
 
 class GPIOPort(bitWidth: Int = 32) extends Bundle {

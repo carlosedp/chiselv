@@ -67,5 +67,6 @@ scalacOptions ++= Seq(
   "-Xcheckinit",
   "-Xfatal-warnings",
   "-Ywarn-dead-code",
-  "-Ywarn-unused"
+  "-Ywarn-unused",
+  "-P:chiselplugin:genBundleElements"
 )

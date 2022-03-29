@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{Cat, Fill, is, log2Ceil, switch}
 
 /* Memory Map
  *

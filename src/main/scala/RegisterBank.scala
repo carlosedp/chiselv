@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.log2Ceil
 
 class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
   val rs1         = Output(SInt(bitWidth.W))

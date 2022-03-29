@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util.{BitPat, _}
+import chisel3.util.{BitPat, Cat, Fill, ListLookup, is, switch}
 
 import Instruction._
 import InstructionType._

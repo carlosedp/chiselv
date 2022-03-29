@@ -1,8 +1,8 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental._
-import chisel3.util._
+import chisel3.experimental.Analog
+import chisel3.util.{Cat, Fill, is, switch}
 
 import Instruction._
 

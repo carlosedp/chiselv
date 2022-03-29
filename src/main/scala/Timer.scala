@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.Counter
 
 class TimerPort(bitWidth: Int = 32) extends Bundle {
   val dataIn      = Input(UInt(bitWidth.W))

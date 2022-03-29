@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{Counter, Decoupled, Enum, Queue, Valid, is, isPow2, log2Ceil, switch}
 
 /*
  * A simple TTL serial module. Idle is high. Start bits are low, stop bits

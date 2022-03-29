@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental._
+import chisel3.experimental.Analog
 import com.carlosedp.scalautils.ParseArguments
 
 // Project Top level

@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{is, switch}
 
 // Chisel Bundle implementation of RISC-V Formal Interface (RVFI)
 class RVFIPort extends Bundle {

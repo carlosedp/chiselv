@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util._
+import chisel3.util.{is, switch}
 
 class SysconPort(val bitWidth: Int) extends Bundle {
   val Address = Input(UInt(12.W))
