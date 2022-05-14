@@ -15,7 +15,7 @@ class InstructionMemory(
   memoryFile: String = ""
 ) extends Module {
   val words = sizeBytes / bitWidth
-  val io = IO(new Bundle() {
+  val io = IO(new Bundle {
     val memPort = new InstructionMemPort(bitWidth, sizeBytes)
   })
 

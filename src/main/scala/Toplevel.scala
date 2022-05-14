@@ -7,9 +7,9 @@ import com.carlosedp.scalautils.ParseArguments
 // Project Top level
 class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {
   val io = IO(new Bundle {
-    val led0  = Output(Bool())       // LED 0 is the heartbeat
-    val GPIO0 = Analog(8.W)          // GPIO 0
-    val UART0 = new UARTSerialPort() // UART 0
+    val led0  = Output(Bool())     // LED 0 is the heartbeat
+    val GPIO0 = Analog(8.W)        // GPIO 0
+    val UART0 = new UARTSerialPort // UART 0
   })
 
   // Instantiate PLL module based on board

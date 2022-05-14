@@ -13,7 +13,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   behavior of "Decoder"
 
   it should "Decode an ADD instruction (type R)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       //  Template: "b0000000??????????000?????0110011"
       c.io.DecoderPort.op.poke(makeBin("add x1, x2, x3"))
       c.clock.step()
@@ -21,7 +21,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     }
   }
   it should "Decode an ANDI instruction (type I)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       // ?????????????????000?????0010011
       c.io.DecoderPort.op.poke(makeBin("andi x7, x24, -1"))
       c.clock.step()
@@ -29,7 +29,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     }
   }
   it should "Decode an SB instruction (type S)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       //  Template: b?????????????????000?????0100011
       c.io.DecoderPort.op.poke(makeBin("sb x10, -81(x21)"))
       c.clock.step()
@@ -37,14 +37,14 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     }
   }
   it should "Decode an BEQ instruction (type B)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       c.io.DecoderPort.op.poke(makeBin("beq x21, x10, -1366"))
       c.clock.step()
       validateResult(c, BEQ, 0, 21, 10, -1366, false, true)
     }
   }
   it should "Decode an LUI instruction (type U)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       //  Template: b?????????????????????????0110111
       c.io.DecoderPort.op.poke(makeBin("lui x23, -1431658496"))
       c.clock.step()
@@ -52,7 +52,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     }
   }
   it should "Decode an JAL instruction (type J)" in {
-    test(new Decoder()) { c =>
+    test(new Decoder) { c =>
       //  Template: b?????????????????????????1101111
       c.io.DecoderPort.op.poke(makeBin("jal x21, -699052"))
       c.clock.step()

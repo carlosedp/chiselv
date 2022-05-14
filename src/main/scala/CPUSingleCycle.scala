@@ -17,7 +17,7 @@ class CPUSingleCycle(
   val io = IO(new Bundle {
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
 
-    val UART0Port          = Flipped(new UARTPort()) // UART0 data port
+    val UART0Port          = Flipped(new UARTPort) // UART0 data port
     val SysconPort         = Flipped(new SysconPort(bitWidth))
     val instructionMemPort = Flipped(new InstructionMemPort(bitWidth, instructionMemorySize))
     val dataMemPort        = Flipped(new MemoryPortDual(bitWidth, dataMemorySize))

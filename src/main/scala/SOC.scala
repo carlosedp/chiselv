@@ -14,9 +14,9 @@ class SOC(
   numGPIO:               Int = 8
 ) extends Module {
   val io = IO(new Bundle {
-    val led0            = Output(Bool())       // LED 0 is the heartbeat
-    val GPIO0External   = Analog(numGPIO.W)    // GPIO external port
-    val UART0SerialPort = new UARTSerialPort() // UART0 serial port
+    val led0            = Output(Bool())     // LED 0 is the heartbeat
+    val GPIO0External   = Analog(numGPIO.W)  // GPIO external port
+    val UART0SerialPort = new UARTSerialPort // UART0 serial port
   })
 
   // Heartbeat LED - Keep on if reached an error

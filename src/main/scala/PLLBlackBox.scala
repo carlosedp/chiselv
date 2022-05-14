@@ -6,7 +6,7 @@ import chisel3.util.HasBlackBoxInline
 import scala.io.Source
 
 class PLL0(board: String) extends BlackBox with HasBlackBoxInline {
-  val io = IO(new Bundle() {
+  val io = IO(new Bundle {
     val clki = Input(Clock())
     val clko = Output(Clock());
     val lock = Output(Clock())

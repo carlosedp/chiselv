@@ -40,8 +40,8 @@ class UARTPort() extends Bundle {
 
 class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
   val io = IO(new Bundle {
-    val serialPort = new UARTSerialPort()
-    val dataPort   = new UARTPort()
+    val serialPort = new UARTSerialPort
+    val dataPort   = new UARTPort
   })
 
   require(isPow2(rxOverclock))
@@ -57,10 +57,10 @@ class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
   val txQueue = Module(new Queue(UInt(8.W), fifoLength))
   val rxQueue = Module(new Queue(UInt(8.W), fifoLength))
 
-  io.dataPort.rxEmpty := (rxQueue.io.count === 0.U)
-  io.dataPort.txEmpty := (txQueue.io.count === 0.U)
-  io.dataPort.rxFull  := (rxQueue.io.count === fifoLength.U)
-  io.dataPort.txFull  := (txQueue.io.count === fifoLength.U)
+  io.dataPort.rxEmpty := rxQueue.io.count === 0.U
+  io.dataPort.txEmpty := txQueue.io.count === 0.U
+  io.dataPort.rxFull  := rxQueue.io.count === fifoLength.U
+  io.dataPort.txFull  := txQueue.io.count === fifoLength.U
 
   val uartEnabled = clockDivisor.orR
 

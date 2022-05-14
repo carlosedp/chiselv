@@ -43,11 +43,11 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
       addresses.foreach { address =>
         values.foreach { value =>
           c.io.dualPort.writeEnable.poke(true)
-          c.io.dualPort.writeAddress.poke((addressOffset + address))
-          c.io.dualPort.readAddress.poke((addressOffset + address))
+          c.io.dualPort.writeAddress.poke(addressOffset + address)
+          c.io.dualPort.readAddress.poke(addressOffset + address)
           c.io.dualPort.writeData.poke(value)
           c.clock.step(1)
-          c.io.dualPort.readAddress.poke((addressOffset + address))
+          c.io.dualPort.readAddress.poke(addressOffset + address)
           c.clock.step(1)
           c.io.dualPort.readData.peekInt() should be(value)
         }
