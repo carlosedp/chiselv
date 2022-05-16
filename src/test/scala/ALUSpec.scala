@@ -12,8 +12,8 @@ import matchers._
 class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   val one        = BigInt(1)
   val max        = (one << 32) - one
-  val min_signed = one << (32 - 1)
-  val max_signed = (one << (32 - 1)) - one
+  val min_signed = one << 32 - 1
+  val max_signed = (one << 32 - 1) - one
   val cases =
     Array[BigInt](1, 2, 4, 123, -1, -2, -4, 0, 0x7fffffffL, 0x80000000L, max, min_signed, max_signed) ++ Seq.fill(10)(
       BigInt(scala.util.Random.nextInt())
@@ -22,72 +22,72 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   behavior of "ALU"
 
   it should "ADD" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, ADD)
     }
   }
   it should "SUB" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SUB)
     }
   }
   it should "AND" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, AND)
     }
   }
   it should "OR" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, OR)
     }
   }
   it should "XOR" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, XOR)
     }
   }
   it should "SRA" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SRA)
     }
   }
   it should "SRL" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SRL)
     }
   }
   it should "SLL" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SLL)
     }
   }
   it should "SLT" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SLT)
     }
   }
   it should "SLTU" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, SLTU)
     }
   }
   it should "EQ" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, EQ)
     }
   }
   it should "NEQ" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, NEQ)
     }
   }
   it should "GT" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, GTE)
     }
   }
   it should "GTU" in {
-    test(new ALU()) { c =>
+    test(new ALU) { c =>
       testCycle(c, GTEU)
     }
   }

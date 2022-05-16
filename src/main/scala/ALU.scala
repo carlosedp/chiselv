@@ -52,13 +52,13 @@ class ALU(bitWidth: Int = 32) extends Module {
     is(OR)(out  := a | b)
     is(XOR)(out := a ^ b)
     // Compare
-    is(SLT)(out  := (Mux((a.asSInt < b.asSInt), 1.U, 0.U))) // Signed
+    is(SLT)(out  := Mux((a.asSInt < b.asSInt), 1.U, 0.U)) // Signed
     is(SLTU)(out := Mux(a < b, 1.U, 0.U))
     // Auxiliary
     is(EQ)(out   := Mux(a === b, 1.U, 0.U))
     is(NEQ)(out  := Mux(a =/= b, 1.U, 0.U))
     is(GTE)(out  := Mux(a.asSInt >= b.asSInt, 1.U, 0.U))
-    is(GTEU)(out := (Mux((a >= b), 1.U, 0.U)))
+    is(GTEU)(out := Mux((a >= b), 1.U, 0.U))
   }
 
   io.ALUPort.x := out

@@ -10,7 +10,7 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
   behavior of "ProgramCounter"
 
   it should "initialize to 0" in {
-    test(new ProgramCounter()) { c =>
+    test(new ProgramCounter) { c =>
       c.io.pcPort.PC.peekInt() should be(0)
     }
   }
@@ -20,7 +20,7 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     }
   }
   it should "walk 4 bytes" in {
-    test(new ProgramCounter()) { c =>
+    test(new ProgramCounter) { c =>
       c.io.pcPort.PC.peekInt() should be(0)
       c.io.pcPort.PC4.peekInt() should be(4)
       c.clock.step()
@@ -31,7 +31,7 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     }
   }
   it should "jump to 0xbaddcafe (write)" in {
-    test(new ProgramCounter()) { c =>
+    test(new ProgramCounter) { c =>
       c.io.pcPort.writeEnable.poke(true)
       c.io.pcPort.dataIn.poke(0xbaddcafeL)
       c.clock.step()
@@ -39,7 +39,7 @@ class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with sho
     }
   }
   it should "add 32 to PC ending up in 40" in {
-    test(new ProgramCounter()) { c =>
+    test(new ProgramCounter) { c =>
       c.io.pcPort.writeEnable.poke(true)
       c.io.pcPort.dataIn.poke(8)
       c.clock.step()

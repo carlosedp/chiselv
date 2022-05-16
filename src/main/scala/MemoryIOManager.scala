@@ -45,7 +45,7 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
     val MemoryIOPort = new MMIOPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))
     val Timer0Port   = Flipped(new TimerPort(bitWidth))
-    val UART0Port    = Flipped(new UARTPort())
+    val UART0Port    = Flipped(new UARTPort)
     val DataMemPort  = Flipped(new MemoryPortDual(bitWidth, sizeBytes))
     val SysconPort   = Flipped(new SysconPort(bitWidth))
     val stall        = Output(Bool())
@@ -87,7 +87,7 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
     DACK - 1.U,
     Mux((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest), stallLatency, 0.U)
   )
-  io.stall := ((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest) && DACK =/= 1.U && stallEnable)
+  io.stall := (io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest) && DACK =/= 1.U && stallEnable
 
   /* --- Syscon --- */
   when(readAddress(31, 12) === 0x0000_1L.U && io.MemoryIOPort.readRequest) {

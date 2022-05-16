@@ -62,7 +62,7 @@ class SysconSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     defaultDut() { c =>
       c.io.SysconPort.Address.poke(0x34)
       c.clock.step()
-      c.io.SysconPort.DataOut.peekInt() should be((64 * 1024))
+      c.io.SysconPort.DataOut.peekInt() should be(64 * 1024)
     }
   }
 }

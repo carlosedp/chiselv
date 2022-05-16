@@ -20,7 +20,7 @@ class DualPortRAM(
   debugMsg:   Boolean = false
 ) extends Module {
   val words = sizeBytes / bitWidth
-  val io = IO(new Bundle() {
+  val io = IO(new Bundle {
     val dualPort = new MemoryPortDual(bitWidth, sizeBytes)
   })
 

@@ -109,7 +109,7 @@ class RVFI(bitWidth: Int = 32) extends Module {
     val dmem_wdata = Output(UInt(bitWidth.W))
     val dmem_wen   = Output(Bool())
   })
-  val rvfi = IO(new RVFIPort()) // RVFI interface for RISCV-Formal
+  val rvfi = IO(new RVFIPort) // RVFI interface for RISCV-Formal
 
   // Instantiate the wrapped CPU with RVFI interface
   val CPU = Module(
@@ -144,6 +144,6 @@ class RVFI(bitWidth: Int = 32) extends Module {
 object RVFITop extends App {
   // Generate Verilog
   (new chisel3.stage.ChiselStage).emitVerilog(
-    new RVFI()
+    new RVFI
   )
 }

@@ -11,13 +11,13 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
   behavior of "RegisterBank"
 
   it should "have x0 equal to 0" in {
-    test(new RegisterBank()) { c =>
+    test(new RegisterBank) { c =>
       c.io.regPort.rs1_addr.poke(0.U)
       c.io.regPort.rs1.expect(0.S)
     }
   }
   it should "not write to x0" in {
-    test(new RegisterBank()) { c =>
+    test(new RegisterBank) { c =>
       c.io.regPort.writeEnable.poke(true)
       c.io.regPort.regwr_addr.poke(0.U)
       c.io.regPort.regwr_data.poke(123.S)
@@ -26,7 +26,7 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
     }
   }
   it should "not write if not enabled" in {
-    test(new RegisterBank()) { c =>
+    test(new RegisterBank) { c =>
       c.io.regPort.rs1_addr.poke(1)
       c.io.regPort.regwr_addr.poke(1)
       c.io.regPort.regwr_data.poke(123.S)
@@ -35,7 +35,7 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
     }
   }
   it should "write to other registers as expected" in {
-    test(new RegisterBank()).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    test(new RegisterBank).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       for (i <- 1 until 32) {
         c.io.regPort.writeEnable.poke(true)
         c.clock.step()
