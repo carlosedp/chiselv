@@ -42,7 +42,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
         // Shifts
         BitPat("b0000000??????????001?????0110011")  -> List(INST_R,      SLL,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
         BitPat("b0000000??????????001?????0010011")  -> List(INST_I,     SLLI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
-        BitPat("b0100000??????????101?????0110011")  -> List(INST_R,      SRL,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
+        BitPat("b0000000??????????101?????0110011")  -> List(INST_R,      SRL,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
         BitPat("b0000000??????????101?????0010011")  -> List(INST_I,     SRLI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),
         BitPat("b0100000??????????101?????0110011")  -> List(INST_R,      SRA,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
         BitPat("b0100000??????????101?????0010011")  -> List(INST_I,     SRAI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),

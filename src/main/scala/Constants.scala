@@ -7,7 +7,7 @@ object Instruction extends ChiselEnum {
   // RV32I
   ADD, ADDI, SUB, LUI, AUIPC,                  // Arithmetic
   SLL, SLLI, SRL, SRLI, SRA, SRAI,             // Shifts
-  XOR, XORI, OR, ORI, AND, ANDI,               // Logical
+  AND, ANDI, OR, ORI, XOR, XORI,               // Logical
   SLT, SLTI, SLTU, SLTIU,                      // Compare
   BEQ, BNE, BLT, BGE, BLTU, BGEU,              // Branches
   JAL, JALR,                                   // Jump & Link
