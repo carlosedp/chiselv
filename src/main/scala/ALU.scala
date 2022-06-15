@@ -18,7 +18,7 @@ class ALU(bitWidth: Int = 32) extends Module {
 
   val a   = io.ALUPort.a
   val b   = io.ALUPort.b
-  val out = WireDefault(UInt(bitWidth.W), 0.U)
+  val out = WireDefault(0.U(bitWidth.W))
 
   // For RV32I the shift amount is 5 bits, for RV64I is 6 bits
   val shamt = if (bitWidth == 32) b(4, 0).asUInt else b(5, 0).asUInt

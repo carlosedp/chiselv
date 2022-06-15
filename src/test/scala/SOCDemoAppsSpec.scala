@@ -32,7 +32,7 @@ class SOCWrapperDemo(
 }
 
 class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "CPULEDDemoSpec"
+  behavior of "CPUSOCDemoSpec"
 
   val cpuFrequency          = 10000
   val bitWidth              = 32
