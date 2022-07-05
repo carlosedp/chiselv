@@ -46,7 +46,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
     defaultDut(filename) { c =>
       c.clock.setTimeout(0)
       val results = List.fill(8)(List(0, 1000, 3000, 2000)).flatten
-      for ((i, r) <- (0 until 31 zip results)) {
+      for ((i, r) <- 0 until 31 zip results) {
         c.registers(i).peekInt() should be(r)
         c.clock.step(1)
       }

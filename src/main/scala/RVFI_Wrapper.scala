@@ -83,7 +83,7 @@ class RVFICPUWrapper(
     PC.io.pcPort.PC4
   )
 
-  rvfi.mem_addr  := Mux((decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store), ALU.io.ALUPort.x, 0.U)
+  rvfi.mem_addr  := Mux(decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store, ALU.io.ALUPort.x, 0.U)
   rvfi.mem_rdata := Mux(decoder.io.DecoderPort.is_load, memoryIOManager.io.DataMemPort.readData, 0.U)
   rvfi.mem_rmask := Mux(decoder.io.DecoderPort.is_load, rvfi_mem_size_mask, 0.U)
 

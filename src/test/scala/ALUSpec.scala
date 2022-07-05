@@ -99,15 +99,15 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       case AND  => a & b
       case OR   => a | b
       case XOR  => a ^ b
-      case SRA  => (a.toInt >> (b.toInt & 0x1f))
+      case SRA  => a.toInt >> (b.toInt & 0x1f)
       case SRL  => a.toInt >>> b.toInt
       case SLL  => a.toInt << b.toInt
-      case SLT  => (if (a.toInt < b.toInt) 1 else 0)
-      case SLTU => (if (a.to32Bit < b.to32Bit) 1 else 0)
-      case EQ   => (if (a.to32Bit == b.to32Bit) 1 else 0)
-      case NEQ  => (if (a.to32Bit != b.to32Bit) 1 else 0)
-      case GTE  => (if (a.toInt >= b.toInt) 1 else 0)
-      case GTEU => (if (a.to32Bit >= b.to32Bit) 1 else 0)
+      case SLT  => if (a.toInt < b.toInt) 1 else 0
+      case SLTU => if (a.to32Bit < b.to32Bit) 1 else 0
+      case EQ   => if (a.to32Bit == b.to32Bit) 1 else 0
+      case NEQ  => if (a.to32Bit != b.to32Bit) 1 else 0
+      case GTE  => if (a.toInt >= b.toInt) 1 else 0
+      case GTEU => if (a.to32Bit >= b.to32Bit) 1 else 0
       case _    => 0 // Never happens
     }
 
