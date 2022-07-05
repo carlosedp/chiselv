@@ -85,7 +85,7 @@ class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module
   DACK := Mux(
     DACK > 0.U,
     DACK - 1.U,
-    Mux((io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest), stallLatency, 0.U)
+    Mux(io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest, stallLatency, 0.U)
   )
   io.stall := (io.MemoryIOPort.readRequest || io.MemoryIOPort.writeRequest) && DACK =/= 1.U && stallEnable
 
