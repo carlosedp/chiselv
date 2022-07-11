@@ -53,11 +53,7 @@ addCommandAlias("fix", "all Compile / scalafixAll; Test / scalafixAll")
 addCommandAlias("lint", "fmt;fix")
 addCommandAlias("deps", "dependencyUpdates")
 
-resolvers ++= Seq(
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  "Sonatype New OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots"
-)
+resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 scalacOptions ++= Seq(
   "-unchecked",
