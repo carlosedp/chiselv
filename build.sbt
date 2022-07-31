@@ -27,7 +27,7 @@ lazy val chiselv = (project in file("."))
 // Default library versions
 lazy val versions = new {
   val chisel3         = "3.5.3"
-  val chiseltest      = "0.5.3"
+  val chiseltest      = "0.5.4"
   val scalatest       = "3.2.12"
   val organizeimports = "0.6.0"
   val scalautils      = "0.10.2"
