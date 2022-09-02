@@ -4,7 +4,7 @@ scala_files = $(wildcard $(project)/*/*.scala)
 generated_files = generated
 
 # Toolchains and tools
-MILL = ./mill
+MILL = ./mill -j 4
 DOCKERARGS  = run --rm -v $(PWD):/src -w /src
 
 # Define utility applications for simulation
@@ -38,7 +38,7 @@ checkboard:
 
 check: test
 test:## Run Chisel tests
-	$(MILL) -j 4 $(project).test
+	$(MILL) $(project).test
 
 lint: ## Formats code using scalafmt and scalafix
 	$(MILL) lint
