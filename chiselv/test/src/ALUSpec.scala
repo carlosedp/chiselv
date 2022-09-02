@@ -16,7 +16,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   val max_signed = (one << 32 - 1) - one
   val cases =
     Array[BigInt](1, 2, 4, 123, -1, -2, -4, 0, 0x7fffffffL, 0x80000000L, max, min_signed, max_signed) ++ Seq.fill(10)(
-      BigInt(scala.util.Random.nextInt())
+      BigInt(scala.util.Random.nextInt()),
     )
 
   behavior of "ALU"

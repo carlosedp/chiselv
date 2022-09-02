@@ -10,7 +10,7 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleIOWrapper(
-  memoryFile: String
+  memoryFile: String,
 ) extends SOC(
     cpuFrequency = 25000000,
     entryPoint = 0,
@@ -18,7 +18,7 @@ class CPUSingleCycleIOWrapper(
     instructionMemorySize = 1 * 1024,
     dataMemorySize = 1 * 1024,
     memoryFile = memoryFile,
-    numGPIO = 8
+    numGPIO = 8,
   ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
@@ -65,8 +65,8 @@ class CPUSingleCycleIOSpec
       .withAnnotations(
         Seq(
           WriteVcdAnnotation,
-          VerilatorBackendAnnotation // GPIO needs Verilator backend
-        )
+          VerilatorBackendAnnotation, // GPIO needs Verilator backend
+        ),
       )
   }
 

@@ -35,8 +35,8 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
           dataMemorySize = dataMemorySize,
           memoryFile = "progload.mem",
           ramFile = "progload-RAM.mem",
-          numGPIO = numGPIO
-        )
+          numGPIO = numGPIO,
+        ),
       )
 
     // Connect IO
@@ -63,6 +63,6 @@ object Toplevel extends App {
   // Generate Verilog
   (new chisel3.stage.ChiselStage).emitVerilog(
     new Toplevel(board, invReset, cpuFrequency),
-    chiselargs
+    chiselargs,
   )
 }

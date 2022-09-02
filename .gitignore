@@ -77,5 +77,4 @@ tmp
 /*.vcd
 /obj_dir
 /*.mem
-/chiselv
 /tmphex/*

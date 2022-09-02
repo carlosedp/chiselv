@@ -12,7 +12,7 @@ class CPUSingleCycle(
   bitWidth:              Int = 32,
   instructionMemorySize: Int = 1 * 1024,
   dataMemorySize:        Int = 1 * 1024,
-  numGPIO:               Int = 8
+  numGPIO:               Int = 8,
 ) extends Module {
   val io = IO(new Bundle {
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
@@ -101,7 +101,7 @@ class CPUSingleCycle(
     ALU.io.ALUPort.b := Mux(
       decoder.io.DecoderPort.use_imm,
       decoder.io.DecoderPort.imm.asUInt,
-      registerBank.io.regPort.rs2.asUInt
+      registerBank.io.regPort.rs2.asUInt,
     )
 
     registerBank.io.regPort.writeEnable := true.B
@@ -147,7 +147,7 @@ class CPUSingleCycle(
       // Set PC to jump address
       PC.io.pcPort.dataIn := Cat(
         (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm).asUInt(31, 1),
-        0.U
+        0.U,
       )
     }
   }
@@ -193,7 +193,7 @@ class CPUSingleCycle(
       dataSize := 2.U
       dataOut := Cat(
         Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
-        memoryIOManager.io.MemoryIOPort.readData(15, 0)
+        memoryIOManager.io.MemoryIOPort.readData(15, 0),
       ).asSInt
     }
     // Load Halfword Unsigned
@@ -206,7 +206,7 @@ class CPUSingleCycle(
       dataSize := 1.U
       dataOut := Cat(
         Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
-        memoryIOManager.io.MemoryIOPort.readData(7, 0)
+        memoryIOManager.io.MemoryIOPort.readData(7, 0),
       ).asSInt
     }
     // Load Byte Unsigned

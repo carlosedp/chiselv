@@ -33,13 +33,13 @@ class RVFICPUWrapper(
   bitWidth:              Int = 32,
   instructionMemorySize: Int = 64 * 1024,
   dataMemorySize:        Int = 64 * 1024,
-  numGPIO:               Int = 8
+  numGPIO:               Int = 8,
 ) extends CPUSingleCycle(
     cpuFrequency,
     bitWidth,
     instructionMemorySize,
     dataMemorySize,
-    numGPIO
+    numGPIO,
   ) {
   val rvfi = IO(new RVFIPort) // RVFI interface for RISCV-Formal
 
@@ -80,7 +80,7 @@ class RVFICPUWrapper(
   rvfi.pc_wdata := Mux(
     PC.io.pcPort.writeAdd,
     (PC.io.pcPort.PC.asSInt + PC.io.pcPort.dataIn.asSInt).asUInt,
-    PC.io.pcPort.PC4
+    PC.io.pcPort.PC4,
   )
 
   rvfi.mem_addr  := Mux(decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store, ALU.io.ALUPort.x, 0.U)
@@ -113,7 +113,7 @@ class RVFI(bitWidth: Int = 32) extends Module {
 
   // Instantiate the wrapped CPU with RVFI interface
   val CPU = Module(
-    new RVFICPUWrapper(bitWidth)
+    new RVFICPUWrapper(bitWidth),
   )
 
   // Initialize unused IO
@@ -144,6 +144,6 @@ class RVFI(bitWidth: Int = 32) extends Module {
 object RVFITop extends App {
   // Generate Verilog
   (new chisel3.stage.ChiselStage).emitVerilog(
-    new RVFI
+    new RVFI,
   )
 }
