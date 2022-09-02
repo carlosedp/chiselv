@@ -62,6 +62,7 @@ project/metals.sbt
 .addons-dont-touch
 .DS_Store
 generated
+generated_rvfi
 docs/generated
 test_run_dir
 tmp
@@ -78,3 +79,4 @@ tmp
 /obj_dir
 /*.mem
 /tmphex/*
+/chiselv.bin

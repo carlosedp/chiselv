@@ -14,3 +14,7 @@ boards:
       interfaceConfig: digilent-hs1.cfg
       boardConfig: xilinx-xc7.cfg
       bitstream: Toplevel.bit
+
+    qmtech_k325t:
+      templateFile: qmtech_k325t-template.txt
+      bitstream: carlosedp_chiselv_singlecycle_0.bit

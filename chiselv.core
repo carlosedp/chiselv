@@ -47,6 +47,16 @@ filesets:
       - openocd/xilinx-xc7.cfg: { file_type: user }
       - proginfo/artix7-template.txt: { file_type: user }
 
+  qmtech_k325t:
+    files:
+      - constraints/qmtech-kintex7.xdc: { file_type: XDC }
+      - proginfo/qmtech_k325t-template.txt: { file_type: user }
+
+  qmtech_k325t_zyjzgw:
+    files:
+      - constraints/qmtech-zyjzgw.xdc: { file_type: XDC }
+      - proginfo/qmtech_k325t-template.txt: { file_type: user }
+
 generate:
   default-chisel:
     generator: chisel
@@ -77,6 +87,12 @@ generate:
     parameters:
       <<: *baseparam
       extraargs: "--target:fpga -board artya7-35t -cpufreq 25000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+
+  qmtech_k325t:
+    generator: chisel
+    parameters:
+      <<: *baseparam
+      extraargs: "-board qmtech_k325t -invreset true --target:fpga -cpufreq 50000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
 
 targets:
   lint:
@@ -130,8 +146,31 @@ targets:
         pnr: vtr
     toplevel : Toplevel
 
+  qmtech_k325t: &qmtech_k325t
+    default_tool : xray
+    description: QMTech Kintex 7 K325T Board using Project X-Ray OSS Toolchain
+    filesets : [base, qmtech_k325t, proginfo, progload]
+    generate: [qmtech_k325t]
+    hooks:
+      post_run: [qmtech_k325t]
+    tools:
+      xray:
+        part : xc7k325t
+        package: ffg676-1
+        yosys_synth_options: [-abc9, -flatten]
+        nextpnr_options: [--verbose, --debug]
+    toplevel : Toplevel
+
+  qmtech_k325t_zyjzgw:
+    <<: *qmtech_k325t
+    description: QMTech Kintex 7 K325T ZYJZGW Board using Project X-Ray OSS Toolchain
+    filesets : [base, qmtech_k325t_zyjzgw, proginfo, progload]
+
+
 scripts:
   artya7-35t:
     cmd : [python3, proginfo.py, artya7-35t]
   ulx3s-85f:
     cmd : [python3, proginfo.py, ulx3s-85f]
+  qmtech_k325t:
+    cmd : [python3, proginfo.py, qmtech_k325t]
