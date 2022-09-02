@@ -15,7 +15,7 @@ class SOCWrapperDemo(
   memorySize:            Int,
   memoryFile:            String,
   ramFile:               String,
-  numGPIO:               Int
+  numGPIO:               Int,
   // baudRate: Int,
 ) extends SOC(
     cpuFrequency,
@@ -25,7 +25,7 @@ class SOCWrapperDemo(
     memorySize,
     memoryFile,
     ramFile,
-    numGPIO
+    numGPIO,
   ) {
   val registers = expose(core.registerBank.regs)
   val pc        = expose(core.PC.pc)
@@ -48,15 +48,15 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
         memorySize,
         memoryfile,
         ramFile,
-        8
+        8,
         // 1200,
-      )
+      ),
     )
       .withAnnotations(
         Seq(
           WriteVcdAnnotation,
-          VerilatorBackendAnnotation
-        )
+          VerilatorBackendAnnotation,
+        ),
       )
 
   it should "lit a LED connected to GPIO from gcc program" in {

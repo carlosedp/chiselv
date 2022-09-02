@@ -9,7 +9,7 @@ import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
 class CPUSingleCycleWrapperApps(
-  memoryFile: String
+  memoryFile: String,
 ) extends SOC(
     cpuFrequency = 25000000,
     entryPoint = 0,
@@ -17,7 +17,7 @@ class CPUSingleCycleWrapperApps(
     instructionMemorySize = 1 * 1024,
     dataMemorySize = 1 * 1024,
     memoryFile = memoryFile,
-    numGPIO = 0
+    numGPIO = 0,
   ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
@@ -37,8 +37,8 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
     test(new CPUSingleCycleWrapperApps(memoryFile = memoryfile))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation
-        )
+          WriteVcdAnnotation,
+        ),
       )
 
   it should "load instructions from file to write to all registers with ADDI" in {

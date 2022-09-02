@@ -12,8 +12,8 @@ class SysconSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
   def defaultDut() =
     test(new Syscon(32, 50000000, 8, 0L, 64 * 1024, 64 * 1024)).withAnnotations(
       Seq(
-        WriteVcdAnnotation
-      )
+        WriteVcdAnnotation,
+      ),
     )
 
   it should "read dummy value from Syscon 0x0" in {

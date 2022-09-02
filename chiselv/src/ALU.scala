@@ -35,8 +35,8 @@ class ALU(bitWidth: Int = 32) extends Module {
       (io.ALUPort.inst === ORI)   -> OR,
       (io.ALUPort.inst === XORI)  -> XOR,
       (io.ALUPort.inst === SLTI)  -> SLT,
-      (io.ALUPort.inst === SLTIU) -> SLTU
-    )
+      (io.ALUPort.inst === SLTIU) -> SLTU,
+    ),
   )
 
   switch(op) {

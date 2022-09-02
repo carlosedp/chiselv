@@ -309,7 +309,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
     use_imm: Boolean = false,
     jump:    Boolean = false,
     load:    Boolean = false,
-    store:   Boolean = false
+    store:   Boolean = false,
   ) = {
     c.io.DecoderPort.inst.expect(inst)
     c.io.DecoderPort.rd.peekInt() should be(rd)

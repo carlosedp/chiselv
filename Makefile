@@ -1,18 +1,11 @@
 # Source and target files/directories
-scala_files = $(wildcard src/main/scala/*.scala)
+project = $(shell grep projectName build.sc | cut -d= -f2|tr -d "\"" |xargs)
+scala_files = $(wildcard $(project)/*/*.scala)
 generated_files = generated
 
-# Define the SBT command (Docker or local)
+# Toolchains and tools
+MILL = ./mill
 DOCKERARGS  = run --rm -v $(PWD):/src -w /src
-BUILDTOOL ?= sbt 							# Can also be mill
-SBTIMAGE   = docker $(DOCKERARGS) adoptopenjdk:8u282-b08-jre-hotspot
-SBTCMD   = $(SBTIMAGE) curl -Ls https://git.io/sbt > /tmp/sbt && chmod 0775 /tmp/sbt && /tmp/sbt
-SBTLOCAL := $(shell command -v sbt 2> /dev/null)
-ifndef SBTLOCAL
-	SBT=${SBTCMD}
-else
-	SBT=sbt
-endif
 
 # Define utility applications for simulation
 YOSYS = docker $(DOCKERARGS) hdlc/yosys yosys
@@ -34,34 +27,27 @@ CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMe
 # Targets
 all: chisel gcc
 
-chisel: $(generated_files) ## Generates Verilog code from Chisel sources using SBT
+chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
 
-$(generated_files): $(scala_files) build.sbt Makefile
+$(generated_files): $(scala_files) build.sc Makefile checkboard
 	@rm -rf $(generated_files)
-	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
-	$(SCALABUILD)
-	@if [ $(BUILDTOOL) = "sbt" ]; then \
-		echo ${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
-		${SBT} "run $(CHISELPARAMS) $(BOARDPARAMS)"; \
-	elif [ $(BUILDTOOL) = "mill" ]; then \
-		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
-		echo scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
-		scripts/mill $(project).run $(CHISELPARAMS) $(BOARDPARAMS); \
-	fi
+	$(MILL) $(project).run $(CHISELPARAMS) $(BOARDPARAMS)
 
-chisel_tests:
-	@if [ $(BUILDTOOL) = "sbt" ]; then \
-		${SBT} "test"; \
-	elif [ $(BUILDTOOL) = "mill" ]; then \
-		project=grep object build.sc |grep -v extends |sed s/object//g |xargs \
-		scripts/mill $(project).test; \
-	fi
+checkboard:
+	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: .\n" ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
+
+check: test
+test:## Run Chisel tests
+	$(MILL) -j 4 $(project).test
+
+lint: ## Formats code using scalafmt and scalafix
+	$(MILL) lint
+
+deps: ## Check for library version updates
+	$(MILL) deps
 
 rvfi: clean ## Generates Verilog code for RISC-V Formal tests
-	${SBT} "runMain chiselv.RVFITop $(CHISELPARAMS) $(BOARDPARAMS)"
-
-check: chisel_tests ## Run Chisel tests
-test: chisel_tests
+	$(MILL) $(project)_rvfi.run $(CHISELPARAMS) $(BOARDPARAMS)
 
 # This section defines the Verilator simulation and demo application to be used
 verilator: $(generated_files) ## Generate Verilator simulation
@@ -86,28 +72,23 @@ dot: $(generated_files) ## Generate dot files for Core
 	@$(YOSYS) -p "read_verilog ./generated/*.v; proc; opt; show -colors 2 -width -format dot -prefix $(MODULE) -signed $(MODULE)"
 	@rm progload.mem progload-RAM.mem
 
-fmt: ## Formats code using scalafmt and scalafix
-	${SBT} lint
-
 .PHONY: gcc
 gcc: ## Builds gcc sample code
 	@for d in `find gcc -name Makefile`;do echo ----\\nBuilding $$d; pushd `dirname $$d`; make; popd; done
 
 clean:   ## Clean all generated files
-	@if [ $(BUILDTOOL) = "sbt" ]; then \
-		${SBT} "clean"; \
-	elif [ $(BUILDTOOL) = "mill" ]; then \
-		scripts/mill clean; \
-	fi
+	$(MILL) clean
 	@rm -rf obj_dir test_run_dir target
 	@rm -rf $(generated_files)
+	@rm -rf tmphex
 	@rm -rf out
-	@rm -f chiselv
 	@rm -f *.mem
 
-cleancache: clean  ## Clean all downloaded dependencies and cache
+cleanall: clean  ## Clean all downloaded dependencies and cache
+	@rm -rf project/.bloop
 	@rm -rf project/project
 	@rm -rf project/target
+	@rm -rf .bloop .bsp .metals .vscode
 
 help:
 	@echo "Makefile targets:"
@@ -115,5 +96,5 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "[:##]"}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$4}'
 	@echo ""
 
-.PHONY: clean prog help
+.PHONY: test clean prog help
 .DEFAULT_GOAL := help

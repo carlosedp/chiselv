@@ -11,7 +11,7 @@ class SOC(
   dataMemorySize:        Int = 1 * 1024,
   memoryFile:            String = "",
   ramFile:               String = "",
-  numGPIO:               Int = 8
+  numGPIO:               Int = 8,
 ) extends Module {
   val io = IO(new Bundle {
     val led0            = Output(Bool())     // LED 0 is the heartbeat
@@ -47,7 +47,7 @@ class SOC(
 
   // Instantiate our core
   val core = Module(
-    new CPUSingleCycle(cpuFrequency, entryPoint, bitWidth, instructionMemorySize, dataMemorySize, numGPIO)
+    new CPUSingleCycle(cpuFrequency, entryPoint, bitWidth, instructionMemorySize, dataMemorySize, numGPIO),
   )
 
   // Connect the core to the devices

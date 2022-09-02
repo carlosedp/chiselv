@@ -18,7 +18,7 @@ class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Match
     test(new TimerWrapper(32, cpuFrequency)).withAnnotations(
       Seq(
         // WriteVcdAnnotation
-      )
+      ),
     )
 
   val ms = cpuFrequency / 1000
