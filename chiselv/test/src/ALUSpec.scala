@@ -2,7 +2,7 @@ package chiselv
 
 import chisel3._
 import chiseltest._
-import com.carlosedp.scalautils.ObjectUtils.NumericManipulation
+import com.carlosedp.riscvassembler.ObjectUtils.NumericManipulation
 import org.scalatest._
 
 import Instruction._

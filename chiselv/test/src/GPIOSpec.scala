@@ -2,7 +2,7 @@ package chiselv
 
 import chiseltest._
 import chiseltest.experimental.expose
-import com.carlosedp.scalautils.ObjectUtils._
+import com.carlosedp.riscvassembler.ObjectUtils._
 import org.scalatest._
 
 import flatspec._

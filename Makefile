@@ -1,10 +1,11 @@
 # Source and target files/directories
 project = $(shell grep projectName build.sc | cut -d= -f2|tr -d "\"" |xargs)
-scala_files = $(wildcard $(project)/*/*.scala)
+scala_files = $(wildcard $(project)/src/*.scala) $(wildcard $(project)/resources/*.scala) $(wildcard $(project)/test/src/*.scala)
 generated_files = generated
+rvfi_files = generated_rvfi
 
 # Toolchains and tools
-MILL = ./mill -j 4
+MILL = ./mill
 DOCKERARGS  = run --rm -v $(PWD):/src -w /src
 
 # Define utility applications for simulation
@@ -22,48 +23,53 @@ BOARD := bypass
 PLLFREQ ?= 50000000
 BOARDPARAMS=-board ${BOARD} -cpufreq ${PLLFREQ} -invreset false
 # CHISELPARAMS = --target:fpga -td $(generated_files)
-CHISELPARAMS = --target:fpga -td $(generated_files) --emission-options=disableMemRandomization,disableRegisterRandomization
+CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
 all: chisel gcc
 
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
-
-$(generated_files): $(scala_files) build.sc Makefile checkboard
-	@rm -rf $(generated_files)
-	$(MILL) $(project).run $(CHISELPARAMS) $(BOARDPARAMS)
-
-checkboard:
+$(generated_files): $(scala_files) build.sc Makefile
+	@rm -rf $@
 	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: .\n" ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
+	$(MILL) $(project).run $(CHISELPARAMS) -td $@ $(BOARDPARAMS)
 
 check: test
+.PHONY: test
 test:## Run Chisel tests
 	$(MILL) $(project).test
 
+.PHONY: lint
 lint: ## Formats code using scalafmt and scalafix
 	$(MILL) lint
 
+.PHONY: deps
 deps: ## Check for library version updates
 	$(MILL) deps
 
-rvfi: clean ## Generates Verilog code for RISC-V Formal tests
-	$(MILL) $(project)_rvfi.run $(CHISELPARAMS) $(BOARDPARAMS)
+
+rvfi: $(rvfi_files) ## Generates Verilog code for RISC-V Formal tests
+$(rvfi_files):  $(scala_files) build.sc Makefile
+	@rm -rf $@
+	$(MILL) $(project)_rvfi.run -td $@ $(CHISELPARAMS)
 
 # This section defines the Verilator simulation and demo application to be used
-verilator: $(generated_files) ## Generate Verilator simulation
+binfile = chiselv.bin
+verilator: $(binfile) ## Generate Verilator simulation
+$(binfile): $(generated_files)
 	@rm -rf obj_dir
-	$(VERILATOR) verilator -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o chiselv --timescale 1ns/1ps
+	$(VERILATOR) verilator -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o $(binfile) --timescale 1ns/1ps
 	make -C obj_dir -f VToplevel.mk -j`nproc`
-	@cp obj_dir/chiselv .
+	@cp obj_dir/$(binfile) .
 
 # Adjust the rom and ram files below to match the desired demo app
 romfile = gcc/helloUART/main-rom.mem
 ramfile = gcc/helloUART/main-ram.mem
-verirun: verilator ## Run Verilator simulation with ROM and RAM files to be loaded
+verirun: $(binfile) ## Run Verilator simulation with ROM and RAM files to be loaded
 	@cp $(romfile) progload.mem
 	@cp $(ramfile) progload-RAM.mem
 	@echo "------------------------------------------------------"
-	@bash -c "trap 'reset' EXIT; ./chiselv"
+	@bash -c "trap 'reset' EXIT; ./$(binfile)"
 
 MODULE ?= Toplevel
 dot: $(generated_files) ## Generate dot files for Core
@@ -76,6 +82,7 @@ dot: $(generated_files) ## Generate dot files for Core
 gcc: ## Builds gcc sample code
 	@for d in `find gcc -name Makefile`;do echo ----\\nBuilding $$d; pushd `dirname $$d`; make; popd; done
 
+.PHONY: clean
 clean:   ## Clean all generated files
 	$(MILL) clean
 	@rm -rf obj_dir test_run_dir target
@@ -84,17 +91,18 @@ clean:   ## Clean all generated files
 	@rm -rf out
 	@rm -f *.mem
 
+.PHONY: cleanall
 cleanall: clean  ## Clean all downloaded dependencies and cache
 	@rm -rf project/.bloop
 	@rm -rf project/project
 	@rm -rf project/target
 	@rm -rf .bloop .bsp .metals .vscode
 
+.PHONY: help
 help:
 	@echo "Makefile targets:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "[:##]"}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$4}'
 	@echo ""
 
-.PHONY: test clean prog help
 .DEFAULT_GOAL := help

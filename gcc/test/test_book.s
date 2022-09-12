@@ -10,7 +10,7 @@
 main:   addi   x2, x0, 5       # x2 = 5                 0           00500113
         addi   x3, x0, 12      # x3 = 12                4           00C00193
         addi   x7, x3, -9      # x7 = (12 - 9) = 3      8           FF718393
-        lui    x6, %hi(0x80000000)  # x5 = 0x80000000        C           800002b7
+        lui    x6, %hi(0x80000000)  # x5 = 0x80000000   C           800002b7
         or     x4, x7, x2      # x4 = (3 OR 5) = 7      10          0023E233
         and    x5, x3, x4      # x5 = (12 AND 7) = 4    14          0041F2B3
         add    x5, x5, x4      # x5 = 4 + 7 = 11        18          004282B3
@@ -27,5 +27,5 @@ around: slt    x4, x7, x2      # x4 = (3 < 5) = 1       2C          0023A233
         jal    x3, end         # jump to end, x3 = 0x44 44          008001EF
         addi   x2, x0, 1       # shouldn't execute      48          00100113
 end:    add    x2, x2, x9      # x2 = (7 + 18) = 25     4C          00910133
-        sw     x2, 100(x6)    # [100+x6] = 25             50          0221A023
-done:   beq    x2, x2, done    # infinite loop          54        00210063
+        sw     x2, 100(x6)     # [100+x6] = 25          50          0221A023
+done:   beq    x2, x2, done    # infinite loop          54          00210063

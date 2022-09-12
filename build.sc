@@ -12,6 +12,7 @@ object versions {
   val scalatest       = "3.2.13"
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
+  val riscvassembler  = "1.1.0"
   val scalautils      = "0.10.2"
   val oslib           = "0.8.1"
 }
@@ -31,15 +32,17 @@ trait BaseProject extends ScalaModule with PublishModule {
     ),
   )
 
-  def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.carlosedp::scalautils:${versions.scalautils}",
-    ivy"com.lihaoyi::os-lib:${versions.oslib}",
-  )
   def repositoriesTask = T.task { // Add snapshot repositories in case needed
     super.repositoriesTask() ++ Seq("oss", "s01.oss")
       .map(r => s"https://$r.sonatype.org/content/repositories/snapshots")
       .map(MavenRepository(_))
   }
+
+  def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"com.carlosedp::riscvassembler:${versions.riscvassembler}",
+    ivy"com.carlosedp::scalautils:${versions.scalautils}",
+    ivy"com.lihaoyi::os-lib:${versions.oslib}",
+  )
 }
 
 trait HasChisel3 extends ScalaModule {
@@ -101,5 +104,6 @@ object chiselv extends BaseProject with HasChisel3 with CodeQuality with ScalacO
   def mainClass = Some("chiselv.Toplevel")
 }
 object chiselv_rvfi extends BaseProject with HasChisel3 with CodeQuality with ScalacOptions {
-  override def mainClass = Some("chiselv.RVFITop")
+  def mainClass = Some("chiselv.RVFITop")
+  def sources   = T.sources(millSourcePath / os.up / "chiselv" / "src")
 }

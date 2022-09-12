@@ -7,7 +7,7 @@ MEMDATA       := $(SOURCES:%.s=%.mem)
 DOCKERARGS = run --rm -v $(PWD):/src -w /src
 DOCKERIMG  = docker $(DOCKERARGS) carlosedp/crossbuild-riscv64
 
-CFLAGS=-mabi=ilp32 -march=rv32i
+CFLAGS=-mabi=ilp32 -march=rv32i -Os
 LDFLAGS=-T riscv.ld -m elf32lriscv -O binary
 
 PREFIX=riscv64-linux

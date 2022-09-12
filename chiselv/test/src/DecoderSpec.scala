@@ -2,7 +2,7 @@ package chiselv
 
 import chisel3._
 import chiseltest._
-import com.carlosedp.scalautils.riscvassembler.RISCVAssembler
+import com.carlosedp.riscvassembler.RISCVAssembler
 import org.scalatest._
 
 import Instruction._
