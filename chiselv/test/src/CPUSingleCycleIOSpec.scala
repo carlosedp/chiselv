@@ -36,27 +36,18 @@ class CPUSingleCycleIOSpec
   extends AnyFlatSpec
   with ChiselScalatestTester
   with BeforeAndAfterEach
-  with BeforeAndAfter
+  with BeforeAndAfterAll
   with should.Matchers {
   val cpuFrequency = 25000000
   val ms           = cpuFrequency / 1000
   var memoryfile: os.Path = _
-  val tmpdir = "tmphex"
+  val tmpdir = os.pwd / "tmphex"
 
-  before {
-    os.makeDir.all(os.pwd / tmpdir)
-  }
-  after {
-    try {
-      os.remove(os.pwd / tmpdir)
-    } catch {
-      case _: Exception => // not empty, ignore
-    }
-  }
+  override def beforeAll(): Unit = os.makeDir.all(tmpdir)
+  override def afterAll():  Unit = scala.util.Try(os.remove(tmpdir))
   override def beforeEach(): Unit =
-    memoryfile = os.pwd / tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
-  override def afterEach(): Unit =
-    os.remove.all(memoryfile)
+    memoryfile = tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
+  override def afterEach(): Unit = os.remove.all(memoryfile)
 
   def defaultDut(prog: String) = {
     val hex = RISCVAssembler.fromString(prog)

@@ -32,23 +32,15 @@ class CPUSingleCycleInstructionSpec
   extends AnyFlatSpec
   with ChiselScalatestTester
   with BeforeAndAfterEach
-  with BeforeAndAfter
+  with BeforeAndAfterAll
   with should.Matchers {
   val memReadLatency  = 1
   val memWriteLatency = 1
   var memoryfile: os.Path = _
   val tmpdir = os.pwd / "tmphex"
 
-  before {
-    os.makeDir.all(tmpdir)
-  }
-  after {
-    try {
-      os.remove(tmpdir)
-    } catch {
-      case _: Exception => // not empty, ignore
-    }
-  }
+  override def beforeAll(): Unit = os.makeDir.all(tmpdir)
+  override def afterAll():  Unit = scala.util.Try(os.remove(tmpdir))
   override def beforeEach(): Unit =
     memoryfile = tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
   override def afterEach(): Unit =

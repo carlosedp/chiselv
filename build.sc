@@ -12,7 +12,7 @@ object versions {
   val scalatest       = "3.2.13"
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
-  val riscvassembler  = "1.1.0"
+  val riscvassembler  = "1.1.1"
   val scalautils      = "0.10.2"
   val oslib           = "0.8.1"
 }

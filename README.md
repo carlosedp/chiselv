@@ -1,6 +1,6 @@
 # ChiselV - A RISC-V Processor in Chisel
 
-```txt
+```
 (..,,***)
  ( #,,****)             MM''''''YMM dP       oo                   dP M''MMMMM''M
   (,,.,,***)            M' .mmm. 'M 88                            88 M  MMMMM  M
