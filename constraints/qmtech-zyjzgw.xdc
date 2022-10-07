@@ -5,12 +5,12 @@ set_property IOSTANDARD LVCMOS33 [get_ports {clock}]
 create_clock -period 20.0 [get_ports {clock}]
 
 # LED2_FPGA R26
-set_property LOC R26 [get_ports io_led0]
-set_property IOSTANDARD LVCMOS33 [get_ports {io_led0}]
+set_property LOC R26 [get_ports led0]
+set_property IOSTANDARD LVCMOS33 [get_ports {led0}]
 
 # LED3_FPGA P26
-set_property LOC P26 [get_ports io_led2]
-set_property IOSTANDARD LVCMOS33 [get_ports {io_led2}]
+set_property LOC P26 [get_ports led2]
+set_property IOSTANDARD LVCMOS33 [get_ports {led2}]
 
 ##Buttons
 # Sw 2 - AB26

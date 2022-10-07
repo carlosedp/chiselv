@@ -1,13 +1,14 @@
 # Programming instructions for ULX3S based on Lattice ECP5
 
-## To program with ujprog:
+## To program with ujprog (https://github.com/emard/ulx3s-bin):
 
 ujprog $bitstreamSVF
+
+## Or using openFPGALoader (https://trabucayre.github.io/openFPGALoader/guide/install.html):
+
+openfpgaloader -b ulx3s $bitstream
 
 ## To program the board using OpenOCD, use the command:
 
 openocd -f $interfaceConfig -f $boardConfig -c "transport select jtag; init; scan_chain; svf -quiet -progress $bitstreamSVF; exit"
 
-## Or using openFPGALoader (https://trabucayre.github.io/openFPGALoader/guide/install.html):
-
-openfpgaloader -b arty $bitstream

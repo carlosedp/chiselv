@@ -1,3 +1,7 @@
+// This UART driver for Verilator has been borrowed from Chiselwatt, an OpenPOWER
+// core created by Anton Blanchard:
+// https://github.com/antonblanchard/chiselwatt/blob/master/uart.c
+
 #include <signal.h>
 #include <poll.h>
 #include <unistd.h>
@@ -14,13 +18,13 @@
 /* Round to nearest */
 #define BITWIDTH ((CLOCK+(BAUD/2))/BAUD)
 
-/*
- * Our UART uses 16x oversampling, so at 50 MHz and 115200 baud
- * each sample is: 50000000/(115200*16) = 27 clock cycles. This
- * means each bit is off by 0.47% so for 8 bits plus a start and
- * stop bit the errors add to be 4.7%.
- */
-static double error = 0.05;
+		/*
+		 * Our UART uses 16x oversampling, so at 50 MHz and 115200 baud
+		 * each sample is: 50000000/(115200*16) = 27 clock cycles. This
+		 * means each bit is off by 0.47% so for 8 bits plus a start and
+		 * stop bit the errors add to be 4.7%.
+		 */
+		static double error = 0.05;
 
 enum state {
 	IDLE, START_BIT, BITS, STOP_BIT, ERROR

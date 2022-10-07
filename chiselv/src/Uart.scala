@@ -19,7 +19,7 @@ import chisel3.util.{Counter, Decoupled, Enum, Queue, Valid, is, isPow2, log2Cei
  * introduced by oversampling might be significant. Eg at 10MHz, 115200 baud,
  * 16x oversampling we have almost 8% error and the UART fails to work.
  *
- * This file has been provided by Anton Blanchard's Chiselwatt repository at:
+ * This file has been created by Anton Blanchard on Chiselwatt repository at:
  * https://github.com/antonblanchard/chiselwatt
  */
 

@@ -62,7 +62,8 @@ generate:
     generator: chisel
     parameters: &baseparam
       extraargs: "--target:fpga -board bypass -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
-      buildtool: sbt
+      buildtool: mill
+      chiselproject: chiselv
       copy_core: true
       output:
         files:

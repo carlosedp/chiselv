@@ -1,9 +1,6 @@
 import mill._, mill.scalalib._, mill.scalalib.publish._
-import mill.scalalib.TestModule.ScalaTest
 import scalafmt._
-import coursier.maven.MavenRepository
-import $ivy.`com.goyeau::mill-scalafix::0.2.10`
-import com.goyeau.mill.scalafix.ScalafixModule
+import $ivy.`com.goyeau::mill-scalafix::0.2.10`, com.goyeau.mill.scalafix.ScalafixModule
 
 object versions {
   val scala           = "2.13.8"
@@ -22,10 +19,10 @@ trait BaseProject extends ScalaModule with PublishModule {
   def publishVersion = "1.0.0"
   def projectName    = "chiselv"
   def pomSettings = PomSettings(
-    description = "ChiselV is a RISC-V core written in Chisel",
-    organization = "com.carlosedp",
-    url = "https://github.com/carlosedp/chiselv",
-    licenses = Seq(License.MIT),
+    description    = "ChiselV is a RISC-V core written in Chisel",
+    organization   = "com.carlosedp",
+    url            = "https://github.com/carlosedp/chiselv",
+    licenses       = Seq(License.MIT),
     versionControl = VersionControl.github("carlosedp", "chiselv"),
     developers = Seq(
       Developer("carlosedp", "Carlos Eduardo de Paula", "https://github.com/carlosedp"),
@@ -35,7 +32,7 @@ trait BaseProject extends ScalaModule with PublishModule {
   def repositoriesTask = T.task { // Add snapshot repositories in case needed
     super.repositoriesTask() ++ Seq("oss", "s01.oss")
       .map(r => s"https://$r.sonatype.org/content/repositories/snapshots")
-      .map(MavenRepository(_))
+      .map(coursier.maven.MavenRepository(_))
   }
 
   def ivyDeps = super.ivyDeps() ++ Agg(
@@ -58,10 +55,6 @@ trait HasChisel3 extends ScalaModule {
       ivy"org.scalatest::scalatest:${versions.scalatest}",
       ivy"edu.berkeley.cs::chiseltest:${versions.chiseltest}",
     )
-
-    def testOne(args: String*) = T.command {
-      super.runMain("org.scalatest.run", args: _*)
-    }
   }
 }
 
@@ -89,12 +82,15 @@ trait ScalacOptions extends ScalaModule {
 }
 
 // Toplevel commands
-def lint(ev: eval.Evaluator) = T.command {
+def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
   mill.main.MainModule.evaluateTasks(
     ev,
-    Seq("__.fix", "+", "mill.scalalib.scalafmt.ScalafmtModule/reformatAll", "__.sources"),
+    t.flatMap(x => x +: Seq("+")).flatMap(x => x.split(" ")).dropRight(1),
     mill.define.SelectMode.Separated,
   )(identity)
+}
+def lint(implicit ev: eval.Evaluator) = T.command {
+  runTasks(Seq("__.fix", "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"))
 }
 def deps(ev: eval.Evaluator) = T.command {
   mill.scalalib.Dependency.showUpdates(ev)

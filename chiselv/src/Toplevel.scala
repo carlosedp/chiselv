@@ -1,16 +1,16 @@
 package chiselv
 
 import chisel3._
-import chisel3.experimental.Analog
+import chisel3.experimental.{Analog, FlatIO}
 import com.carlosedp.scalautils.ParseArguments
 
 // Project Top level
 class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {
-  val io = IO(new Bundle {
+  val io = FlatIO(new Bundle {
     val led0  = Output(Bool())     // LED 0 is the heartbeat
-    val GPIO0 = Analog(8.W)        // GPIO 0
     val UART0 = new UARTSerialPort // UART 0
   })
+  val GPIO0 = IO(Analog(8.W)) // GPIO 0
 
   // Instantiate PLL module based on board
   val pll = Module(new PLL0(board))
@@ -41,7 +41,7 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
 
     // Connect IO
     io.led0 <> SOC.io.led0
-    io.GPIO0 <> SOC.io.GPIO0External
+    GPIO0 <> SOC.io.GPIO0External
     io.UART0 <> SOC.io.UART0SerialPort
   }
 }
