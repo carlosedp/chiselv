@@ -3,8 +3,7 @@ package chiselv
 import chisel3._
 import chisel3.experimental.Analog
 import chisel3.util.{Cat, Fill, is, switch}
-
-import Instruction._
+import chiselv.Instruction._
 
 class CPUSingleCycle(
   cpuFrequency:          Int,

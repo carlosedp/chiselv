@@ -12,13 +12,13 @@ import matchers._
 class CPUSingleCycleIOWrapper(
   memoryFile: String,
 ) extends SOC(
-    cpuFrequency = 25000000,
-    entryPoint = 0,
-    bitWidth = 32,
+    cpuFrequency          = 25000000,
+    entryPoint            = 0,
+    bitWidth              = 32,
     instructionMemorySize = 1 * 1024,
-    dataMemorySize = 1 * 1024,
-    memoryFile = memoryFile,
-    numGPIO = 8,
+    dataMemorySize        = 1 * 1024,
+    memoryFile            = memoryFile,
+    numGPIO               = 8,
   ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)

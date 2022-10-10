@@ -28,14 +28,14 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
     val SOC =
       Module(
         new SOC(
-          cpuFrequency = cpuFrequency,
-          entryPoint = 0x00000000,
-          bitWidth = bitWidth,
+          cpuFrequency          = cpuFrequency,
+          entryPoint            = 0x00000000,
+          bitWidth              = bitWidth,
           instructionMemorySize = instructionMemorySize,
-          dataMemorySize = dataMemorySize,
-          memoryFile = "progload.mem",
-          ramFile = "progload-RAM.mem",
-          numGPIO = numGPIO,
+          dataMemorySize        = dataMemorySize,
+          memoryFile            = "progload.mem",
+          ramFile               = "progload-RAM.mem",
+          numGPIO               = numGPIO,
         ),
       )
 

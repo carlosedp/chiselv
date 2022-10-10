@@ -2,8 +2,7 @@ package chiselv
 
 import chisel3._
 import chisel3.util.{MuxCase, is, switch}
-
-import Instruction._
+import chiselv.Instruction._
 
 class ALUPort(bitWidth: Int = 32) extends Bundle {
   val inst = Input(Instruction())

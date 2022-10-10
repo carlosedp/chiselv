@@ -1,10 +1,9 @@
 package chiselv
 
 import chisel3._
-import chisel3.util.{BitPat, Cat, Fill, ListLookup, is, switch}
-
-import Instruction._
-import InstructionType._
+import chisel3.util._
+import chiselv.Instruction._
+import chiselv.InstructionType._
 
 class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val op       = Input(UInt(bitWidth.W))  // Op is the 32 bit instruction read received for decoding
@@ -137,13 +136,15 @@ class Decoder(bitWidth: Int = 32) extends Module {
     }
   }
 
-  /** ImmGenerator generates the immadiate value depending on the instruction type
-    *
-    * @param regType
-    *   is the instruction type from `Constants.scala`
-    * @return
-    *   the imm value
-    */
+  /**
+   * ImmGenerator generates the immadiate value depending on the instruction
+   * type
+   *
+   * @param regType
+   *   is the instruction type from `Constants.scala`
+   * @return
+   *   the imm value
+   */
   def ImmGenerator(regType: InstructionType.Type, inst: UInt): SInt = regType match {
     case INST_R => 0.S
     case INST_I => Cat(Fill(20, inst(31)), inst(31, 20)).asSInt()
