@@ -1,6 +1,6 @@
 import mill._, mill.scalalib._, mill.scalalib.publish._
 import scalafmt._
-import $ivy.`com.goyeau::mill-scalafix::0.2.10`, com.goyeau.mill.scalafix.ScalafixModule
+import $ivy.`com.goyeau::mill-scalafix::0.2.11`, com.goyeau.mill.scalafix.ScalafixModule
 
 object versions {
   val scala           = "2.13.8"
