@@ -39,7 +39,7 @@ Currently the target builds a RV32I core.
 Verilog code can be generated from Chisel sources by using the `chisel` Makefile target. If a `-board` parameter is passed, the target board PLL is included in the design. If it's not provided, a bypass PLL will be used.
 
 ```sh
-make chisel BOARD=artya7-35
+make chisel BOARD=artya7-35t
 ```
 
 The `BOARD` argument must match one of the `pll_BOARD.v` files in `/src/main/resources` directory.
