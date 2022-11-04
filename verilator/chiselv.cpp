@@ -72,8 +72,8 @@ int main(int argc, char **argv)
 		tick(top);
 		// VL_PRINTF("GPIO  %" VL_PRI64 "x\r\n", top->Toplevel__DOT__CPU__DOT__GPIO0__DOT__GPIO);
 
-		uart_tx(top->io_UART0_tx);
-		top->io_UART0_rx = uart_rx();
+		uart_tx(top->UART0_tx);
+		top->UART0_rx = uart_rx();
 	}
 
 #if VM_TRACE
