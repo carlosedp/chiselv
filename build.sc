@@ -4,7 +4,7 @@ import $ivy.`com.goyeau::mill-scalafix::0.2.11`, com.goyeau.mill.scalafix.Scalaf
 
 object versions {
   val scala           = "2.13.8"
-  val chisel3         = "3.5.4"
+  val chisel3         = "3.5.5"
   val chiseltest      = "0.5.4"
   val scalatest       = "3.2.14"
   val organizeimports = "0.6.0"
