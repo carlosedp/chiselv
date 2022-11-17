@@ -19,10 +19,7 @@ else
 endif
 
 # Set board PLL or bypass if not defined
-BOARD := bypass
-PLLFREQ ?= 50000000
-BOARDPARAMS=-board ${BOARD} -cpufreq ${PLLFREQ} -invreset false
-# CHISELPARAMS = --target:fpga -td $(generated_files)
+BOARDPARAMS=--board ${BOARD:-bypass} --cpufreq ${PLLFREQ:-50000000}
 CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
@@ -32,7 +29,7 @@ chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output
 $(generated_files): $(scala_files) build.sc Makefile
 	@rm -rf $@
 	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: .\n" ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
-	$(MILL) $(project).run $(CHISELPARAMS) -td $@ $(BOARDPARAMS)
+	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS) --target-dir $@
 
 check: test
 .PHONY: test
@@ -46,7 +43,6 @@ lint: ## Formats code using scalafmt and scalafix
 .PHONY: deps
 deps: ## Check for library version updates
 	$(MILL) deps
-
 
 rvfi: $(rvfi_files) ## Generates Verilog code for RISC-V Formal tests
 $(rvfi_files):  $(scala_files) build.sc Makefile

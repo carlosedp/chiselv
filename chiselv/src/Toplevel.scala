@@ -2,15 +2,15 @@ package chiselv
 
 import chisel3._
 import chisel3.experimental.{Analog, FlatIO}
-import com.carlosedp.scalautils.ParseArguments
+import mainargs.{main, arg, ParserForMethods, Leftover}
 
 // Project Top level
 class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {
   val io = FlatIO(new Bundle {
     val led0  = Output(Bool())     // LED 0 is the heartbeat
     val UART0 = new UARTSerialPort // UART 0
+    val GPIO0 = Analog(8.W)        // GPIO 0
   })
-  val GPIO0 = IO(Analog(8.W)) // GPIO 0
 
   // Instantiate PLL module based on board
   val pll = Module(new PLL0(board))
@@ -41,28 +41,26 @@ class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) exten
 
     // Connect IO
     io.led0 <> SOC.io.led0
-    GPIO0 <> SOC.io.GPIO0External
+    io.GPIO0 <> SOC.io.GPIO0External
     io.UART0 <> SOC.io.UART0SerialPort
   }
 }
 
 // The Main object extending App to generate the Verilog code.
-object Toplevel extends App {
+object Toplevel {
+  @main
+  def run(
+    // Parse command line arguments and extract required parameters
+    @arg(short = 'b', doc = "FPGA Board to use") board:                 String = "bypass",
+    @arg(short = 'r', doc = "FPGA Board have inverted reset") invreset: Boolean = false,
+    @arg(short = 'f', doc = "CPU Frequency to run core") cpufreq:       Int = 50000000,
+    @arg(short = 'c', doc = "Chisel arguments") chiselArgs:             Leftover[String],
+  ) =
+    // Generate Verilog
+    (new chisel3.stage.ChiselStage).emitVerilog(
+      new Toplevel(board, invreset, cpufreq),
+      chiselArgs.value.toArray,
+    )
 
-  // Parse command line arguments and extract required parameters
-  // pass the input arguments and a list of parameters to be extracted
-  // The funcion will return the parameters map and the remaining non-extracted args
-  val (params, chiselargs) = ParseArguments(args, List("board", "invreset", "cpufreq"))
-  val board: String =
-    params.getOrElse("board", throw new IllegalArgumentException("The '-board' argument should be informed."))
-  val invReset: Boolean =
-    params.getOrElse("invreset", "true").toBoolean
-  val cpuFrequency =
-    params.getOrElse("cpufreq", throw new IllegalArgumentException("The '-cpufreq' argument should be informed.")).toInt
-
-  // Generate Verilog
-  (new chisel3.stage.ChiselStage).emitVerilog(
-    new Toplevel(board, invReset, cpuFrequency),
-    chiselargs,
-  )
+  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args.toIndexedSeq)
 }

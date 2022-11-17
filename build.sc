@@ -3,14 +3,14 @@ import scalafmt._
 import $ivy.`com.goyeau::mill-scalafix::0.2.11`, com.goyeau.mill.scalafix.ScalafixModule
 
 object versions {
-  val scala           = "2.13.8"
+  val scala           = "2.13.10"
   val chisel3         = "3.5.5"
   val chiseltest      = "0.5.5"
   val scalatest       = "3.2.14"
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
   val riscvassembler  = "1.6.0"
-  val scalautils      = "0.10.2"
+  val mainargs        = "0.3.0"
   val oslib           = "0.8.1"
 }
 
@@ -37,7 +37,7 @@ trait BaseProject extends ScalaModule with PublishModule {
 
   def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"com.carlosedp::riscvassembler:${versions.riscvassembler}",
-    ivy"com.carlosedp::scalautils:${versions.scalautils}",
+    ivy"com.lihaoyi::mainargs:${versions.mainargs}",
     ivy"com.lihaoyi::os-lib:${versions.oslib}",
   )
 }
@@ -81,7 +81,15 @@ trait ScalacOptions extends ScalaModule {
   }
 }
 
-// Toplevel commands
+object chiselv extends BaseProject with HasChisel3 with CodeQuality with ScalacOptions {
+  def mainClass = Some("chiselv.Toplevel")
+}
+object chiselv_rvfi extends BaseProject with HasChisel3 with CodeQuality with ScalacOptions {
+  def mainClass = Some("chiselv.RVFI")
+  def sources   = T.sources(millSourcePath / os.up / "chiselv" / "src")
+}
+
+// Toplevel commands and aliases
 def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
   mill.main.MainModule.evaluateTasks(
     ev,
@@ -92,14 +100,6 @@ def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
 def lint(implicit ev: eval.Evaluator) = T.command {
   runTasks(Seq("__.fix", "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"))
 }
-def deps(ev: eval.Evaluator) = T.command {
+def deps(implicit ev: eval.Evaluator) = T.command {
   mill.scalalib.Dependency.showUpdates(ev)
-}
-
-object chiselv extends BaseProject with HasChisel3 with CodeQuality with ScalacOptions {
-  def mainClass = Some("chiselv.Toplevel")
-}
-object chiselv_rvfi extends BaseProject with HasChisel3 with CodeQuality with ScalacOptions {
-  def mainClass = Some("chiselv.RVFITop")
-  def sources   = T.sources(millSourcePath / os.up / "chiselv" / "src")
 }
