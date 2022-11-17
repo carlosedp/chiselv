@@ -81,7 +81,11 @@ class CPUSingleCycle(
   }
 
   // Connect PC output to instruction memory
-  io.instructionMemPort.readAddr := PC.io.pcPort.PC
+  when(io.instructionMemPort.ready) {
+    io.instructionMemPort.readAddr := PC.io.pcPort.PC
+  }.otherwise(
+    io.instructionMemPort.readAddr := DontCare
+  )
 
   // Connect the instruction memory to the decoder
   decoder.io.DecoderPort.op := io.instructionMemPort.readData

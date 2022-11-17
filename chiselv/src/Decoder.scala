@@ -31,7 +31,7 @@ class Decoder(bitWidth: Int = 32) extends Module {
       // format: off
       List(                                                  IN_ERR, ERR_INST, false.B,  false.B, false.B,  false.B,  false.B,  false.B), // Default values
       Array(
-        /*                                                   inst_type,  inst   to_alu   branch   use_imm   jump      is_load   is_store*/
+        /*                                                inst_type,     inst   to_alu   branch   use_imm   jump      is_load   is_store */
         // Arithmetic
         BitPat("b0000000??????????000?????0110011")  -> List(INST_R,      ADD,  true.B,  false.B, false.B,  false.B,  false.B,  false.B),
         BitPat("b?????????????????000?????0010011")  -> List(INST_I,     ADDI,  true.B,  false.B, true.B,   false.B,  false.B,  false.B),

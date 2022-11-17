@@ -33,13 +33,13 @@ class RVFICPUWrapper(
   bitWidth:              Int = 32,
   instructionMemorySize: Int = 64 * 1024,
   dataMemorySize:        Int = 64 * 1024,
-  numGPIO:               Int = 8,
 ) extends CPUSingleCycle(
-    cpuFrequency,
-    bitWidth,
-    instructionMemorySize,
-    dataMemorySize,
-    numGPIO,
+    cpuFrequency = cpuFrequency,
+    entryPoint = 0x0,
+    bitWidth = bitWidth,
+    instructionMemorySize = instructionMemorySize,
+    dataMemorySize = dataMemorySize,
+    numGPIO = 0,
   ) {
   val rvfi = IO(new RVFIPort) // RVFI interface for RISCV-Formal
 
@@ -92,15 +92,20 @@ class RVFICPUWrapper(
 
   rvfi.mode := rvfi_mode
   rvfi.trap := false.B
+  when(decoder.io.DecoderPort.inst === Instruction.ERR_INST) {
+    rvfi.trap := true.B
+  }
 
   rvfi.halt := rvfi_halt
   rvfi.intr := rvfi_intr
   rvfi.ixl  := 1.U
 }
 
+// This is the Topmodule used in RISCV-Formal
 class RVFI(bitWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
     val imem_addr  = Output(UInt(bitWidth.W))
+    val imem_ready = Input(Bool())
     val imem_rdata = Input(UInt(bitWidth.W))
 
     val dmem_rdata = Input(UInt(bitWidth.W))
@@ -124,6 +129,7 @@ class RVFI(bitWidth: Int = 32) extends Module {
   CPU.io.UART0Port.txEmpty       := true.B
   CPU.io.UART0Port.rxFull        := false.B
   CPU.io.UART0Port.rxQueue.valid := false.B
+  CPU.io.SysconPort.DataOut      := 0.U
 
   // Connect RVFI port
   rvfi <> CPU.rvfi
@@ -131,6 +137,7 @@ class RVFI(bitWidth: Int = 32) extends Module {
   // Connect instruction memory
   io.imem_addr                       := CPU.io.instructionMemPort.readAddr
   CPU.io.instructionMemPort.readData := io.imem_rdata
+  CPU.io.instructionMemPort.ready    := io.imem_ready
 
   // Connect data memory
   io.dmem_waddr := CPU.io.dataMemPort.writeAddress
@@ -141,9 +148,10 @@ class RVFI(bitWidth: Int = 32) extends Module {
   CPU.io.dataMemPort.readData := io.dmem_rdata
 }
 
-object RVFITop extends App {
+object RVFI extends App {
   // Generate Verilog
   (new chisel3.stage.ChiselStage).emitVerilog(
     new RVFI,
+    args,
   )
 }

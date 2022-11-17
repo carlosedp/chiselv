@@ -11,4 +11,3 @@ openfpgaloader -b ulx3s $bitstream
 ## To program the board using OpenOCD, use the command:
 
 openocd -f $interfaceConfig -f $boardConfig -c "transport select jtag; init; scan_chain; svf -quiet -progress $bitstreamSVF; exit"
-

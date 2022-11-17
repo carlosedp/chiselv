@@ -61,6 +61,7 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     val filename = "MemorySpecTestFile.hex"
     // Create memory test file with 32bit address space
     val file = os.pwd / "MemorySpecTestFile.hex"
+    os.remove(file)
     os.write(file, "00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n")
     test(new InstructionMemory(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.io.memPort.readAddr.poke(0)
