@@ -80,3 +80,4 @@ tmp
 /*.mem
 /tmphex/*
 /chiselv.bin
+.genboard

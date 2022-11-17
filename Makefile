@@ -19,14 +19,18 @@ else
 endif
 
 # Set board PLL or bypass if not defined
-BOARDPARAMS=--board ${BOARD:-bypass} --cpufreq ${PLLFREQ:-50000000}
+BOARD ?= bypass
+PLLFREQ ?= 50000000
+BOARDPARAMS=--board ${BOARD} --cpufreq ${PLLFREQ}
+# Check if generating for a different board/pll
+$(if $(findstring $(shell cat .genboard 2>/dev/null),$(BOARDPARAMS)),,$(shell echo ${BOARDPARAMS} > .genboard))
 CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
 
 # Targets
 all: chisel gcc
 
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
-$(generated_files): $(scala_files) build.sc Makefile
+$(generated_files): $(scala_files) build.sc Makefile .genboard
 	@rm -rf $@
 	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: .\n" ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s '\n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
 	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS) --target-dir $@
