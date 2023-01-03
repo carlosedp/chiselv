@@ -65,7 +65,7 @@ class CPUSingleCycleIOSpec
 
   it should "write to GPIO0" in {
     val prog = """
-    lui x1, 0x30001000
+    lui x1, 0x30001
     addi x5, x0, -1
     addi x3, x3, 1
     addi x4, x0, 7
@@ -112,7 +112,7 @@ class CPUSingleCycleIOSpec
   behavior of "Timer"
   it should "read timer and wait for 2 ms" in {
     val prog = """
-    main:   lui x1, 0x30003000
+    main:   lui x1, 0x30003
             addi x2, x0, 2
     wait:   lw x3, 0(x1)
             bne x2, x3, -4
@@ -144,7 +144,7 @@ class CPUSingleCycleIOSpec
 
   it should "reset timer after 1ms and wait for 1 ms" in {
     val prog = """
-    main:   lui x1, 0x30003000
+    main:   lui x1, 0x30003
             addi x2, x0, 1
     wait:   lw x3, 0(x1)
             bne x2, x3, -4

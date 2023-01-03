@@ -2,7 +2,7 @@ package chiselv
 
 import chisel3._
 import chisel3.experimental.{Analog, FlatIO}
-import mainargs.{main, arg, ParserForMethods, Leftover}
+import mainargs.{Leftover, ParserForMethods, arg, main}
 
 // Project Top level
 class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {

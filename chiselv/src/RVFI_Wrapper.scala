@@ -34,12 +34,12 @@ class RVFICPUWrapper(
   instructionMemorySize: Int = 64 * 1024,
   dataMemorySize:        Int = 64 * 1024,
 ) extends CPUSingleCycle(
-    cpuFrequency = cpuFrequency,
-    entryPoint = 0x0,
-    bitWidth = bitWidth,
+    cpuFrequency          = cpuFrequency,
+    entryPoint            = 0x0,
+    bitWidth              = bitWidth,
     instructionMemorySize = instructionMemorySize,
-    dataMemorySize = dataMemorySize,
-    numGPIO = 0,
+    dataMemorySize        = dataMemorySize,
+    numGPIO               = 0,
   ) {
   val rvfi = IO(new RVFIPort) // RVFI interface for RISCV-Formal
 

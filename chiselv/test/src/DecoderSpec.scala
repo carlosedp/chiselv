@@ -35,16 +35,16 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   }
   it should "Decode an LUI instruction (type U)" in {
     test(new Decoder) { c =>
-      c.io.DecoderPort.op.poke(makeBin("lui x23, -1431658496"))
+      c.io.DecoderPort.op.poke(makeBin("lui x23, 0x12345"))
       c.clock.step()
-      validateResult(c, LUI, 23, 0, 0, -1431658496, false, false, true)
+      validateResult(c, LUI, 23, 0, 0, 305418240, false, false, true)
     }
   }
   it should "Decode an AUIPC instruction (type U)" in {
     test(new Decoder) { c =>
-      c.io.DecoderPort.op.poke(makeBin("auipc x23, -1431658496"))
+      c.io.DecoderPort.op.poke(makeBin("auipc x23, 0x12345"))
       c.clock.step()
-      validateResult(c, AUIPC, 23, 0, 0, -1431658496, false, false, true)
+      validateResult(c, AUIPC, 23, 0, 0, 305418240, false, false, true)
     }
   }
 
@@ -87,9 +87,9 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   }
   it should "Decode an SRAI instruction (type I)" in {
     test(new Decoder) { c =>
-      c.io.DecoderPort.op.poke(makeBin("srai x1, x2, 5"))
+      c.io.DecoderPort.op.poke(makeBin("srai x1, x2, 1"))
       c.clock.step()
-      validateResult(c, SRLI, 1, 2, 0, 5, true, false, true)
+      validateResult(c, SRAI, 1, 2, 0, 1025, true, false, true)
     }
   }
 

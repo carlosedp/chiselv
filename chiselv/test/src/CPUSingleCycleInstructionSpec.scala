@@ -138,7 +138,7 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LUI instruction" in {
     val prog = """
-    lui x2, 0xc0000000
+    lui x2, 0xc0000
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
@@ -157,15 +157,15 @@ class CPUSingleCycleInstructionSpec
       c.clock.setTimeout(0)
       c.registers(2).peekInt() should be(0x00000000)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x00001000)
+      c.registers(2).peekInt() should be(0x01000000)
       c.clock.step(1)
-      c.registers(3).peekInt() should be(0x00001004)
+      c.registers(3).peekInt() should be(0x01000004)
     }
   }
 
   it should "validate SW instruction" in {
     val prog = """
-      lui x1, 0x80000000
+      lui x1, 0x80000
       addi x1, x1, 20
       addi x2, x0, 291
       sw x2, 0(x1)
@@ -193,8 +193,8 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate SH instruction" in {
     val prog = """
-    lui x1, 0x80000000
-    lui x2, 0x12345000
+    lui x1, 0x80000
+    lui x2, 0x12345
     addi x2, x2, 1656
     addi x3, x3, -1
     sw x3, 48(x1)  // Memory offset 48 (0x30) should be 0xffffffff
@@ -248,8 +248,8 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate SB instruction" in {
     val prog = """
-    lui x1, 0x80000000
-    lui x2, 0x12345000
+    lui x1, 0x80000
+    lui x2, 0x12345
     addi x2, x2, 1656
     addi x3, x3, -1
     sw x3, 48(x1)  // Memory offset 48 (0x30) should be 0xffffffff
@@ -308,9 +308,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LW instruction" in {
     val prog = """
-    lui x1, 0xf0f0f000
+    lui x1, 0xf0f0f
     addi x1, x1, 240
-    lui x2, 0x80000000
+    lui x2, 0x80000
     sw x1, 0(x2)
     lw x3, 0(x2)
     """
@@ -338,9 +338,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LH instruction" in {
     val prog = """
-      lui x1, 0xffff1000
+      lui x1, 0xffff1
       addi x1, x1, 564
-      lui x2, 0x80000000
+      lui x2, 0x80000
       sw x1, 0(x2)
       lh x3, 0(x2)
       lh x4, 2(x2)
@@ -374,9 +374,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LHU instruction" in {
     val prog = """
-    lui x1, 0xffff1000
+    lui x1, 0xffff1
     addi x1, x1, 564
-    lui x2, 0x80000000
+    lui x2, 0x80000
     sw x1, 0(x2)
     lhu x3, 0(x2)
     lhu x4, 2(x2)
@@ -410,9 +410,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LB instruction" in {
     val prog = """
-    lui x1, 0xabcde000
+    lui x1, 0xabcde
     addi x1, x1, 0x123
-    lui x2, 0x80000000
+    lui x2, 0x80000
     sw x1, 0(x2)
     lb x3, 0(x2)
     lb x4, 1(x2)
@@ -458,9 +458,9 @@ class CPUSingleCycleInstructionSpec
 
   it should "validate LBU instruction" in {
     val prog = """
-    lui x1, 0xabcde000
+    lui x1, 0xabcde
     addi x1, x1, 0x123
-    lui x2, 0x80000000
+    lui x2, 0x80000
     sw x1, 0(x2)
     lbu x3, 0(x2)
     lbu x4, 1(x2)
