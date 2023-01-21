@@ -5,11 +5,11 @@ import $ivy.`com.goyeau::mill-scalafix::0.2.11`, com.goyeau.mill.scalafix.Scalaf
 object versions {
   val scala           = "2.13.10"
   val chisel3         = "3.5.5"
-  val chiseltest      = "0.5.5"
+  val chiseltest      = "0.5.6"
   val scalatest       = "3.2.15"
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
-  val riscvassembler  = "1.7.0"
+  val riscvassembler  = "1.7.1"
   val mainargs        = "0.3.0"
   val oslib           = "0.9.0"
 }
