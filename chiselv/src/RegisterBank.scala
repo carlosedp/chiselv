@@ -3,7 +3,9 @@ package chiselv
 import chisel3._
 import chisel3.util.log2Ceil
 
-class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
+class RegisterBankPort(
+  bitWidth: Int = 32,
+) extends Bundle {
   val rs1         = Output(SInt(bitWidth.W))
   val rs2         = Output(SInt(bitWidth.W))
   val rs1_addr    = Input(UInt(log2Ceil(bitWidth + 1).W))
@@ -14,7 +16,10 @@ class RegisterBankPort(bitWidth: Int = 32) extends Bundle {
   val stall       = Input(Bool()) // >1 => Stall, 0 => Run
 }
 
-class RegisterBank(numRegs: Int = 32, regWidth: Int = 32) extends Module {
+class RegisterBank(
+  numRegs:  Int = 32,
+  regWidth: Int = 32,
+) extends Module {
   val io = IO(new Bundle {
     val regPort = new RegisterBankPort(regWidth)
   })

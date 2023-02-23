@@ -9,7 +9,8 @@ import matchers._
 class SysconSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "Syscon"
 
-  def defaultDut() =
+  def defaultDut(
+  ) =
     test(new Syscon(32, 50000000, 8, 0L, 64 * 1024, 64 * 1024)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
