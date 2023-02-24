@@ -23,12 +23,14 @@ import chisel3.util._
  * https://github.com/antonblanchard/chiselwatt
  */
 
-class UARTSerialPort() extends Bundle {
+class UARTSerialPort(
+) extends Bundle {
   val rx = Input(UInt(1.W))
   val tx = Output(UInt(1.W))
 }
 
-class UARTPort() extends Bundle {
+class UARTPort(
+) extends Bundle {
   val rxQueue      = Decoupled(UInt(8.W))
   val txQueue      = Flipped(Decoupled(UInt(8.W)))
   val rxEmpty      = Output(Bool())
@@ -38,7 +40,10 @@ class UARTPort() extends Bundle {
   val clockDivisor = Flipped(Valid(UInt(8.W)))
 }
 
-class Uart(val fifoLength: Int, val rxOverclock: Int) extends Module {
+class Uart(
+  val fifoLength:  Int,
+  val rxOverclock: Int,
+) extends Module {
   val io = IO(new Bundle {
     val serialPort = new UARTSerialPort
     val dataPort   = new UARTPort
