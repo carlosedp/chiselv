@@ -4,10 +4,7 @@ import chisel3._
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
-class InstructionMemPort(
-  val bitWidth:  Int,
-  val sizeBytes: Long,
-) extends Bundle {
+class InstructionMemPort(val bitWidth: Int, val sizeBytes: Long) extends Bundle {
   val readAddr = Input(UInt(log2Ceil(sizeBytes).W))
   val readData = Output(UInt(bitWidth.W))
   val ready    = Output(Bool())

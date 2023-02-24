@@ -43,19 +43,13 @@ class CPUSingleCycleIOSpec
   var memoryfile: os.Path = _
   val tmpdir = os.pwd / "tmphex"
 
-  override def beforeAll(
-  ): Unit = os.makeDir.all(tmpdir)
-  override def afterAll(
-  ): Unit = scala.util.Try(os.remove(tmpdir))
-  override def beforeEach(
-  ): Unit =
+  override def beforeAll(): Unit = os.makeDir.all(tmpdir)
+  override def afterAll():  Unit = scala.util.Try(os.remove(tmpdir))
+  override def beforeEach(): Unit =
     memoryfile = tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
-  override def afterEach(
-  ): Unit = os.remove.all(memoryfile)
+  override def afterEach(): Unit = os.remove.all(memoryfile)
 
-  def defaultDut(
-    prog: String,
-  ) = {
+  def defaultDut(prog: String) = {
     val hex = RISCVAssembler.fromString(prog)
     os.write(memoryfile, hex)
     test(new CPUSingleCycleIOWrapper(memoryFile = memoryfile.toString))

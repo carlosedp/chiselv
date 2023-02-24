@@ -39,10 +39,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
   val instructionMemorySize = 64 * 1024
   val memorySize            = 64 * 1024
 
-  def defaultDut(
-    memoryfile: String,
-    ramFile:    String = "",
-  ) =
+  def defaultDut(memoryfile: String, ramFile: String = "") =
     test(
       new SOCWrapperDemo(
         cpuFrequency,

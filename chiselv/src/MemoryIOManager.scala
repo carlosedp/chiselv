@@ -29,10 +29,7 @@ import chisel3.util.{Cat, Fill, is, log2Ceil, switch}
  * 0x9000_0000 - 0x9FFF_FFFF: Reserved
  */
 
-class MMIOPort(
-  val bitWidth:    Int,
-  val addressSize: Long,
-) extends Bundle {
+class MMIOPort(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val writeRequest = Input(Bool())
   val readRequest  = Input(Bool())
   val readAddr     = Input(UInt(log2Ceil(addressSize).W))
@@ -43,10 +40,7 @@ class MMIOPort(
   val dataSize     = Input(UInt(2.W))
 }
 
-class MemoryIOManager(
-  bitWidth:  Int = 32,
-  sizeBytes: Long = 1024,
-) extends Module {
+class MemoryIOManager(bitWidth: Int = 32, sizeBytes: Long = 1024) extends Module {
   val io = IO(new Bundle {
     val MemoryIOPort = new MMIOPort(bitWidth, scala.math.pow(2, bitWidth).toLong)
     val GPIO0Port    = Flipped(new GPIOPort(bitWidth))

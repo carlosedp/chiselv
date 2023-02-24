@@ -92,11 +92,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     }
   }
   // --------------------- Test Helpers ---------------------
-  def aluHelper(
-    a:  BigInt,
-    b:  BigInt,
-    op: Type,
-  ): BigInt =
+  def aluHelper(a: BigInt, b: BigInt, op: Type): BigInt =
     op match {
       case ADD  => (a + b).to32Bit
       case SUB  => a - b
@@ -115,13 +111,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       case _    => 0 // Never happens
     }
 
-  def testDut(
-    i:   BigInt,
-    j:   BigInt,
-    out: BigInt,
-    op:  Type,
-    dut: ALU,
-  ) = {
+  def testDut(i: BigInt, j: BigInt, out: BigInt, op: Type, dut: ALU) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
     dut.io.ALUPort.inst.poke(op)
     dut.io.ALUPort.a.poke(i.to32Bit)
@@ -129,17 +119,12 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     dut.clock.step()
     dut.io.ALUPort.x.peekInt() should be(out)
   }
-  def testCycle(
-    dut: ALU,
-    op:  Type,
-  ) =
+  def testCycle(dut: ALU, op: Type) =
     cases.foreach { i =>
       cases.foreach { j =>
         testDut(i, j, aluHelper(i, j, op).to32Bit, op, dut)
       }
     }
 
-  def toUInt(
-    i: BigInt,
-  ) = i.to32Bit.asUInt(32.W)
+  def toUInt(i: BigInt) = i.to32Bit.asUInt(32.W)
 }

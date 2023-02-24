@@ -90,24 +90,16 @@ object chiselv_rvfi extends BaseProject with HasChisel3 with CodeQuality with Sc
 }
 
 // Toplevel commands and aliases
-def runTasks(
-  t: Seq[String],
-)(
-  implicit ev: eval.Evaluator,
-) = T.task {
+def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
   mill.main.MainModule.evaluateTasks(
     ev,
     t.flatMap(x => x +: Seq("+")).flatMap(x => x.split(" ")).dropRight(1),
     mill.define.SelectMode.Separated,
   )(identity)
 }
-def lint(
-  implicit ev: eval.Evaluator,
-) = T.command {
+def lint(implicit ev: eval.Evaluator) = T.command {
   runTasks(Seq("__.fix", "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"))
 }
-def deps(
-  implicit ev: eval.Evaluator,
-) = T.command {
+def deps(implicit ev: eval.Evaluator) = T.command {
   mill.scalalib.Dependency.showUpdates(ev)
 }

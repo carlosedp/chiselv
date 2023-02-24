@@ -102,9 +102,7 @@ class RVFICPUWrapper(
 }
 
 // This is the Topmodule used in RISCV-Formal
-class RVFI(
-  bitWidth: Int = 32,
-) extends Module {
+class RVFI(bitWidth: Int = 32) extends Module {
   val io = IO(new Bundle {
     val imem_addr  = Output(UInt(bitWidth.W))
     val imem_ready = Input(Bool())
