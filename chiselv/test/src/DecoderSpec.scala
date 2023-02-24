@@ -292,9 +292,7 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
 
   // --------------------- Test Helpers ---------------------
 
-  def makeBin(
-    in: String,
-  ): UInt = {
+  def makeBin(in: String): UInt = {
     val bin = RISCVAssembler.binOutput(in)
     ("b" + bin).U
   }
