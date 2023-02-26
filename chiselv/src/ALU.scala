@@ -4,13 +4,17 @@ import chisel3._
 import chisel3.util.{MuxCase, is, switch}
 import chiselv.Instruction._
 
-class ALUPort(bitWidth: Int = 32) extends Bundle {
+class ALUPort(
+  bitWidth: Int = 32,
+) extends Bundle {
   val inst = Input(Instruction())
   val a    = Input(UInt(bitWidth.W))
   val b    = Input(UInt(bitWidth.W))
   val x    = Output(UInt(bitWidth.W))
 }
-class ALU(bitWidth: Int = 32) extends Module {
+class ALU(
+  bitWidth: Int = 32,
+) extends Module {
   val io = IO(new Bundle {
     val ALUPort = new ALUPort(bitWidth)
   })
