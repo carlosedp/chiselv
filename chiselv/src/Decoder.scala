@@ -5,7 +5,9 @@ import chisel3.util._
 import chiselv.Instruction._
 import chiselv.InstructionType._
 
-class DecoderPort(bitWidth: Int = 32) extends Bundle {
+class DecoderPort(
+  bitWidth: Int = 32,
+) extends Bundle {
   val op       = Input(UInt(bitWidth.W))  // Op is the 32 bit instruction read received for decoding
   val inst     = Output(Instruction())    // Instruction is the decoded instruction
   val rd       = Output(UInt(5.W))        // Rd is the 5 bit destiny register
@@ -20,7 +22,9 @@ class DecoderPort(bitWidth: Int = 32) extends Bundle {
   val is_store = Output(Bool())           // is_store is a flag to indicate if the instruction has a store to memory
 }
 
-class Decoder(bitWidth: Int = 32) extends Module {
+class Decoder(
+  bitWidth: Int = 32,
+) extends Module {
   val io = IO(new Bundle {
     val DecoderPort = new DecoderPort(bitWidth)
   })
@@ -145,7 +149,10 @@ class Decoder(bitWidth: Int = 32) extends Module {
    * @return
    *   the imm value
    */
-  def ImmGenerator(regType: InstructionType.Type, inst: UInt): SInt = regType match {
+  def ImmGenerator(
+    regType: InstructionType.Type,
+    inst:    UInt,
+  ): SInt = regType match {
     case INST_R => 0.S
     case INST_I => Cat(Fill(20, inst(31)), inst(31, 20)).asSInt()
     case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7)).asSInt()

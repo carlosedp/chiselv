@@ -5,7 +5,11 @@ import chisel3.experimental.{Analog, FlatIO}
 import mainargs.{Leftover, ParserForMethods, arg, main}
 
 // Project Top level
-class Toplevel(board: String, invReset: Boolean = true, cpuFrequency: Int) extends Module {
+class Toplevel(
+  board:        String,
+  invReset:     Boolean = true,
+  cpuFrequency: Int,
+) extends Module {
   val io = FlatIO(new Bundle {
     val led0  = Output(Bool())     // LED 0 is the heartbeat
     val UART0 = new UARTSerialPort // UART 0
@@ -62,5 +66,7 @@ object Toplevel {
       chiselArgs.value.toArray,
     )
 
-  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args.toIndexedSeq)
+  def main(
+    args: Array[String],
+  ): Unit = ParserForMethods(this).runOrExit(args.toIndexedSeq)
 }

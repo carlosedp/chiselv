@@ -7,14 +7,18 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-class TimerWrapper(bitWidth: Int = 32, cpuFrequency: Int) extends chiselv.Timer(bitWidth, cpuFrequency) {
+class TimerWrapper(
+  bitWidth:     Int = 32,
+  cpuFrequency: Int,
+) extends chiselv.Timer(bitWidth, cpuFrequency) {
   val obs_counter = expose(counter)
 }
 class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "Timer"
 
   val cpuFrequency = 25000000
-  def defaultDut() =
+  def defaultDut(
+  ) =
     test(new TimerWrapper(32, cpuFrequency)).withAnnotations(
       Seq(
         // WriteVcdAnnotation

@@ -33,7 +33,9 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
   val writeLatency = 2
   val readLatency  = 1
 
-  def defaultDut(memoryfile: String) =
+  def defaultDut(
+    memoryfile: String,
+  ) =
     test(new CPUSingleCycleWrapperApps(memoryFile = memoryfile))
       .withAnnotations(
         Seq(
