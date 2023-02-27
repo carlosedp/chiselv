@@ -61,7 +61,7 @@ generate:
   default-chisel:
     generator: chisel
     parameters: &baseparam
-      extraargs: "--target:fpga -board bypass -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board bypass --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
       buildtool: mill
       chiselproject: chiselv
       copy_core: true
@@ -75,25 +75,25 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board bypass -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board bypass --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
 
   ulx3s:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board ulx3s -cpufreq 15000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board ulx3s --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
 
   artya7-35t:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--target:fpga -board artya7-35t -cpufreq 25000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board artya7-35t --cpufreq 25000000 --target:fpga  --emission-options=disableMemRandomization,disableRegisterRandomization"
 
   qmtech_k325t:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "-board qmtech_k325t -invreset true --target:fpga -cpufreq 50000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board qmtech_k325t --invreset true --target:fpga --cpufreq 50000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
 
 targets:
   lint:

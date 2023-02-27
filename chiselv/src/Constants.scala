@@ -1,6 +1,6 @@
 package chiselv
 
-import chisel3.experimental.ChiselEnum
+import chisel3.ChiselEnum
 
 object Instruction extends ChiselEnum {
   val ERR_INST,
