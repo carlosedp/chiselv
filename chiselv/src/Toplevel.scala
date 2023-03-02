@@ -65,7 +65,12 @@ object Toplevel {
     ChiselStage.emitSystemVerilogFile(
       new Toplevel(board, invreset, cpufreq),
       chiselArgs.value.toArray,
-      Array("--disable-all-randomization", "--strip-debug-info", "-lower-memories"),
+      Array(
+        "--disable-all-randomization",
+        "--strip-debug-info",
+        "-lower-memories",
+        "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+      ),
     )
 
   def main(
