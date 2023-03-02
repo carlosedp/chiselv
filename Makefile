@@ -3,6 +3,17 @@ project = $(shell grep projectName build.sc | cut -d= -f2|tr -d "\"" |xargs)
 scala_files = $(wildcard $(project)/src/*.scala) $(wildcard $(project)/resources/*.scala) $(wildcard $(project)/test/src/*.scala)
 generated_files = generated
 rvfi_files = generated_rvfi
+firtool_version=1.32.0
+export PATH := ./:$(PATH)
+
+FIRTOOL_URL :=
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	FIRTOOL_URL =https://github.com/llvm/circt/releases/download/firtool-$(firtool_version)/circt-bin-ubuntu-20.04.tar.gz
+endif
+ifeq ($(UNAME_S),Darwin)
+	FIRTOOL_URL = https://github.com/llvm/circt/releases/download/firtool-$(firtool_version)/circt-bin-macos-11.tar.gz
+endif
 
 # Toolchains and tools
 MILL = ./mill
@@ -31,10 +42,15 @@ CHISELPARAMS = --split-verilog
 all: chisel gcc
 
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
-$(generated_files): $(scala_files) build.sc Makefile .genboard
+$(generated_files): $(scala_files) build.sc Makefile .genboard firtool
 	@rm -rf $@
 	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s ' \n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
 	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS) --target-dir $@
+
+
+firtool:
+	@curl -sL $(FIRTOOL_URL) |tar -xz
+	@cp firtool-$(firtool_version)/bin/firtool .
 
 check: test
 .PHONY: test
