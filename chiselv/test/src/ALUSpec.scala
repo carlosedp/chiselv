@@ -22,74 +22,46 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   behavior of "ALU"
 
   it should "ADD" in {
-    test(new ALU) { c =>
-      testCycle(c, ADD)
-    }
+    testCycle(ADD)
   }
   it should "SUB" in {
-    test(new ALU) { c =>
-      testCycle(c, SUB)
-    }
+    testCycle(SUB)
   }
   it should "AND" in {
-    test(new ALU) { c =>
-      testCycle(c, AND)
-    }
+    testCycle(AND)
   }
   it should "OR" in {
-    test(new ALU) { c =>
-      testCycle(c, OR)
-    }
+    testCycle(OR)
   }
   it should "XOR" in {
-    test(new ALU) { c =>
-      testCycle(c, XOR)
-    }
+    testCycle(XOR)
   }
   it should "SRA" in {
-    test(new ALU) { c =>
-      testCycle(c, SRA)
-    }
+    testCycle(SRA)
   }
   it should "SRL" in {
-    test(new ALU) { c =>
-      testCycle(c, SRL)
-    }
+    testCycle(SRL)
   }
   it should "SLL" in {
-    test(new ALU) { c =>
-      testCycle(c, SLL)
-    }
+    testCycle(SLL)
   }
   it should "SLT" in {
-    test(new ALU) { c =>
-      testCycle(c, SLT)
-    }
+    testCycle(SLT)
   }
   it should "SLTU" in {
-    test(new ALU) { c =>
-      testCycle(c, SLTU)
-    }
+    testCycle(SLTU)
   }
   it should "EQ" in {
-    test(new ALU) { c =>
-      testCycle(c, EQ)
-    }
+    testCycle(EQ)
   }
   it should "NEQ" in {
-    test(new ALU) { c =>
-      testCycle(c, NEQ)
-    }
+    testCycle(NEQ)
   }
   it should "GT" in {
-    test(new ALU) { c =>
-      testCycle(c, GTE)
-    }
+    testCycle(GTE)
   }
   it should "GTU" in {
-    test(new ALU) { c =>
-      testCycle(c, GTEU)
-    }
+    testCycle(GTEU)
   }
   // --------------------- Test Helpers ---------------------
   def aluHelper(
@@ -130,12 +102,13 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     dut.io.ALUPort.x.peekInt() should be(out)
   }
   def testCycle(
-    dut: ALU,
-    op:  Type,
+    op: Type,
   ) =
-    cases.foreach { i =>
-      cases.foreach { j =>
-        testDut(i, j, aluHelper(i, j, op).to32Bit, op, dut)
+    test(new ALU) { c =>
+      cases.foreach { i =>
+        cases.foreach { j =>
+          testDut(i, j, aluHelper(i, j, op).to32Bit, op, c)
+        }
       }
     }
 

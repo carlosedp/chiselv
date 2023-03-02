@@ -69,7 +69,7 @@ object Toplevel {
         "--disable-all-randomization",
         "--strip-debug-info",
         "-lower-memories",
-        "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+        "--lowering-options=disallowLocalVariables,disallowPackedArrays", // Ref. https://github.com/llvm/circt/issues/4751
       ),
     )
 
