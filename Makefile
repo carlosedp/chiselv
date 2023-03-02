@@ -24,7 +24,8 @@ PLLFREQ ?= 50000000
 BOARDPARAMS=--board ${BOARD} --cpufreq ${PLLFREQ}
 # Check if generating for a different board/pll
 $(if $(findstring $(shell cat .genboard 2>/dev/null),$(BOARDPARAMS)),,$(shell echo ${BOARDPARAMS} > .genboard))
-CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
+# CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
+CHISELPARAMS = --split-verilog
 
 # Targets
 all: chisel gcc
@@ -58,7 +59,7 @@ binfile = chiselv.bin
 verilator: $(binfile) ## Generate Verilator simulation
 $(binfile): $(generated_files)
 	@rm -rf obj_dir
-	$(VERILATOR) verilator -O3 --assert $(foreach f,$(wildcard generated/*.v),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o $(binfile) --timescale 1ns/1ps
+	$(VERILATOR) verilator -O3 --assert $(foreach f,$(shell find ./generated -name "*.v" -o -name "*.sv"),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o $(binfile) --timescale 1ns/1ps
 	make -C obj_dir -f VToplevel.mk -j`nproc`
 	@cp obj_dir/$(binfile) .
 

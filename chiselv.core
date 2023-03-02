@@ -1,21 +1,18 @@
 CAPI=2:
 
 name: carlosedp:chiselv:singlecycle:0
-description : ChiselV is a RV32I core written in Chisel
+description: ChiselV is a RV32I core written in Chisel
 
 filesets:
   # These are the demo filesets, use the `&demofiles` tag for the one to be used
   gpiodemo:
     files:
-      - gcc/blinkLED/main-rom.mem:
-          { copyto: progload.mem, file_type: user }
-      - gcc/blinkLED/main-ram.mem:
-          { copyto: progload-RAM.mem, file_type: user }
+      - gcc/blinkLED/main-rom.mem: { copyto: progload.mem, file_type: user }
+      - gcc/blinkLED/main-ram.mem: { copyto: progload-RAM.mem, file_type: user }
 
   uartdemo: &demofiles
     files:
-      - gcc/helloUART/main-rom.mem:
-          { copyto: progload.mem, file_type: user }
+      - gcc/helloUART/main-rom.mem: { copyto: progload.mem, file_type: user }
       - gcc/helloUART/main-ram.mem:
           { copyto: progload-RAM.mem, file_type: user }
 
@@ -26,8 +23,8 @@ filesets:
   # Show the programming info for the FPGAs
   proginfo:
     files:
-      - proginfo/proginfo.py : {file_type : user, copyto : proginfo.py}
-      - proginfo/boardconfig.yaml : {file_type : user, copyto : boardconfig.yaml}
+      - proginfo/proginfo.py: { file_type: user, copyto: proginfo.py }
+      - proginfo/boardconfig.yaml: { file_type: user, copyto: boardconfig.yaml }
 
   base:
     depend: ["fusesoc:utils:generators"]
@@ -61,13 +58,32 @@ generate:
   default-chisel:
     generator: chisel
     parameters: &baseparam
-      extraargs: "--board bypass --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board bypass --cpufreq 15000000"
       buildtool: mill
       chiselproject: chiselv
       copy_core: true
       output:
         files:
-          - generated/Toplevel.v: { file_type: verilogSource }
+          - generated/ram_combMem.sv: { file_type: systemVerilogSource }
+          - generated/mem_combMem.sv: { file_type: systemVerilogSource }
+          - generated/mem_combMem_0.sv: { file_type: systemVerilogSource }
+          - generated/Blinky.sv: { file_type: systemVerilogSource }
+          - generated/extern_modules.sv: { file_type: systemVerilogSource }
+          - generated/Queue.sv: { file_type: systemVerilogSource }
+          - generated/InstructionMemory.sv: { file_type: systemVerilogSource }
+          - generated/DualPortRAM.sv: { file_type: systemVerilogSource }
+          - generated/Syscon.sv: { file_type: systemVerilogSource }
+          - generated/ProgramCounter.sv: { file_type: systemVerilogSource }
+          - generated/ALU.sv: { file_type: systemVerilogSource }
+          - generated/GPIO.sv: { file_type: systemVerilogSource }
+          - generated/SOC.sv: { file_type: systemVerilogSource }
+          - generated/Timer.sv: { file_type: systemVerilogSource }
+          - generated/Toplevel.sv: { file_type: systemVerilogSource }
+          - generated/RegisterBank.sv: { file_type: systemVerilogSource }
+          - generated/Uart.sv: { file_type: systemVerilogSource }
+          - generated/MemoryIOManager.sv: { file_type: systemVerilogSource }
+          - generated/CPUSingleCycle.sv: { file_type: systemVerilogSource }
+          - generated/Decoder.sv: { file_type: systemVerilogSource }
           - generated/GPIOInOut.v: { file_type: verilogSource }
           - generated/PLL.v: { file_type: verilogSource }
 
@@ -75,37 +91,37 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board bypass --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board bypass --cpufreq 15000000 --split-verilog"
 
   ulx3s:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board ulx3s --cpufreq 15000000 --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board ulx3s --cpufreq 15000000 --split-verilog"
 
   artya7-35t:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board artya7-35t --cpufreq 25000000 --target:fpga  --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board artya7-35t --cpufreq 25000000 --split-verilog"
 
   qmtech_k325t:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board qmtech_k325t --invreset true --target:fpga --cpufreq 50000000 --emission-options=disableMemRandomization,disableRegisterRandomization"
+      extraargs: "--board qmtech_k325t --invreset true --cpufreq 50000000 --split-verilog"
 
 targets:
   lint:
-    default_tool : verilator
-    description : Lint the RTL. Uses Verilator by default
+    default_tool: verilator
+    description: Lint the RTL. Uses Verilator by default
     filesets: [base]
     generate: [bypass]
-    tools :
-      verilator :
-        mode : lint-only
+    tools:
+      verilator:
+        mode: lint-only
         verilator_options: ["--timescale 1ns/1ps"]
-    toplevel : Toplevel
+    toplevel: Toplevel
 
   ulx3s_85:
     default_tool: trellis
@@ -123,55 +139,54 @@ targets:
     toplevel: Toplevel
 
   artya7-35t:
-    default_tool : vivado
+    default_tool: vivado
     description: Digilent ArtyA7-35T Board using Vivado
-    filesets : [base, artya7-35t, progload]
+    filesets: [base, artya7-35t, progload]
     generate: [artya7-35t]
     tools:
       vivado:
-        part : xc7a35ticsg324-1L
-    toplevel : Toplevel
+        part: xc7a35ticsg324-1L
+    toplevel: Toplevel
 
   artya7-35t-oss:
-    default_tool : symbiflow
+    default_tool: symbiflow
     description: Digilent ArtyA7-35T Board using Symbiflow OSS Toolchain
-    filesets : [base, artya7-35t, proginfo, progload]
+    filesets: [base, artya7-35t, proginfo, progload]
     generate: [artya7-35t]
     hooks:
       post_run: [artya7-35t]
     tools:
       symbiflow:
-        part : xc7a35t
+        part: xc7a35t
         package: csg324-1
         vendor: xilinx
         pnr: vtr
-    toplevel : Toplevel
+    toplevel: Toplevel
 
   qmtech_k325t: &qmtech_k325t
-    default_tool : xray
+    default_tool: xray
     description: QMTech Kintex 7 K325T Board using Project X-Ray OSS Toolchain
-    filesets : [base, qmtech_k325t, proginfo, progload]
+    filesets: [base, qmtech_k325t, proginfo, progload]
     generate: [qmtech_k325t]
     hooks:
       post_run: [qmtech_k325t]
     tools:
       xray:
-        part : xc7k325t
+        part: xc7k325t
         package: ffg676-1
         yosys_synth_options: [-abc9, -flatten]
         nextpnr_options: [--verbose, --debug]
-    toplevel : Toplevel
+    toplevel: Toplevel
 
   qmtech_k325t_zyjzgw:
     <<: *qmtech_k325t
     description: QMTech Kintex 7 K325T ZYJZGW Board using Project X-Ray OSS Toolchain
-    filesets : [base, qmtech_k325t_zyjzgw, proginfo, progload]
-
+    filesets: [base, qmtech_k325t_zyjzgw, proginfo, progload]
 
 scripts:
   artya7-35t:
-    cmd : [python3, proginfo.py, artya7-35t]
+    cmd: [python3, proginfo.py, artya7-35t]
   ulx3s-85f:
-    cmd : [python3, proginfo.py, ulx3s-85f]
+    cmd: [python3, proginfo.py, ulx3s-85f]
   qmtech_k325t:
-    cmd : [python3, proginfo.py, qmtech_k325t]
+    cmd: [python3, proginfo.py, qmtech_k325t]

@@ -74,6 +74,7 @@ tmp
 /*.json
 /*.fir
 /*.v
+/*.sv
 /*.f
 /*.vcd
 /obj_dir
@@ -81,3 +82,4 @@ tmp
 /tmphex/*
 /chiselv.bin
 .genboard
+/firtool*

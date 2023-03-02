@@ -1,6 +1,7 @@
 package chiselv
 
 import chisel3._
+import circt.stage.ChiselStage
 import chisel3.experimental.{Analog, FlatIO}
 import mainargs.{Leftover, ParserForMethods, arg, main}
 
@@ -20,7 +21,7 @@ class Toplevel(
   val pll = Module(new PLL0(board))
   pll.io.clki := clock
   // Define if reset should be inverted based on board switch
-  val customReset = if (invReset) ~reset.asBool() else reset
+  val customReset = if (invReset) ~reset.asBool else reset
 
   // Instantiate the Core connecting using the PLL clock
   withClockAndReset(pll.io.clko, customReset) {
@@ -61,9 +62,10 @@ object Toplevel {
     @arg(short = 'c', doc = "Chisel arguments") chiselArgs:             Leftover[String],
   ) =
     // Generate Verilog
-    (new chisel3.stage.ChiselStage).emitVerilog(
+    ChiselStage.emitSystemVerilogFile(
       new Toplevel(board, invreset, cpufreq),
       chiselArgs.value.toArray,
+      Array("--disable-all-randomization", "--strip-debug-info", "-lower-memories"),
     )
 
   def main(

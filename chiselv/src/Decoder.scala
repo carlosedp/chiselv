@@ -154,13 +154,13 @@ class Decoder(
     inst:    UInt,
   ): SInt = regType match {
     case INST_R => 0.S
-    case INST_I => Cat(Fill(20, inst(31)), inst(31, 20)).asSInt()
-    case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7)).asSInt()
-    case INST_B => Cat(Fill(19, inst(31)), inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W)).asSInt()
-    case INST_U => Cat(inst(31, 12), Fill(12, 0.U)).asSInt()
+    case INST_I => Cat(Fill(20, inst(31)), inst(31, 20)).asSInt
+    case INST_S => Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7)).asSInt
+    case INST_B => Cat(Fill(19, inst(31)), inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W)).asSInt
+    case INST_U => Cat(inst(31, 12), Fill(12, 0.U)).asSInt
     case INST_J =>
-      Cat(Fill(11, inst(31)), inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21), 0.U(1.W)).asSInt()
-    case INST_Z => Cat(Fill(27, 0.U), inst(19, 15)).asSInt() // for csri
+      Cat(Fill(11, inst(31)), inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21), 0.U(1.W)).asSInt
+    case INST_Z => Cat(Fill(27, 0.U), inst(19, 15)).asSInt // for csri
     case _      => 0.S
   }
 }

@@ -1,6 +1,7 @@
 package chiselv
 
 import chisel3._
+import circt.stage.ChiselStage
 import chisel3.util.{is, switch}
 
 // Chisel Bundle implementation of RISC-V Formal Interface (RVFI)
@@ -61,7 +62,7 @@ class RVFICPUWrapper(
   }
 
   // Connect RVFI interface outputs
-  rvfi_valid := !reset.asBool() && !stall
+  rvfi_valid := !reset.asBool && !stall
   when(rvfi_valid) {
     rvfi_order := rvfi_order + 1.U
   }
@@ -152,8 +153,10 @@ class RVFI(
 
 object RVFI extends App {
   // Generate Verilog
-  (new chisel3.stage.ChiselStage).emitVerilog(
+
+  ChiselStage.emitSystemVerilogFile(
     new RVFI,
     args,
+    Array("--disable-all-randomization", "--strip-debug-info", "-lower-memories"),
   )
 }
