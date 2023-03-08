@@ -12,7 +12,7 @@ object versions {
   val semanticdb      = "4.5.13"
   val riscvassembler  = "1.7.1"
   val mainargs        = "0.4.0"
-  val oslib           = "0.9.0"
+  val oslib           = "0.9.1"
 }
 
 trait BaseProject extends ScalaModule with PublishModule {
