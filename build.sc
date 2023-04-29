@@ -11,7 +11,7 @@ object versions {
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
   val riscvassembler  = "1.7.1"
-  val mainargs        = "0.4.0"
+  val mainargs        = "0.5.0"
   val oslib           = "0.9.1"
 }
 
