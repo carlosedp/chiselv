@@ -7,7 +7,7 @@ object versions {
   val chisel3         = "3.6.0"
   val chisel3circt    = "0.8.0"
   val chiseltest      = "0.6.0"
-  val scalatest       = "3.2.15"
+  val scalatest       = "3.2.16"
   val organizeimports = "0.6.0"
   val semanticdb      = "4.5.13"
   val riscvassembler  = "1.7.1"
