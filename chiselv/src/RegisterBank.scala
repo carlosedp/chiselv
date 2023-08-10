@@ -8,9 +8,9 @@ class RegisterBankPort(
 ) extends Bundle {
   val rs1         = Output(SInt(bitWidth.W))
   val rs2         = Output(SInt(bitWidth.W))
-  val rs1_addr    = Input(UInt(log2Ceil(bitWidth + 1).W))
-  val rs2_addr    = Input(UInt(log2Ceil(bitWidth + 1).W))
-  val regwr_addr  = Input(UInt(log2Ceil(bitWidth + 1).W))
+  val rs1_addr    = Input(UInt(log2Ceil(bitWidth).W))
+  val rs2_addr    = Input(UInt(log2Ceil(bitWidth).W))
+  val regwr_addr  = Input(UInt(log2Ceil(bitWidth).W))
   val regwr_data  = Input(SInt(bitWidth.W))
   val writeEnable = Input(Bool())
   val stall       = Input(Bool()) // >1 => Stall, 0 => Run
