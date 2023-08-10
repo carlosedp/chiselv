@@ -67,40 +67,40 @@ Linker script and memory map
                 0x00000000000009a8                putchar
  .text          0x00000000000009f4        0x0 ../lib/crt.s.o
 
-.text.startup   0x00000000000009f4       0x9c
- .text.startup  0x00000000000009f4       0x9c ./main.o
+.text.startup   0x00000000000009f4       0xe8
+ .text.startup  0x00000000000009f4       0xe8 ./main.o
                 0x00000000000009f4                main
 
-.data           0x0000000080000000      0xcf8
+.data           0x0000000080000000      0xd0c
  *(.rodata*)
  .rodata.str1.4
-                0x0000000080000000      0xc8b ./main.o
- *fill*         0x0000000080000c8b        0x1 
+                0x0000000080000000      0xc9f ./main.o
+ *fill*         0x0000000080000c9f        0x1 
  .rodata.str1.4
-                0x0000000080000c8c       0x19 ../lib/stdio.o
- *fill*         0x0000000080000ca5        0x3 
- .rodata        0x0000000080000ca8       0x40 ../lib/stdio.o
+                0x0000000080000ca0       0x19 ../lib/stdio.o
+ *fill*         0x0000000080000cb9        0x3 
+ .rodata        0x0000000080000cbc       0x40 ../lib/stdio.o
  *(.*data*)
- .data          0x0000000080000ce8        0x0 ./main.o
- .sdata         0x0000000080000ce8        0xc ./main.o
-                0x0000000080000ce8                heapcheck
-                0x0000000080000cec                logocv
-                0x0000000080000cf0                logorv
- .data          0x0000000080000cf4        0x0 ../lib/io.o
- .data          0x0000000080000cf4        0x0 ../lib/stdio.o
- .data          0x0000000080000cf4        0x0 ../lib/uart.o
- .data          0x0000000080000cf4        0x0 ../lib/crt.s.o
+ .data          0x0000000080000cfc        0x0 ./main.o
+ .sdata         0x0000000080000cfc        0xc ./main.o
+                0x0000000080000cfc                heapcheck
+                0x0000000080000d00                logocv
+                0x0000000080000d04                logorv
+ .data          0x0000000080000d08        0x0 ../lib/io.o
+ .data          0x0000000080000d08        0x0 ../lib/stdio.o
+ .data          0x0000000080000d08        0x0 ../lib/uart.o
+ .data          0x0000000080000d08        0x0 ../lib/crt.s.o
  *(.sbss)
- .sbss          0x0000000080000cf4        0x4 ../lib/stdio.o
+ .sbss          0x0000000080000d08        0x4 ../lib/stdio.o
  *(.bss)
- .bss           0x0000000080000cf8        0x0 ./main.o
- .bss           0x0000000080000cf8        0x0 ../lib/io.o
- .bss           0x0000000080000cf8        0x0 ../lib/stdio.o
- .bss           0x0000000080000cf8        0x0 ../lib/uart.o
- .bss           0x0000000080000cf8        0x0 ../lib/crt.s.o
+ .bss           0x0000000080000d0c        0x0 ./main.o
+ .bss           0x0000000080000d0c        0x0 ../lib/io.o
+ .bss           0x0000000080000d0c        0x0 ../lib/stdio.o
+ .bss           0x0000000080000d0c        0x0 ../lib/uart.o
+ .bss           0x0000000080000d0c        0x0 ../lib/crt.s.o
  *(.rela*)
  *(COMMON)
-                0x0000000080000cf8                _heap = .
+                0x0000000080000d0c                _heap = .
                 0x0000000080010000                PROVIDE (_sstack = (ORIGIN (RAM) + LENGTH (RAM)))
 LOAD ./main.o
 LOAD ../lib/io.o

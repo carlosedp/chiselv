@@ -11,12 +11,12 @@ SYMBOL TABLE:
 00000000 l    df *ABS*	00000000 main.c
 00000000 l    df *ABS*	00000000 io.c
 00000000 l    df *ABS*	00000000 stdio.c
-80000cf4 l     O .data	00000004 nxt.0
+80000d08 l     O .data	00000004 nxt.0
 00000000 l    df *ABS*	00000000 uart.c
 000009a8 g     F .text	0000004c putchar
 000008dc g     F .text	00000010 uart_reg_read
 00000490 g     F .text	000000fc printf
-80000cf0 g     O .data	00000004 logorv
+80000d04 g     O .data	00000004 logorv
 0000023c g     F .text	0000000c readGPIO
 0000032c g     F .text	00000040 putstr
 0000093c g     F .text	00000020 uart_divisor
@@ -31,11 +31,11 @@ SYMBOL TABLE:
 0000036c g     F .text	0000001c puts
 00000838 g     F .text	00000008 __udivsi3
 000001f8 g     F .text	00000020 sleep
-80000cec g     O .data	00000004 logocv
+80000d00 g     O .data	00000004 logocv
 000001b0 g     F .text	00000030 digitalWrite
 00000164 g     F .text	00000030 pinMode
 000001e0 g     F .text	0000000c getTimer
-80000ce8 g     O .data	00000004 heapcheck
+80000cfc g     O .data	00000004 heapcheck
 0000071c g     F .text	00000040 xtoi
 0000075c g     F .text	00000034 __umulsi3
 00002000 g       *ABS*	00000000 __heap_size
@@ -49,7 +49,7 @@ SYMBOL TABLE:
 00000628 g     F .text	000000a0 strtok
 00000388 g     F .text	000000f8 putdx
 0000060c g     F .text	0000001c memset
-000009f4 g     F .text.startup	0000009c main
+000009f4 g     F .text.startup	000000e8 main
 0000098c g     F .text	0000001c getchar
 000008cc g     F .text	00000008 __divsi3
 000005c0 g     F .text	00000008 strcmp
@@ -60,7 +60,7 @@ SYMBOL TABLE:
 000001ec g     F .text	0000000c resetTimer
 00000488 g     F .text	00000008 putd
 00000920 g     F .text	00000010 uart_read
-80000cf8 g       .data	00000000 _heap
+80000d0c g       .data	00000000 _heap
 00000248 g     F .text	0000000c setTimer
 000007e0 g     F .text	00000058 __udiv_umod_si3
 000008d4 g     F .text	00000008 __modsi3
@@ -312,7 +312,7 @@ Disassembly of section .text:
  338:	00050413          	mv	s0,a0
  33c:	00051663          	bnez	a0,348 <putstr+0x1c>
  340:	80001437          	lui	s0,0x80001
- 344:	c8c40413          	addi	s0,s0,-884 # 80000c8c <_sstack+0xffff0c8c>
+ 344:	ca040413          	addi	s0,s0,-864 # 80000ca0 <_sstack+0xffff0ca0>
  348:	00044503          	lbu	a0,0(s0)
  34c:	00051a63          	bnez	a0,360 <putstr+0x34>
  350:	00c12083          	lw	ra,12(sp)
@@ -339,9 +339,9 @@ Disassembly of section .text:
  394:	800015b7          	lui	a1,0x80001
  398:	04812c23          	sw	s0,88(sp)
  39c:	04912a23          	sw	s1,84(sp)
- 3a0:	ca858413          	addi	s0,a1,-856 # 80000ca8 <_sstack+0xffff0ca8>
+ 3a0:	cbc58413          	addi	s0,a1,-836 # 80000cbc <_sstack+0xffff0cbc>
  3a4:	02c00613          	li	a2,44
- 3a8:	ca858593          	addi	a1,a1,-856
+ 3a8:	cbc58593          	addi	a1,a1,-836
  3ac:	00050493          	mv	s1,a0
  3b0:	01410513          	addi	a0,sp,20
  3b4:	04112e23          	sw	ra,92(sp)
@@ -359,7 +359,7 @@ Disassembly of section .text:
  3e4:	80001937          	lui	s2,0x80001
  3e8:	01800993          	li	s3,24
  3ec:	00100a93          	li	s5,1
- 3f0:	c9490913          	addi	s2,s2,-876 # 80000c94 <_sstack+0xffff0c94>
+ 3f0:	ca890913          	addi	s2,s2,-856 # 80000ca8 <_sstack+0xffff0ca8>
  3f4:	00042583          	lw	a1,0(s0)
  3f8:	02059463          	bnez	a1,420 <putdx+0x98>
  3fc:	05c12083          	lw	ra,92(sp)
@@ -532,13 +532,13 @@ Disassembly of section .text:
  650:	00050993          	mv	s3,a0
  654:	00041863          	bnez	s0,664 <strtok+0x3c>
  658:	800017b7          	lui	a5,0x80001
- 65c:	cf47a403          	lw	s0,-780(a5) # 80000cf4 <_sstack+0xffff0cf4>
+ 65c:	d087a403          	lw	s0,-760(a5) # 80000d08 <_sstack+0xffff0d08>
  660:	04040063          	beqz	s0,6a0 <strtok+0x78>
  664:	00040493          	mv	s1,s0
  668:	0004c783          	lbu	a5,0(s1)
  66c:	00079863          	bnez	a5,67c <strtok+0x54>
  670:	800017b7          	lui	a5,0x80001
- 674:	ce07aa23          	sw	zero,-780(a5) # 80000cf4 <_sstack+0xffff0cf4>
+ 674:	d007a423          	sw	zero,-760(a5) # 80000d08 <_sstack+0xffff0d08>
  678:	0280006f          	j	6a0 <strtok+0x78>
  67c:	00098613          	mv	a2,s3
  680:	00090593          	mv	a1,s2
@@ -548,7 +548,7 @@ Disassembly of section .text:
  690:	02051863          	bnez	a0,6c0 <strtok+0x98>
  694:	80001737          	lui	a4,0x80001
  698:	00048023          	sb	zero,0(s1)
- 69c:	cef72a23          	sw	a5,-780(a4) # 80000cf4 <_sstack+0xffff0cf4>
+ 69c:	d0f72423          	sw	a5,-760(a4) # 80000d08 <_sstack+0xffff0d08>
  6a0:	01c12083          	lw	ra,28(sp)
  6a4:	00040513          	mv	a0,s0
  6a8:	01812403          	lw	s0,24(sp)
@@ -806,42 +806,61 @@ Disassembly of section .text:
 Disassembly of section .text.startup:
 
 000009f4 <main>:
- 9f4:	fe010113          	addi	sp,sp,-32
- 9f8:	00112e23          	sw	ra,28(sp)
- 9fc:	00812c23          	sw	s0,24(sp)
- a00:	00912a23          	sw	s1,20(sp)
- a04:	01212823          	sw	s2,16(sp)
- a08:	01312623          	sw	s3,12(sp)
- a0c:	01412423          	sw	s4,8(sp)
- a10:	f4dff0ef          	jal	ra,95c <uart_init>
- a14:	00100593          	li	a1,1
- a18:	00000513          	li	a0,0
- a1c:	f48ff0ef          	jal	ra,164 <pinMode>
- a20:	00100593          	li	a1,1
- a24:	00000513          	li	a0,0
- a28:	f88ff0ef          	jal	ra,1b0 <digitalWrite>
- a2c:	e68ff0ef          	jal	ra,94 <header>
- a30:	800017b7          	lui	a5,0x80001
- a34:	cec7a503          	lw	a0,-788(a5) # 80000cec <_sstack+0xffff0cec>
- a38:	deadc437          	lui	s0,0xdeadc
- a3c:	00d00913          	li	s2,13
- a40:	a51ff0ef          	jal	ra,490 <printf>
- a44:	80000537          	lui	a0,0x80000
- a48:	08450513          	addi	a0,a0,132 # 80000084 <_sstack+0xffff0084>
- a4c:	a45ff0ef          	jal	ra,490 <printf>
- a50:	80000a37          	lui	s4,0x80000
- a54:	800019b7          	lui	s3,0x80001
- a58:	eef40413          	addi	s0,s0,-273 # deadbeef <_sstack+0x5eacbeef>
- a5c:	800004b7          	lui	s1,0x80000
- a60:	f2dff0ef          	jal	ra,98c <getchar>
- a64:	0ff57513          	andi	a0,a0,255
- a68:	03251063          	bne	a0,s2,a88 <main+0x94>
- a6c:	088a0513          	addi	a0,s4,136 # 80000088 <_sstack+0xffff0088>
- a70:	a21ff0ef          	jal	ra,490 <printf>
- a74:	ce89a783          	lw	a5,-792(s3) # 80000ce8 <_sstack+0xffff0ce8>
- a78:	fe8784e3          	beq	a5,s0,a60 <main+0x6c>
- a7c:	09048513          	addi	a0,s1,144 # 80000090 <_sstack+0xffff0090>
- a80:	a11ff0ef          	jal	ra,490 <printf>
- a84:	fddff06f          	j	a60 <main+0x6c>
- a88:	f21ff0ef          	jal	ra,9a8 <putchar>
- a8c:	fe9ff06f          	j	a74 <main+0x80>
+ 9f4:	f6010113          	addi	sp,sp,-160
+ 9f8:	08112e23          	sw	ra,156(sp)
+ 9fc:	08912a23          	sw	s1,148(sp)
+ a00:	09212823          	sw	s2,144(sp)
+ a04:	09312623          	sw	s3,140(sp)
+ a08:	09412423          	sw	s4,136(sp)
+ a0c:	09512223          	sw	s5,132(sp)
+ a10:	08812c23          	sw	s0,152(sp)
+ a14:	09612023          	sw	s6,128(sp)
+ a18:	f45ff0ef          	jal	ra,95c <uart_init>
+ a1c:	00100593          	li	a1,1
+ a20:	00000513          	li	a0,0
+ a24:	f40ff0ef          	jal	ra,164 <pinMode>
+ a28:	00100593          	li	a1,1
+ a2c:	00000513          	li	a0,0
+ a30:	f80ff0ef          	jal	ra,1b0 <digitalWrite>
+ a34:	e60ff0ef          	jal	ra,94 <header>
+ a38:	800017b7          	lui	a5,0x80001
+ a3c:	d007a503          	lw	a0,-768(a5) # 80000d00 <_sstack+0xffff0d00>
+ a40:	deadc4b7          	lui	s1,0xdeadc
+ a44:	800009b7          	lui	s3,0x80000
+ a48:	a49ff0ef          	jal	ra,490 <printf>
+ a4c:	80000537          	lui	a0,0x80000
+ a50:	08450513          	addi	a0,a0,132 # 80000084 <_sstack+0xffff0084>
+ a54:	a3dff0ef          	jal	ra,490 <printf>
+ a58:	80000a37          	lui	s4,0x80000
+ a5c:	80000ab7          	lui	s5,0x80000
+ a60:	80001937          	lui	s2,0x80001
+ a64:	eef48493          	addi	s1,s1,-273 # deadbeef <_sstack+0x5eacbeef>
+ a68:	00d00b13          	li	s6,13
+ a6c:	f21ff0ef          	jal	ra,98c <getchar>
+ a70:	0ff57413          	andi	s0,a0,255
+ a74:	00010513          	mv	a0,sp
+ a78:	b51ff0ef          	jal	ra,5c8 <strlen>
+ a7c:	08010793          	addi	a5,sp,128
+ a80:	00a78533          	add	a0,a5,a0
+ a84:	f8850023          	sb	s0,-128(a0)
+ a88:	05641463          	bne	s0,s6,ad0 <main+0xdc>
+ a8c:	08898513          	addi	a0,s3,136 # 80000088 <_sstack+0xffff0088>
+ a90:	a01ff0ef          	jal	ra,490 <printf>
+ a94:	00010593          	mv	a1,sp
+ a98:	08ca0513          	addi	a0,s4,140 # 8000008c <_sstack+0xffff008c>
+ a9c:	9f5ff0ef          	jal	ra,490 <printf>
+ aa0:	08000613          	li	a2,128
+ aa4:	00000593          	li	a1,0
+ aa8:	00010513          	mv	a0,sp
+ aac:	b61ff0ef          	jal	ra,60c <memset>
+ ab0:	09ca8513          	addi	a0,s5,156 # 8000009c <_sstack+0xffff009c>
+ ab4:	9ddff0ef          	jal	ra,490 <printf>
+ ab8:	cfc92783          	lw	a5,-772(s2) # 80000cfc <_sstack+0xffff0cfc>
+ abc:	fa9788e3          	beq	a5,s1,a6c <main+0x78>
+ ac0:	80000537          	lui	a0,0x80000
+ ac4:	0a450513          	addi	a0,a0,164 # 800000a4 <_sstack+0xffff00a4>
+ ac8:	9c9ff0ef          	jal	ra,490 <printf>
+ acc:	f9dff06f          	j	a68 <main+0x74>
+ ad0:	00040513          	mv	a0,s0
+ ad4:	ed5ff0ef          	jal	ra,9a8 <putchar>
+ ad8:	fe1ff06f          	j	ab8 <main+0xc4>

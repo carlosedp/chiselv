@@ -35,11 +35,18 @@ int main(void)
   // Print the banner
   printf(logocv);
   printf("> ");
+  char data[128];
   while (1)
   {
     unsigned char c = getchar();
+    int bufLen = strlen(data);
+    data[bufLen] = c;
     if (c == '\r')
     {
+      printf("\r\n");
+      printf("You typed: %s", data);
+      // Clear the buffer
+      memset(data, 0, sizeof(data));
       printf("\r\n> ");
     }
     else
