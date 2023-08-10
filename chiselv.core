@@ -54,6 +54,11 @@ filesets:
       - constraints/qmtech-zyjzgw.xdc: { file_type: XDC }
       - proginfo/qmtech_k325t-template.txt: { file_type: user }
 
+  verilator:
+    files:
+      - verilator/chiselv.cpp: { file_type: cppSource }
+      - verilator/uart.c: { file_type: cSource }
+
 generate:
   default-chisel:
     generator: chisel
@@ -64,40 +69,40 @@ generate:
       copy_core: true
       output:
         files:
-          - generated/ram_combMem.sv: { file_type: systemVerilogSource }
-          - generated/mem_combMem.sv: { file_type: systemVerilogSource }
-          - generated/mem_combMem_0.sv: { file_type: systemVerilogSource }
-          - generated/Blinky.sv: { file_type: systemVerilogSource }
-          - generated/extern_modules.sv: { file_type: systemVerilogSource }
-          - generated/Queue.sv: { file_type: systemVerilogSource }
-          - generated/InstructionMemory.sv: { file_type: systemVerilogSource }
-          - generated/DualPortRAM.sv: { file_type: systemVerilogSource }
-          - generated/Syscon.sv: { file_type: systemVerilogSource }
-          - generated/ProgramCounter.sv: { file_type: systemVerilogSource }
           - generated/ALU.sv: { file_type: systemVerilogSource }
-          - generated/GPIO.sv: { file_type: systemVerilogSource }
-          - generated/SOC.sv: { file_type: systemVerilogSource }
-          - generated/Timer.sv: { file_type: systemVerilogSource }
-          - generated/Toplevel.sv: { file_type: systemVerilogSource }
-          - generated/RegisterBank.sv: { file_type: systemVerilogSource }
-          - generated/Uart.sv: { file_type: systemVerilogSource }
-          - generated/MemoryIOManager.sv: { file_type: systemVerilogSource }
+          - generated/Blinky.sv: { file_type: systemVerilogSource }
           - generated/CPUSingleCycle.sv: { file_type: systemVerilogSource }
           - generated/Decoder.sv: { file_type: systemVerilogSource }
-          - generated/GPIOInOut.v: { file_type: verilogSource }
+          - generated/DualPortRAM.sv: { file_type: systemVerilogSource }
+          - generated/extern_modules.sv: { file_type: systemVerilogSource }
+          - generated/GPIO.sv: { file_type: systemVerilogSource }
+          - generated/InstructionMemory.sv: { file_type: systemVerilogSource }
+          - generated/mem_2048x32.sv: { file_type: systemVerilogSource }
+          - generated/mem_2048x32_0.sv: { file_type: systemVerilogSource }
+          - generated/MemoryIOManager.sv: { file_type: systemVerilogSource }
+          - generated/ProgramCounter.sv: { file_type: systemVerilogSource }
+          - generated/Queue128_UInt8.sv: { file_type: systemVerilogSource }
+          - generated/ram_128x8.sv: { file_type: systemVerilogSource }
+          - generated/RegisterBank.sv: { file_type: systemVerilogSource }
+          - generated/SOC.sv: { file_type: systemVerilogSource }
+          - generated/Syscon.sv: { file_type: systemVerilogSource }
+          - generated/Timer.sv: { file_type: systemVerilogSource }
+          - generated/Toplevel.sv: { file_type: systemVerilogSource }
+          - generated/Uart.sv: { file_type: systemVerilogSource }
           - generated/PLL.v: { file_type: verilogSource }
+          - generated/GPIOInOut.v: { file_type: verilogSource }
 
   bypass:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board bypass --cpufreq 15000000 --split-verilog"
+      extraargs: "--board bypass --cpufreq 50000000 --split-verilog"
 
   ulx3s:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board ulx3s --cpufreq 15000000 --split-verilog"
+      extraargs: "--board ulx3s --cpufreq 15000000 --invreset true --split-verilog"
 
   artya7-35t:
     generator: chisel
@@ -109,7 +114,7 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board qmtech_k325t --invreset true --cpufreq 50000000 --split-verilog"
+      extraargs: "--board qmtech_k325t --cpufreq 50000000 --invreset true --split-verilog"
 
 targets:
   lint:
@@ -122,6 +127,21 @@ targets:
         mode: lint-only
         verilator_options: ["--timescale 1ns/1ps"]
     toplevel: Toplevel
+    parameters:
+      - ENABLE_INITIAL_MEM_
+
+  verilator:
+    default_tool: verilator
+    description: Runs the Verilator simulation
+    filesets: [base, verilator, progload]
+    generate: [bypass]
+    tools:
+      verilator:
+        mode: cc
+        verilator_options: [--timescale 1ns/1ps, -O3, --assert]
+    toplevel: Toplevel
+    parameters:
+      - ENABLE_INITIAL_MEM_
 
   ulx3s_85:
     default_tool: trellis
@@ -136,6 +156,8 @@ targets:
       trellis:
         nextpnr_options: [--package, CABGA381, --85k, --lpf-allow-unconstrained]
         yosys_synth_options: [-abc9, -nowidelut]
+    parameters:
+      - ENABLE_INITIAL_MEM_
     toplevel: Toplevel
 
   artya7-35t:
@@ -147,6 +169,8 @@ targets:
       vivado:
         part: xc7a35ticsg324-1L
     toplevel: Toplevel
+    parameters:
+      - ENABLE_INITIAL_MEM_
 
   artya7-35t-oss:
     default_tool: symbiflow
@@ -162,6 +186,8 @@ targets:
         vendor: xilinx
         pnr: vtr
     toplevel: Toplevel
+    parameters:
+      - ENABLE_INITIAL_MEM_
 
   qmtech_k325t: &qmtech_k325t
     default_tool: xray
@@ -177,11 +203,20 @@ targets:
         yosys_synth_options: [-abc9, -flatten]
         nextpnr_options: [--verbose, --debug]
     toplevel: Toplevel
+    parameters:
+      - ENABLE_INITIAL_MEM_
 
   qmtech_k325t_zyjzgw:
     <<: *qmtech_k325t
     description: QMTech Kintex 7 K325T ZYJZGW Board using Project X-Ray OSS Toolchain
     filesets: [base, qmtech_k325t_zyjzgw, proginfo, progload]
+
+parameters:
+  # Used by firtool so the memories are initialized with readmemh. Ref https://github.com/llvm/circt/pull/5237
+  ENABLE_INITIAL_MEM_:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
 
 scripts:
   artya7-35t:

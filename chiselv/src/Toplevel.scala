@@ -1,8 +1,8 @@
 package chiselv
 
 import chisel3._
-import circt.stage.ChiselStage
 import chisel3.experimental.{Analog, FlatIO}
+import circt.stage.ChiselStage
 import mainargs.{Leftover, ParserForMethods, arg, main}
 
 // Project Top level
@@ -61,15 +61,18 @@ object Toplevel {
     @arg(short = 'f', doc = "CPU Frequency to run core") cpufreq:       Int = 50000000,
     @arg(short = 'c', doc = "Chisel arguments") chiselArgs:             Leftover[String],
   ) =
-    // Generate Verilog
+    // Generate SystemVerilog
     ChiselStage.emitSystemVerilogFile(
       new Toplevel(board, invreset, cpufreq),
       chiselArgs.value.toArray,
       Array(
-        "--disable-all-randomization",
         "--strip-debug-info",
-        "-lower-memories",
-        "--lowering-options=disallowLocalVariables,disallowPackedArrays", // Ref. https://github.com/llvm/circt/issues/4751
+        // Disables reg and memory randomization on initialization
+        "--disable-all-randomization",
+        // Creates memories with write masks in a single reg. Ref. https://github.com/llvm/circt/pull/4275
+        "--lower-memories",
+        // Avoids "unexpected TOK_AUTOMATIC" errors in Yosys. Ref. https://github.com/llvm/circt/issues/4751
+        "--lowering-options=disallowLocalVariables,disallowPackedArrays",
       ),
     )
 

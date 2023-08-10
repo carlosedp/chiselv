@@ -79,7 +79,7 @@ tmp
 /*.vcd
 /obj_dir
 /*.mem
-/tmphex/*
+/tmphex
 /chiselv.bin
 .genboard
 /firtool*

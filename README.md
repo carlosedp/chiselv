@@ -36,7 +36,7 @@ Currently the target builds a RV32I core.
 
 ## Generating Verilog
 
-Verilog code can be generated from Chisel sources by using the `chisel` Makefile target. If a `-board` parameter is passed, the target board PLL is included in the design. If it's not provided, a bypass PLL will be used.
+Verilog code can be generated from Chisel sources by using the `chisel` Makefile target. If a `BOARD` parameter is passed, the target board PLL is included in the design. If it's not provided, a bypass PLL will be used.
 
 ```sh
 make chisel BOARD=artya7-35t
@@ -55,7 +55,12 @@ The demo application can be adjusted in the Makefile to point to the dir and fil
 
 ## Building for FPGAs
 
-The standard build process uses locally installed tools like Java (for Chisel generation), Yosys, NextPNR, Vivado and others. It's recommended to use [Fusesoc](https://github.com/olofk/fusesoc) for building the complete workflow by using containers thru a command launcher. In this case, the FPGA tools doesn't need to be installed locally.
+The standard build process uses locally installed tools like Java (for Chisel generation), Firtool, Yosys, NextPNR, Vivado and others. It's recommended to use [Fusesoc](https://github.com/olofk/fusesoc) for building the complete workflow by using containers thru a command launcher. In this case, the FPGA tools doesn't need to be installed locally.
+
+- Install a Java JDK for example from <https://adoptium.net/>.
+- Install the latest Firtool, the SystemVerilog generator **into your path** from <https://github.com/llvm/circt/releases> or using the `download_firtool.sh` script.
+- Install an FPGA programming tool like [OpenOCD](https://openocd.org/) or [openfpgaloader](https://github.com/trabucayre/openFPGALoader/).
+- Install Fusesoc with instructions below.
 
 ### Fusesoc build and generation
 
@@ -81,14 +86,16 @@ If the terminal reports an error about the command not being found check that th
 
 Fusesoc allows multiple boards from different vendors to be supported by the project. It uses chisel-generator to generate Verilog from Scala sources and calls the correct board EDA backend to create it's project files.
 
+Make sure you have all requirements listed in the section above installed.
+
 For example, to generate the programming files for the **ULX3s** board based on Lattice ECP5:
 
 ```sh
 mkdir fusesoc-chiselv && cd fusesoc-chiselv
 
-# Add fusesoc standard library and this core
-fusesoc library add fusesoc-cores https://github.com/fusesoc/fusesoc-cores
+# Add requires fusesoc generators and the core
 fusesoc library add chiselv https://github.com/carlosedp/chiselv
+fusesoc library add fg https://github.com/fusesoc/fusesoc-generators
 
 # Download the command wrapper
 wget https://gist.github.com/carlosedp/c0e29d55e48309a48961f2e3939acfe9/raw/bfeb1cfe2e188c1d5ced0b09aabc9902fdfda6aa/runme.py
@@ -121,14 +128,14 @@ total 6.9M
 # Programming instructions will be printed-out.
 ```
 
-Just program it to your FPGA with `OpenOCD` or in ULX3S case, [`ujprog`](https://github.com/f32c/tools/tree/master/ujprog)
+Just program it to your FPGA with `OpenOCD` or [`openfpgaloader`](https://github.com/trabucayre/openFPGALoader) using printed instructions.
 
 
 ## Planned features
 
-* Add a standard bus like Wishbone
-* Integrate peripherals thru this bus (UART, etc)
-* Add memory controller for SDRAM or DDR
+- Add a standard bus like Wishbone
+- Integrate peripherals thru this bus (UART, etc)
+- Add memory controller for SDRAM or DDR
 
 ## Adding support to new boards
 

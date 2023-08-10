@@ -1,19 +1,9 @@
 # Source and target files/directories
-project = $(shell grep projectName build.sc | cut -d= -f2|tr -d "\"" |xargs)
+project = chiselv
 scala_files = $(wildcard $(project)/src/*.scala) $(wildcard $(project)/resources/*.scala) $(wildcard $(project)/test/src/*.scala)
 generated_files = generated
 rvfi_files = generated_rvfi
-firtool_version=1.32.0
-export PATH := ./:$(PATH)
-
-FIRTOOL_URL :=
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-	FIRTOOL_URL =https://github.com/llvm/circt/releases/download/firtool-$(firtool_version)/circt-bin-ubuntu-20.04.tar.gz
-endif
-ifeq ($(UNAME_S),Darwin)
-	FIRTOOL_URL = https://github.com/llvm/circt/releases/download/firtool-$(firtool_version)/circt-bin-macos-11.tar.gz
-endif
+export PATH := $(PWD):$(PATH)
 
 # Toolchains and tools
 MILL = ./mill
@@ -36,7 +26,7 @@ BOARDPARAMS=--board ${BOARD} --cpufreq ${PLLFREQ}
 # Check if generating for a different board/pll
 $(if $(findstring $(shell cat .genboard 2>/dev/null),$(BOARDPARAMS)),,$(shell echo ${BOARDPARAMS} > .genboard))
 # CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
-CHISELPARAMS = --split-verilog
+CHISELPARAMS = --split-verilog --target-dir $(generated_files)
 
 # Targets
 all: chisel gcc
@@ -44,13 +34,11 @@ all: chisel gcc
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
 $(generated_files): $(scala_files) build.sc Makefile .genboard firtool
 	@rm -rf $@
-	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 4 | grep -v bypass | sed s/board\ //g |tr -s ' \n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
-	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS) --target-dir $@
-
+	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 3 | grep -v bypass | sed s/board\ //g |tr -s ' \n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
+	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS)
 
 firtool:
-	@curl -sL $(FIRTOOL_URL) |tar -xz
-	@cp firtool-$(firtool_version)/bin/firtool .
+	@./download_firtool.sh
 
 check: test
 .PHONY: test
@@ -71,11 +59,12 @@ $(rvfi_files):  $(scala_files) build.sc Makefile
 	$(MILL) $(project)_rvfi.run -td $@ $(CHISELPARAMS)
 
 # This section defines the Verilator simulation and demo application to be used
+# Below, I use -DENABLE_INITIAL_MEM_ to enable initial memory load on firtool from progload.mem and progload-RAM.mem
 binfile = chiselv.bin
 verilator: $(binfile) ## Generate Verilator simulation
 $(binfile): $(generated_files)
 	@rm -rf obj_dir
-	$(VERILATOR) verilator -O3 --assert $(foreach f,$(shell find ./generated -name "*.v" -o -name "*.sv"),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o $(binfile) --timescale 1ns/1ps
+	$(VERILATOR) verilator -O3 --timescale 1ns/1ps -DENABLE_INITIAL_MEM_ --assert $(foreach f,$(shell find ./generated -name "*.v" -o -name "*.sv"),--cc $(f)) --exe verilator/chiselv.cpp verilator/uart.c --top-module Toplevel -o $(binfile)
 	make -C obj_dir -f VToplevel.mk -j`nproc`
 	@cp obj_dir/$(binfile) .
 
@@ -92,7 +81,7 @@ MODULE ?= Toplevel
 dot: $(generated_files) ## Generate dot files for Core
 	@echo "Generating graphviz dot file for module \"$(MODULE)\". For a different module, pass the argument as \"make dot MODULE=mymod\"."
 	@touch progload.mem progload-RAM.mem
-	@$(YOSYS) -p "read_verilog ./generated/*.v; proc; opt; show -colors 2 -width -format dot -prefix $(MODULE) -signed $(MODULE)"
+	@$(YOSYS) -p "read_verilog ./generated/*.v ./generated/*.sv; proc; opt; show -colors 2 -width -format dot -prefix $(MODULE) -signed $(MODULE)"
 	@rm progload.mem progload-RAM.mem
 
 .PHONY: gcc

@@ -3,7 +3,6 @@ package chiselv
 import chisel3._
 import chiseltest._
 import org.scalatest._
-import treadle.WriteVcdAnnotation
 
 import flatspec._
 import matchers._
