@@ -1,6 +1,6 @@
-#include "io.h"
-#include "uart.h"
-#include "stdio.h"
+#include "../lib/io.h"
+#include "../lib/uart.h"
+#include "../lib/stdio.h"
 #include "banner.h"
 
 #define CLEAR "\033[2K"

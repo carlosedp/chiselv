@@ -1,15 +1,17 @@
-SOURCES       := $(shell find . -name '*.c')
-ASM_SOURCES   := $(shell find . -name '*.s')
+SOURCES       := $(shell find . ../lib -name '*.c')
+ASM_SOURCES   := $(shell find . ../lib -name '*.s')
 OBJECTS       := $(SOURCES:%.c=%.o)
 ASM_OBJECTS   := $(ASM_SOURCES:%.s=%.s.o)
 ASM           := $(SOURCES:%.c=%.s)
 
+
 USEDOCKER = 1
-DOCKERARGS = run --rm -v $(PWD):/src -w /src
+CURDIR = $(shell pwd)
+DOCKERARGS = run --rm -v $(PWD)/..:/src -w /src/$(shell basename $(CURDIR))
 DOCKERIMG  = docker $(DOCKERARGS) docker.io/carlosedp/crossbuild-riscv64:latest
 
 CFLAGS=-Wall -mabi=ilp32 -march=rv32i -ffreestanding -fcommon -Os
-LDFLAGS=-T riscv.ld -m elf32lriscv -O binary -Map=main.map
+LDFLAGS=-T ../lib/riscv.ld -m elf32lriscv -O binary -Map=main.map
 
 # PREFIX=riscv64-linux-
 PREFIX=riscv64-linux

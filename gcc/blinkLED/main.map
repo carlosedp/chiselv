@@ -13,10 +13,11 @@ Linker script and memory map
 
 .text           0x0000000000000000      0x924
  *(.boot)
- .boot          0x0000000000000000       0x94 ./crt.s.o
+ .boot          0x0000000000000000       0x94 ../lib/crt.s.o
                 0x0000000000000000                _boot
  *(.text)
- .text          0x0000000000000094       0xf0 ./io.o
+ .text          0x0000000000000094        0x0 ./main.o
+ .text          0x0000000000000094       0xf0 ../lib/io.o
                 0x0000000000000094                pinMode
                 0x00000000000000c4                digitalRead
                 0x00000000000000e0                digitalWrite
@@ -28,7 +29,7 @@ Linker script and memory map
                 0x0000000000000160                setGPIO
                 0x000000000000016c                readGPIO
                 0x0000000000000178                setTimer
- .text          0x0000000000000184      0x688 ./stdio.o
+ .text          0x0000000000000184      0x688 ../lib/stdio.o
                 0x0000000000000184                gets
                 0x000000000000025c                putstr
                 0x000000000000029c                puts
@@ -52,8 +53,7 @@ Linker script and memory map
                 0x0000000000000778                __div_mod_si3
                 0x00000000000007fc                __divsi3
                 0x0000000000000804                __modsi3
- .text          0x000000000000080c        0x0 ./main.o
- .text          0x000000000000080c      0x118 ./uart.o
+ .text          0x000000000000080c      0x118 ../lib/uart.o
                 0x000000000000080c                uart_reg_read
                 0x000000000000081c                uart_reg_write
                 0x000000000000082c                uart_rx_empty
@@ -64,7 +64,7 @@ Linker script and memory map
                 0x000000000000088c                uart_init
                 0x00000000000008bc                getchar
                 0x00000000000008d8                putchar
- .text          0x0000000000000924        0x0 ./crt.s.o
+ .text          0x0000000000000924        0x0 ../lib/crt.s.o
 
 .text.startup   0x0000000000000924       0xf0
  .text.startup  0x0000000000000924       0xf0 ./main.o
@@ -73,48 +73,48 @@ Linker script and memory map
 .data           0x0000000080000000       0x60
  *(.rodata*)
  .rodata.str1.4
-                0x0000000080000000       0x19 ./stdio.o
+                0x0000000080000000       0x19 ../lib/stdio.o
  *fill*         0x0000000080000019        0x3 
- .rodata        0x000000008000001c       0x40 ./stdio.o
+ .rodata        0x000000008000001c       0x40 ../lib/stdio.o
  *(.*data*)
- .data          0x000000008000005c        0x0 ./io.o
- .data          0x000000008000005c        0x0 ./stdio.o
  .data          0x000000008000005c        0x0 ./main.o
- .data          0x000000008000005c        0x0 ./uart.o
- .data          0x000000008000005c        0x0 ./crt.s.o
+ .data          0x000000008000005c        0x0 ../lib/io.o
+ .data          0x000000008000005c        0x0 ../lib/stdio.o
+ .data          0x000000008000005c        0x0 ../lib/uart.o
+ .data          0x000000008000005c        0x0 ../lib/crt.s.o
  *(.sbss)
- .sbss          0x000000008000005c        0x4 ./stdio.o
+ .sbss          0x000000008000005c        0x4 ../lib/stdio.o
  *(.bss)
- .bss           0x0000000080000060        0x0 ./io.o
- .bss           0x0000000080000060        0x0 ./stdio.o
  .bss           0x0000000080000060        0x0 ./main.o
- .bss           0x0000000080000060        0x0 ./uart.o
- .bss           0x0000000080000060        0x0 ./crt.s.o
+ .bss           0x0000000080000060        0x0 ../lib/io.o
+ .bss           0x0000000080000060        0x0 ../lib/stdio.o
+ .bss           0x0000000080000060        0x0 ../lib/uart.o
+ .bss           0x0000000080000060        0x0 ../lib/crt.s.o
  *(.rela*)
  *(COMMON)
                 0x0000000080000060                _heap = .
                 0x0000000080010000                PROVIDE (_sstack = (ORIGIN (RAM) + LENGTH (RAM)))
-LOAD ./io.o
-LOAD ./stdio.o
 LOAD ./main.o
-LOAD ./uart.o
-LOAD ./crt.s.o
+LOAD ../lib/io.o
+LOAD ../lib/stdio.o
+LOAD ../lib/uart.o
+LOAD ../lib/crt.s.o
 OUTPUT(main.elf elf32-littleriscv)
 
 .comment        0x0000000000000000       0x2c
- .comment       0x0000000000000000       0x2c ./io.o
+ .comment       0x0000000000000000       0x2c ./main.o
                                          0x2d (size before relaxing)
- .comment       0x000000000000002c       0x2d ./stdio.o
- .comment       0x000000000000002c       0x2d ./main.o
- .comment       0x000000000000002c       0x2d ./uart.o
+ .comment       0x000000000000002c       0x2d ../lib/io.o
+ .comment       0x000000000000002c       0x2d ../lib/stdio.o
+ .comment       0x000000000000002c       0x2d ../lib/uart.o
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
-                0x0000000000000000        0x0 ./io.o
- .note.GNU-stack
-                0x0000000000000000        0x0 ./stdio.o
- .note.GNU-stack
                 0x0000000000000000        0x0 ./main.o
  .note.GNU-stack
-                0x0000000000000000        0x0 ./uart.o
+                0x0000000000000000        0x0 ../lib/io.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 ../lib/stdio.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 ../lib/uart.o
