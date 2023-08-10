@@ -12,15 +12,13 @@ object versions {
   val scalatest      = "3.2.16"
   val riscvassembler = "1.9.0"
   val mainargs       = "0.5.1"
-  val oslib          = "0.9.1"
 }
 
 trait BaseProject extends ScalaModule with ScalafixModule with ScalafmtModule {
   def scalaVersion = versions.scala
   def ivyDeps = Agg(
-    ivy"com.carlosedp::riscvassembler:${versions.riscvassembler}",
-    ivy"com.lihaoyi::mainargs:${versions.mainargs}",
     ivy"org.chipsalliance::chisel:${versions.chisel}",
+    ivy"com.lihaoyi::mainargs:${versions.mainargs}",
   )
 
   def scalacPluginIvyDeps = Agg(ivy"org.chipsalliance:::chisel-plugin:${versions.chisel}")
@@ -29,6 +27,7 @@ trait BaseProject extends ScalaModule with ScalafixModule with ScalafmtModule {
     def ivyDeps = Agg(
       ivy"org.scalatest::scalatest:${versions.scalatest}",
       ivy"edu.berkeley.cs::chiseltest:${versions.chiseltest}",
+      ivy"com.carlosedp::riscvassembler:${versions.riscvassembler}",
     )
   }
 
