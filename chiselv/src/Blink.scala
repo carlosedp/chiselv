@@ -15,10 +15,7 @@ import chisel3.util.Counter
  * @param io_led0
  *   (Output) is the led output
  */
-class Blinky(
-  freq:    Int,
-  startOn: Boolean = false,
-) extends Module {
+class Blinky(freq: Int, startOn: Boolean = false) extends Module {
   val io = IO(new Bundle {
     val led0 = Output(Bool())
   })

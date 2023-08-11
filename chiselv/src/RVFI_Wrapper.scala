@@ -30,18 +30,18 @@ class RVFIPort extends Bundle {
 }
 
 class RVFICPUWrapper(
-  cpuFrequency:          Int = 50000000,
-  bitWidth:              Int = 32,
-  instructionMemorySize: Int = 64 * 1024,
-  dataMemorySize:        Int = 64 * 1024,
-) extends CPUSingleCycle(
-    cpuFrequency          = cpuFrequency,
-    entryPoint            = 0x0,
-    bitWidth              = bitWidth,
-    instructionMemorySize = instructionMemorySize,
-    dataMemorySize        = dataMemorySize,
-    numGPIO               = 0,
-  ) {
+    cpuFrequency:          Int = 50000000,
+    bitWidth:              Int = 32,
+    instructionMemorySize: Int = 64 * 1024,
+    dataMemorySize:        Int = 64 * 1024,
+  ) extends CPUSingleCycle(
+      cpuFrequency          = cpuFrequency,
+      entryPoint            = 0x0,
+      bitWidth              = bitWidth,
+      instructionMemorySize = instructionMemorySize,
+      dataMemorySize        = dataMemorySize,
+      numGPIO               = 0,
+    ) {
   val rvfi = IO(new RVFIPort) // RVFI interface for RISCV-Formal
 
   // RVFI Interface
@@ -104,8 +104,8 @@ class RVFICPUWrapper(
 
 // This is the Topmodule used in RISCV-Formal
 class RVFI(
-  bitWidth: Int = 32,
-) extends Module {
+    bitWidth: Int = 32
+  ) extends Module {
   val io = IO(new Bundle {
     val imem_addr  = Output(UInt(bitWidth.W))
     val imem_ready = Input(Bool())
@@ -121,7 +121,7 @@ class RVFI(
 
   // Instantiate the wrapped CPU with RVFI interface
   val CPU = Module(
-    new RVFICPUWrapper(bitWidth),
+    new RVFICPUWrapper(bitWidth)
   )
 
   // Initialize unused IO

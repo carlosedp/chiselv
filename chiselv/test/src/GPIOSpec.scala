@@ -8,27 +8,23 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-class GPIOWrapper(
-  bitWidth: Int = 32,
-  numGPIO:  Int = 8,
-) extends GPIO(bitWidth, numGPIO) {
+class GPIOWrapper(bitWidth: Int = 32, numGPIO: Int = 8) extends GPIO(bitWidth, numGPIO) {
   val obs_GPIO      = expose(GPIO)
   val obs_DIRECTION = expose(direction)
 }
 class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
   behavior of "GPIO"
 
-  def defaultDut(
-  ) =
+  def defaultDut =
     test(new GPIOWrapper(32, 8)).withAnnotations(
       Seq(
         WriteVcdAnnotation,
         VerilatorBackendAnnotation,
-      ),
+      )
     )
 
   it should "read GPIO when as 0 when initialized" in {
-    defaultDut() { c =>
+    defaultDut { c =>
       c.io.GPIOPort.valueOut.peekInt() should be(0)
       c.obs_GPIO.peekInt() should be(0)
       c.obs_DIRECTION.peekInt() should be(0)
@@ -36,7 +32,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
   }
 
   it should "write direction then read" in {
-    defaultDut() { c =>
+    defaultDut { c =>
       c.io.GPIOPort.writeDirection.poke(true)
       c.io.GPIOPort.dataIn.poke("10101010".b)
       c.clock.step()
@@ -46,7 +42,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
   }
 
   it should "write IO data then read" in {
-    defaultDut() { c =>
+    defaultDut { c =>
       c.io.GPIOPort.writeValue.poke(true)
       c.io.GPIOPort.dataIn.poke("11111111".b)
       c.clock.step()

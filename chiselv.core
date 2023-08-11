@@ -108,7 +108,7 @@ generate:
     generator: chisel
     parameters:
       <<: *baseparam
-      extraargs: "--board artya7-35t --cpufreq 25000000 --split-verilog"
+      extraargs: "--board artya7-35t --cpufreq 25000000 --invreset true --split-verilog"
 
   qmtech_k325t:
     generator: chisel

@@ -4,15 +4,15 @@ import chisel3._
 import chisel3.experimental.Analog
 
 class SOC(
-  cpuFrequency:          Int,
-  entryPoint:            Long,
-  bitWidth:              Int = 32,
-  instructionMemorySize: Int = 1 * 1024,
-  dataMemorySize:        Int = 1 * 1024,
-  memoryFile:            String = "",
-  ramFile:               String = "",
-  numGPIO:               Int = 8,
-) extends Module {
+    cpuFrequency:          Int,
+    entryPoint:            Long,
+    bitWidth:              Int = 32,
+    instructionMemorySize: Int = 1 * 1024,
+    dataMemorySize:        Int = 1 * 1024,
+    memoryFile:            String = "",
+    ramFile:               String = "",
+    numGPIO:               Int = 8,
+  ) extends Module {
   val io = IO(new Bundle {
     val led0            = Output(Bool())     // LED 0 is the heartbeat
     val GPIO0External   = Analog(numGPIO.W)  // GPIO external port
@@ -47,7 +47,7 @@ class SOC(
 
   // Instantiate our core
   val core = Module(
-    new CPUSingleCycle(cpuFrequency, entryPoint, bitWidth, instructionMemorySize, dataMemorySize, numGPIO),
+    new CPUSingleCycle(cpuFrequency, entryPoint, bitWidth, instructionMemorySize, dataMemorySize, numGPIO)
   )
 
   // Connect the core to the devices

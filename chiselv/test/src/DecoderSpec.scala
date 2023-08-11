@@ -293,26 +293,26 @@ class DecoderSpec extends AnyFlatSpec with ChiselScalatestTester with should.Mat
   // --------------------- Test Helpers ---------------------
 
   def makeBin(
-    in: String,
-  ): UInt = {
+      in: String
+    ): UInt = {
     val bin = RISCVAssembler.binOutput(in)
     ("b" + bin).U
   }
 
   def validateResult(
-    c:       Decoder,
-    inst:    Instruction.Type,
-    rd:      Int,
-    rs1:     Int,
-    rs2:     Int,
-    imm:     Int,
-    toALU:   Boolean = false,
-    branch:  Boolean = false,
-    use_imm: Boolean = false,
-    jump:    Boolean = false,
-    load:    Boolean = false,
-    store:   Boolean = false,
-  ) = {
+      c:       Decoder,
+      inst:    Instruction.Type,
+      rd:      Int,
+      rs1:     Int,
+      rs2:     Int,
+      imm:     Int,
+      toALU:   Boolean = false,
+      branch:  Boolean = false,
+      use_imm: Boolean = false,
+      jump:    Boolean = false,
+      load:    Boolean = false,
+      store:   Boolean = false,
+    ) = {
     c.io.DecoderPort.inst.expect(inst)
     c.io.DecoderPort.rd.peekInt() should be(rd)
     c.io.DecoderPort.rs1.peekInt() should be(rs1)

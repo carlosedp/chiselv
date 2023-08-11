@@ -7,10 +7,10 @@ import mainargs.{Leftover, ParserForMethods, arg, main}
 
 // Project Top level
 class Toplevel(
-  board:        String,
-  invReset:     Boolean = true,
-  cpuFrequency: Int,
-) extends Module {
+    board:        String,
+    invReset:     Boolean = true,
+    cpuFrequency: Int,
+  ) extends Module {
   val io = FlatIO(new Bundle {
     val led0  = Output(Bool())     // LED 0 is the heartbeat
     val UART0 = new UARTSerialPort // UART 0
@@ -41,7 +41,7 @@ class Toplevel(
           memoryFile            = "progload.mem",
           ramFile               = "progload-RAM.mem",
           numGPIO               = numGPIO,
-        ),
+        )
       )
 
     // Connect IO
@@ -55,12 +55,12 @@ class Toplevel(
 object Toplevel {
   @main
   def run(
-    // Parse command line arguments and extract required parameters
-    @arg(short = 'b', doc = "FPGA Board to use") board:                 String = "bypass",
-    @arg(short = 'r', doc = "FPGA Board have inverted reset") invreset: Boolean = false,
-    @arg(short = 'f', doc = "CPU Frequency to run core") cpufreq:       Int = 50000000,
-    @arg(short = 'c', doc = "Chisel arguments") chiselArgs:             Leftover[String],
-  ) =
+      // Parse command line arguments and extract required parameters
+      @arg(short = 'b', doc = "FPGA Board to use") board:                 String = "bypass",
+      @arg(short = 'r', doc = "FPGA Board have inverted reset") invreset: Boolean = false,
+      @arg(short = 'f', doc = "CPU Frequency to run core") cpufreq:       Int = 50000000,
+      @arg(short = 'c', doc = "Chisel arguments") chiselArgs:             Leftover[String],
+    ) =
     // Generate SystemVerilog
     ChiselStage.emitSystemVerilogFile(
       new Toplevel(board, invreset, cpufreq),
@@ -76,7 +76,6 @@ object Toplevel {
       ),
     )
 
-  def main(
-    args: Array[String],
-  ): Unit = ParserForMethods(this).runOrExit(args.toIndexedSeq)
+  def main(args: Array[String]): Unit =
+    ParserForMethods(this).runOrExit(args.toIndexedSeq)
 }

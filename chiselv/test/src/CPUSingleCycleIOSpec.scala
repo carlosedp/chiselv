@@ -9,17 +9,15 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class CPUSingleCycleIOWrapper(
-  memoryFile: String,
-) extends SOC(
-    cpuFrequency          = 25000000,
-    entryPoint            = 0,
-    bitWidth              = 32,
-    instructionMemorySize = 1 * 1024,
-    dataMemorySize        = 1 * 1024,
-    memoryFile            = memoryFile,
-    numGPIO               = 8,
-  ) {
+class CPUSingleCycleIOWrapper(memoryFile: String) extends SOC(
+      cpuFrequency          = 25000000,
+      entryPoint            = 0,
+      bitWidth              = 32,
+      instructionMemorySize = 1 * 1024,
+      dataMemorySize        = 1 * 1024,
+      memoryFile            = memoryFile,
+      numGPIO               = 8,
+    ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -33,29 +31,26 @@ class CPUSingleCycleIOWrapper(
 }
 
 class CPUSingleCycleIOSpec
-  extends AnyFlatSpec
-  with ChiselScalatestTester
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll
-  with should.Matchers {
+    extends AnyFlatSpec
+    with ChiselScalatestTester
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll
+    with should.Matchers {
   val cpuFrequency = 25000000
   val ms           = cpuFrequency / 1000
   var memoryfile: os.Path = _
   val tmpdir = os.pwd / "tmphex"
 
-  override def beforeAll(
-  ): Unit = os.makeDir.all(tmpdir)
-  override def afterAll(
-  ): Unit = scala.util.Try(os.remove(tmpdir))
-  override def beforeEach(
-  ): Unit =
+  override def beforeAll(): Unit =
+    os.makeDir.all(tmpdir)
+  override def afterAll(): Unit =
+    scala.util.Try(os.remove(tmpdir))
+  override def beforeEach(): Unit =
     memoryfile = tmpdir / (scala.util.Random.alphanumeric.filter(_.isLetter).take(15).mkString + ".hex")
-  override def afterEach(
-  ): Unit = os.remove.all(memoryfile)
+  override def afterEach(): Unit =
+    os.remove.all(memoryfile)
 
-  def defaultDut(
-    prog: String,
-  ) = {
+  def defaultDut(prog: String) = {
     val hex = RISCVAssembler.fromString(prog)
     os.write(memoryfile, hex)
     test(new CPUSingleCycleIOWrapper(memoryFile = memoryfile.toString))
@@ -63,7 +58,7 @@ class CPUSingleCycleIOSpec
         Seq(
           WriteVcdAnnotation,
           VerilatorBackendAnnotation, // GPIO needs Verilator backend
-        ),
+        )
       )
   }
 

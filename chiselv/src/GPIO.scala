@@ -4,9 +4,7 @@ import chisel3._
 import chisel3.experimental.Analog
 import chisel3.util.HasBlackBoxInline // For Analog type
 
-class GPIOPort(
-  bitWidth: Int = 32,
-) extends Bundle {
+class GPIOPort(bitWidth: Int = 32) extends Bundle {
   val dataIn         = Input(UInt(bitWidth.W))
   val valueOut       = Output(UInt(bitWidth.W))
   val directionOut   = Output(UInt(bitWidth.W))
@@ -15,10 +13,7 @@ class GPIOPort(
   val stall          = Output(Bool()) // >1 => Stall, 0 => Run
 }
 
-class GPIO(
-  bitWidth: Int = 32,
-  numGPIO:  Int = 8,
-) extends Module {
+class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   val io = IO(new Bundle {
     val GPIOPort     = new GPIOPort(bitWidth)
     val externalPort = Analog(numGPIO.W)
@@ -33,7 +28,7 @@ class GPIO(
   // Only instantiate GPIO external interface if needed
   // this avoids using Verilator backend on tests that don't need it
   if (numGPIO > 0) {
-    val InOut = Module(new GPIOInOut(numGPIO))
+    val InOut = Module(new GPIOInOut(bitWidth, numGPIO))
     io.GPIOPort.valueOut := InOut.io.dataOut
     InOut.io.dataIn      := GPIO
     InOut.io.dir         := direction
@@ -51,11 +46,7 @@ class GPIO(
   }
 }
 
-class GPIOInOut(
-  bitWidth: Int = 32,
-  numGPIO:  Int = 8,
-) extends BlackBox(Map("WIDTH" -> numGPIO))
-  with HasBlackBoxInline {
+class GPIOInOut(bitWidth: Int, numGPIO: Int) extends BlackBox with HasBlackBoxInline {
   val io = IO(new Bundle {
     val dataIn  = Input(UInt(bitWidth.W))
     val dataOut = Output(UInt(bitWidth.W))
@@ -67,7 +58,7 @@ class GPIOInOut(
     s"""// This module is inspired by Lucas Teske's Riscow digital port
        |// https://github.com/racerxdl/riskow/blob/main/devices/digital_port.v
        |//
-       |module GPIOInOut #(parameter WIDTH=1, NUMGPIO=8) (
+       |module GPIOInOut #(parameter WIDTH=$bitWidth, NUMGPIO=$numGPIO) (
        |  inout   [NUMGPIO-1:0] dataIO,
        |  input   [WIDTH-1:0] dataIn,
        |  output  [WIDTH-1:0] dataOut,

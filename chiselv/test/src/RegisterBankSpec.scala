@@ -40,7 +40,7 @@ class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with shoul
       val min_signed = 1 << 32 - 1
       val max_signed = (1 << 32 - 1) - 1
       val cases = Array[BigInt](1, 2, 4, 123, -1, -2, -4, 0, 0x7fffffffL, min_signed, max_signed) ++ Seq.fill(10)(
-        BigInt(Random.between(min_signed, max_signed)),
+        BigInt(Random.between(min_signed, max_signed))
       )
       Random.shuffle(1 to 31).foreach { i =>
         cases.foreach { v =>

@@ -6,13 +6,13 @@ import chisel3.util.{Cat, Fill, is, switch}
 import chiselv.Instruction._
 
 class CPUSingleCycle(
-  cpuFrequency:          Int,
-  entryPoint:            Long,
-  bitWidth:              Int = 32,
-  instructionMemorySize: Int = 1 * 1024,
-  dataMemorySize:        Int = 1 * 1024,
-  numGPIO:               Int = 8,
-) extends Module {
+    cpuFrequency:          Int,
+    entryPoint:            Long,
+    bitWidth:              Int = 32,
+    instructionMemorySize: Int = 1 * 1024,
+    dataMemorySize:        Int = 1 * 1024,
+    numGPIO:               Int = 8,
+  ) extends Module {
   val io = IO(new Bundle {
     val GPIO0External = Analog(numGPIO.W) // GPIO external port
 
@@ -84,7 +84,7 @@ class CPUSingleCycle(
   when(io.instructionMemPort.ready) {
     io.instructionMemPort.readAddr := PC.io.pcPort.PC
   }.otherwise(
-    io.instructionMemPort.readAddr := DontCare,
+    io.instructionMemPort.readAddr := DontCare
   )
 
   // Connect the instruction memory to the decoder

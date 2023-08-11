@@ -3,21 +3,19 @@ package chiselv
 import chisel3._
 import chisel3.util.{is, switch}
 
-class SysconPort(
-  val bitWidth: Int,
-) extends Bundle {
+class SysconPort(val bitWidth: Int) extends Bundle {
   val Address = Input(UInt(12.W))
   val DataOut = Output(UInt(bitWidth.W))
 }
 
 class Syscon(
-  bitWidth:  Int = 32,
-  clockFreq: Long,
-  numGPIO0:  Int,
-  bootAddr:  Long,
-  romSize:   Int,
-  ramSize:   Int,
-) extends Module {
+    bitWidth:  Int = 32,
+    clockFreq: Long,
+    numGPIO0:  Int,
+    bootAddr:  Long,
+    romSize:   Int,
+    ramSize:   Int,
+  ) extends Module {
   val io = IO(new Bundle {
     val SysconPort = new SysconPort(bitWidth)
   })

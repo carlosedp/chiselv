@@ -20,14 +20,9 @@ class UartSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
   val baudRate    = 115200
   val divider     = Math.round(1.0f * fpgaClock / (baudRate * rxOverclock) - 1)
 
-  def clockSerial(
-    clk: Clock,
-  ) = clk.step(fpgaClock / baudRate)
+  def clockSerial(clk: Clock) = clk.step(fpgaClock / baudRate)
 
-  private def rxOne(
-    u: Uart,
-    c: UInt,
-  ) = {
+  private def rxOne(u: Uart, c: UInt) = {
     /* Start bit */
     u.io.serialPort.rx.poke(0.U)
     clockSerial(u.clock)

@@ -4,10 +4,7 @@ import chisel3._
 import chisel3.util.experimental.loadMemoryFromFileInline
 import chisel3.util.log2Ceil
 
-class MemoryPortDual(
-  val bitWidth:    Int,
-  val addressSize: Long,
-) extends Bundle {
+class MemoryPortDual(val bitWidth: Int, val addressSize: Long) extends Bundle {
   val readAddress  = Input(UInt(log2Ceil(addressSize).W))
   val readData     = Output(UInt(bitWidth.W))
   val writeAddress = Input(UInt(log2Ceil(addressSize).W))
@@ -17,11 +14,11 @@ class MemoryPortDual(
   val writeEnable  = Input(Bool())
 }
 class DualPortRAM(
-  bitWidth:   Int = 32,
-  sizeBytes:  Long = 1,
-  memoryFile: String = "",
-  debugMsg:   Boolean = false,
-) extends Module {
+    bitWidth:   Int = 32,
+    sizeBytes:  Long = 1,
+    memoryFile: String = "",
+    debugMsg:   Boolean = false,
+  ) extends Module {
   val words = sizeBytes / bitWidth
   val io = IO(new Bundle {
     val dualPort = new MemoryPortDual(bitWidth, sizeBytes)

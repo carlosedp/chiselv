@@ -16,7 +16,7 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   val max_signed = (one << 32 - 1) - one
   val cases =
     Array[BigInt](1, 2, 4, 123, -1, -2, -4, 0, 0x7fffffffL, 0x80000000L, max, min_signed, max_signed) ++ Seq.fill(10)(
-      BigInt(scala.util.Random.nextInt()),
+      BigInt(scala.util.Random.nextInt())
     )
 
   behavior of "ALU"
@@ -65,10 +65,10 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   }
   // --------------------- Test Helpers ---------------------
   def aluHelper(
-    a:  BigInt,
-    b:  BigInt,
-    op: Type,
-  ): BigInt =
+      a:  BigInt,
+      b:  BigInt,
+      op: Type,
+    ): BigInt =
     op match {
       case ADD  => (a + b).to32Bit
       case SUB  => a - b
@@ -88,12 +88,12 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     }
 
   def testDut(
-    i:   BigInt,
-    j:   BigInt,
-    out: BigInt,
-    op:  Type,
-    dut: ALU,
-  ) = {
+      i:   BigInt,
+      j:   BigInt,
+      out: BigInt,
+      op:  Type,
+      dut: ALU,
+    ) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
     dut.io.ALUPort.inst.poke(op)
     dut.io.ALUPort.a.poke(i.to32Bit)
@@ -102,8 +102,8 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     dut.io.ALUPort.x.peekInt() should be(out)
   }
   def testCycle(
-    op: Type,
-  ) =
+      op: Type
+    ) =
     test(new ALU) { c =>
       cases.foreach { i =>
         cases.foreach { j =>
@@ -113,6 +113,6 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
     }
 
   def toUInt(
-    i: BigInt,
-  ) = i.to32Bit.asUInt(32.W)
+      i: BigInt
+    ) = i.to32Bit.asUInt(32.W)
 }

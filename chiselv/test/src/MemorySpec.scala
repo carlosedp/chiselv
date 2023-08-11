@@ -12,8 +12,8 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
   it should "write and read from address" in {
     test(new DualPortRAM(32, 1 * 1024)).withAnnotations(
       Seq(
-        WriteVcdAnnotation,
-      ),
+        WriteVcdAnnotation
+      )
     ) { c =>
       c.io.dualPort.writeEnable.poke(true)
       c.io.dualPort.writeAddress.poke(1)

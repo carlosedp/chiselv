@@ -8,17 +8,15 @@ import flatspec._
 import matchers._
 
 // Extend the Control module to add the observer for sub-module signals
-class CPUSingleCycleWrapperApps(
-  memoryFile: String,
-) extends SOC(
-    cpuFrequency          = 25000000,
-    entryPoint            = 0,
-    bitWidth              = 32,
-    instructionMemorySize = 1 * 1024,
-    dataMemorySize        = 1 * 1024,
-    memoryFile            = memoryFile,
-    numGPIO               = 0,
-  ) {
+class CPUSingleCycleWrapperApps(memoryFile: String) extends SOC(
+      cpuFrequency          = 25000000,
+      entryPoint            = 0,
+      bitWidth              = 32,
+      instructionMemorySize = 1 * 1024,
+      dataMemorySize        = 1 * 1024,
+      memoryFile            = memoryFile,
+      numGPIO               = 0,
+    ) {
   val registers    = expose(core.registerBank.regs)
   val pc           = expose(core.PC.pc)
   val memWriteAddr = expose(core.memoryIOManager.io.MemoryIOPort.writeAddr)
@@ -33,14 +31,12 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
   val writeLatency = 2
   val readLatency  = 1
 
-  def defaultDut(
-    memoryfile: String,
-  ) =
+  def defaultDut(memoryfile: String) =
     test(new CPUSingleCycleWrapperApps(memoryFile = memoryfile))
       .withAnnotations(
         Seq(
-          WriteVcdAnnotation,
-        ),
+          WriteVcdAnnotation
+        )
       )
 
   it should "load instructions from file to write to all registers with ADDI" in {
