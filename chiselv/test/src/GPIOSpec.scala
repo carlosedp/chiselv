@@ -23,7 +23,7 @@ class GPIOSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matche
       )
     )
 
-  it should "read GPIO when as 0 when initialized" in {
+  it should "read GPIO output and direction as 0 when initialized" in {
     defaultDut { c =>
       c.io.GPIOPort.valueOut.peekInt() should be(0)
       c.obs_GPIO.peekInt() should be(0)

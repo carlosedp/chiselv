@@ -82,9 +82,9 @@ class CPUSingleCycleIOSpec
       c.registers(3).peekInt() should be(0)
       c.registers(4).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x30001000)
+      c.registers(1).peekInt() should be(0x30001000L)
       c.clock.step(1) // addi
-      c.registers(5).peekInt() should be(0xffffffff)
+      c.registers(5).peekInt() should be(0xffffffffL)
       c.clock.step(1) // addi
       c.registers(3).peekInt() should be(1)
       c.clock.step(1) // addi
@@ -126,7 +126,7 @@ class CPUSingleCycleIOSpec
       c.registers(3).peekInt() should be(0)
       c.timerCounter.peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x30003000)
+      c.registers(1).peekInt() should be(0x30003000L)
       c.clock.step(1) // addi
       c.registers(2).peekInt() should be(2)
       // Check read from memory address 0x30003000L
@@ -161,7 +161,7 @@ class CPUSingleCycleIOSpec
       c.registers(3).peekInt() should be(0)
       c.timerCounter.peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x30003000)
+      c.registers(1).peekInt() should be(0x30003000L)
       c.clock.step(1) // addi
       c.registers(2).peekInt() should be(1)
       // Check read from memory address 0x30003000L

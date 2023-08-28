@@ -14,6 +14,10 @@ class GPIOPort(bitWidth: Int = 32) extends Bundle {
 }
 
 class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
+  require(
+    numGPIO <= bitWidth,
+    "Number of GPIOs must be less than or equal to the bitwidth, if needed, create another GPIO bank.",
+  )
   val io = IO(new Bundle {
     val GPIOPort     = new GPIOPort(bitWidth)
     val externalPort = Analog(numGPIO.W)
@@ -28,7 +32,7 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   // Only instantiate GPIO external interface if needed
   // this avoids using Verilator backend on tests that don't need it
   if (numGPIO > 0) {
-    val InOut = Module(new GPIOInOut(bitWidth, numGPIO))
+    val InOut = Module(new GPIOInOut(numGPIO))
     io.GPIOPort.valueOut := InOut.io.dataOut
     InOut.io.dataIn      := GPIO
     InOut.io.dir         := direction
@@ -46,11 +50,11 @@ class GPIO(bitWidth: Int = 32, numGPIO: Int = 8) extends Module {
   }
 }
 
-class GPIOInOut(bitWidth: Int, numGPIO: Int) extends BlackBox with HasBlackBoxInline {
+class GPIOInOut(numGPIO: Int) extends BlackBox with HasBlackBoxInline {
   val io = IO(new Bundle {
-    val dataIn  = Input(UInt(bitWidth.W))
-    val dataOut = Output(UInt(bitWidth.W))
-    val dir     = Input(UInt(bitWidth.W))
+    val dataIn  = Input(UInt(numGPIO.W))
+    val dataOut = Output(UInt(numGPIO.W))
+    val dir     = Input(UInt(numGPIO.W))
     val dataIO  = Analog(numGPIO.W)
   })
   setInline(
@@ -58,11 +62,11 @@ class GPIOInOut(bitWidth: Int, numGPIO: Int) extends BlackBox with HasBlackBoxIn
     s"""// This module is inspired by Lucas Teske's Riscow digital port
        |// https://github.com/racerxdl/riskow/blob/main/devices/digital_port.v
        |//
-       |module GPIOInOut #(parameter WIDTH=$bitWidth, NUMGPIO=$numGPIO) (
+       |module GPIOInOut #(parameter NUMGPIO=$numGPIO) (
        |  inout   [NUMGPIO-1:0] dataIO,
-       |  input   [WIDTH-1:0] dataIn,
-       |  output  [WIDTH-1:0] dataOut,
-       |  input   [WIDTH-1:0] dir);
+       |  input   [NUMGPIO-1:0] dataIn,
+       |  output  [NUMGPIO-1:0] dataOut,
+       |  input   [NUMGPIO-1:0] dir);
        |
        |  generate
        |    genvar idx;

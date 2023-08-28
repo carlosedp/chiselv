@@ -63,7 +63,7 @@ class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with
       c.clock.step(1) // addi
       c.registers(7).peekInt() should be(3)
       c.clock.step(1) // lui
-      c.registers(6).peekInt() should be(0x80000000)
+      c.registers(6).peekInt() should be(0x80000000L)
       c.clock.step(1) // or
       c.registers(4).peekInt() should be(7)
       c.clock.step(1) // and

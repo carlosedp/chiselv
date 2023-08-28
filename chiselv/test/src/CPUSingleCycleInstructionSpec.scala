@@ -142,9 +142,9 @@ class CPUSingleCycleInstructionSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).peekInt() should be(0x00000000)
+      c.registers(2).peekInt() should be(0x00000000L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0xc0000000)
+      c.registers(2).peekInt() should be(0xc0000000L)
     }
   }
 
@@ -155,11 +155,11 @@ class CPUSingleCycleInstructionSpec
     """
     defaultDut(prog) { c =>
       c.clock.setTimeout(0)
-      c.registers(2).peekInt() should be(0x00000000)
+      c.registers(2).peekInt() should be(0x00000000L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x01000000)
+      c.registers(2).peekInt() should be(0x01000000L)
       c.clock.step(1)
-      c.registers(3).peekInt() should be(0x01000004)
+      c.registers(3).peekInt() should be(0x01000004L)
     }
   }
 
@@ -174,9 +174,9 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000L)
       c.clock.step(1) // addi
-      c.registers(1).peekInt() should be(0x80000014)
+      c.registers(1).peekInt() should be(0x80000014L)
       c.clock.step(1) // addi
       c.registers(2).peekInt() should be(0x123)
       // Check memory address 0x14 with offset
@@ -207,13 +207,13 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000L)
       c.clock.step(1) // lui
-      c.registers(2).peekInt() should be(0x12345000)
+      c.registers(2).peekInt() should be(0x12345000L)
       c.clock.step(1) // addi
-      c.registers(2).peekInt() should be(0x12345678)
+      c.registers(2).peekInt() should be(0x12345678L)
       c.clock.step(1) // addi
-      c.registers(3).peekInt() should be(0xffffffff)
+      c.registers(3).peekInt() should be(0xffffffffL)
       // Check memory address offset 0x30
       c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
       c.memWriteData.peekInt() should be(0xffffffffL)
@@ -236,12 +236,12 @@ class CPUSingleCycleInstructionSpec
       c.memReadData.peekInt() should be(0xffff5678L)
       c.clock.step(1) // lw
       c.clock.step(1) // lw - stall
-      c.registers(4).peekInt() should be(0xffff5678)
+      c.registers(4).peekInt() should be(0xffff5678L)
       // Check memory address 0x34
       c.memReadAddr.peekInt() should be(0x80000000L + 0x34)
       c.memReadData.peekInt() should be(0x56785678L)
       c.clock.step(1) // lw
-      c.registers(5).peekInt() should be(0x56785678)
+      c.registers(5).peekInt() should be(0x56785678L)
       c.clock.step(10) // padding
     }
   }
@@ -263,13 +263,13 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0x80000000)
+      c.registers(1).peekInt() should be(0x80000000L)
       c.clock.step(1) // lui
-      c.registers(2).peekInt() should be(0x12345000)
+      c.registers(2).peekInt() should be(0x12345000L)
       c.clock.step(1) // addi
-      c.registers(2).peekInt() should be(0x12345678)
+      c.registers(2).peekInt() should be(0x12345678L)
       c.clock.step(1) // addi
-      c.registers(3).peekInt() should be(0xffffffff)
+      c.registers(3).peekInt() should be(0xffffffffL)
       // Check memory address offset 0x30
       c.memWriteAddr.peekInt() should be(0x80000000L + 0x30)
       c.memWriteData.peekInt() should be(0xffffffffL)
@@ -295,13 +295,13 @@ class CPUSingleCycleInstructionSpec
       c.clock.step(1) // lw
       c.memReadData.peekInt() should be(0x78ffff78L)
       c.clock.step(1) // lw
-      c.registers(4).peekInt() should be(0x78ffff78)
+      c.registers(4).peekInt() should be(0x78ffff78L)
       // Check memory address 0x34
       c.memReadAddr.peekInt() should be(0x80000000L + 0x34)
       c.clock.step(1) // lw
       c.memReadData.peekInt() should be(0x00780078L)
       c.clock.step(1) // lw
-      c.registers(5).peekInt() should be(0x00780078)
+      c.registers(5).peekInt() should be(0x00780078L)
       c.clock.step(10) // padding
     }
   }
@@ -317,11 +317,11 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1) // lui
-      c.registers(1).peekInt() should be(0xf0f0f000)
+      c.registers(1).peekInt() should be(0xf0f0f000L)
       c.clock.step(1) // addi
-      c.registers(1).peekInt() should be(0xf0f0f0f0)
+      c.registers(1).peekInt() should be(0xf0f0f0f0L)
       c.clock.step(1) // lui
-      c.registers(2).peekInt() should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000L)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peekInt() should be(0x80000000L)
       c.memWriteData.peekInt() should be(0xf0f0f0f0L)
@@ -331,7 +331,7 @@ class CPUSingleCycleInstructionSpec
       c.memReadData.peekInt() should be(0xf0f0f0f0L)
       c.clock.step(1 + memReadLatency) // lw
       // Check loaded data
-      c.registers(3).peekInt() should be(0xf0f0f0f0)
+      c.registers(3).peekInt() should be(0xf0f0f0f0L)
       c.clock.step(5) // Paddding
     }
   }
@@ -348,11 +348,11 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xffff1000)
+      c.registers(1).peekInt() should be(0xffff1000L)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xffff1234)
+      c.registers(1).peekInt() should be(0xffff1234L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000L)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peekInt() should be(0x80000000L)
       c.memWriteData.peekInt() should be(0xffff1234L)
@@ -362,12 +362,12 @@ class CPUSingleCycleInstructionSpec
       c.memReadData.peekInt() should be(0x00001234L)
       c.clock.step(1 + memReadLatency) // lh
       // Check loaded data
-      c.registers(3).peekInt() should be(0x00001234)
+      c.registers(3).peekInt() should be(0x00001234L)
       // Check memory read at address 0x80000002L
       c.memReadAddr.peekInt() should be(0x80000000L + 0x2)
       c.memReadData.peekInt() should be(0x0000ffffL)
       c.clock.step(1 + memReadLatency) // lh
-      c.registers(4).peekInt() should be(0xffffffff)
+      c.registers(4).peekInt() should be(0xffffffffL)
       c.clock.step(5) // Paddding
     }
   }
@@ -384,11 +384,11 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xffff1000)
+      c.registers(1).peekInt() should be(0xffff1000L)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xffff1234)
+      c.registers(1).peekInt() should be(0xffff1234L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000L)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peekInt() should be(0x80000000L)
       c.memWriteData.peekInt() should be(0xffff1234L)
@@ -398,12 +398,12 @@ class CPUSingleCycleInstructionSpec
       c.memReadData.peekInt() should be(0x00001234L)
       c.clock.step(1 + memReadLatency) // lh
       // Check loaded data
-      c.registers(3).peekInt() should be(0x00001234)
+      c.registers(3).peekInt() should be(0x00001234L)
       // Check memory read at address 0x80000002L
       c.memReadAddr.peekInt() should be(0x80000000L + 0x2)
       c.memReadData.peekInt() should be(0x0000ffffL)
       c.clock.step(1 + memReadLatency) // lh
-      c.registers(4).peekInt() should be(0x0000ffff)
+      c.registers(4).peekInt() should be(0x0000ffffL)
       c.clock.step(5) // Paddding
     }
   }
@@ -422,11 +422,11 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xabcde000)
+      c.registers(1).peekInt() should be(0xabcde000L)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xabcde123)
+      c.registers(1).peekInt() should be(0xabcde123L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000L)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peekInt() should be(0x80000000L)
       c.memWriteData.peekInt() should be(0xabcde123L)
@@ -435,22 +435,22 @@ class CPUSingleCycleInstructionSpec
       c.memReadAddr.peekInt() should be(0x80000000L)
       c.memReadData.peekInt() should be(0x23L)
       c.clock.step(1 + memReadLatency) // lb (offset 0)
-      c.registers(3).peekInt() should be(0x00000023)
+      c.registers(3).peekInt() should be(0x00000023L)
       // Check memory read at address 0x80000001L
       c.memReadAddr.peekInt() should be(0x80000001L)
       c.memReadData.peekInt() should be(0xe1L)
       c.clock.step(1 + memReadLatency) // lb (offset 1)
-      c.registers(4).peekInt() should be(0xffffffe1)
+      c.registers(4).peekInt() should be(0xffffffe1L)
       // Check memory read at address 0x80000002L
       c.memReadAddr.peekInt() should be(0x80000002L)
       c.memReadData.peekInt() should be(0xcdL)
       c.clock.step(1 + memReadLatency) // lb (offset 2)
-      c.registers(5).peekInt() should be(0xffffffcd)
+      c.registers(5).peekInt() should be(0xffffffcdL)
       // Check memory read at address 0x80000003L
       c.memReadAddr.peekInt() should be(0x80000003L)
       c.memReadData.peekInt() should be(0xabL)
       c.clock.step(1 + memReadLatency) // lb (offset 3)
-      c.registers(6).peekInt() should be(0xffffffab)
+      c.registers(6).peekInt() should be(0xffffffabL)
       // Check loaded data
       c.clock.step(5) // Paddding
     }
@@ -470,11 +470,11 @@ class CPUSingleCycleInstructionSpec
     defaultDut(prog) { c =>
       c.registers(1).peekInt() should be(0)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xabcde000)
+      c.registers(1).peekInt() should be(0xabcde000L)
       c.clock.step(1)
-      c.registers(1).peekInt() should be(0xabcde123)
+      c.registers(1).peekInt() should be(0xabcde123L)
       c.clock.step(1)
-      c.registers(2).peekInt() should be(0x80000000)
+      c.registers(2).peekInt() should be(0x80000000L)
       // Check memory write at address 0x80000000L
       c.memWriteAddr.peekInt() should be(0x80000000L)
       c.memWriteData.peekInt() should be(0xabcde123L)
@@ -483,22 +483,22 @@ class CPUSingleCycleInstructionSpec
       c.memReadAddr.peekInt() should be(0x80000000L)
       c.memReadData.peekInt() should be(0x23L)
       c.clock.step(1 + memReadLatency) // lb (offset 0)
-      c.registers(3).peekInt() should be(0x00000023)
+      c.registers(3).peekInt() should be(0x00000023L)
       // Check memory read at address 0x80000001L
       c.memReadAddr.peekInt() should be(0x80000001L)
       c.memReadData.peekInt() should be(0xe1L)
       c.clock.step(1 + memReadLatency) // lb (offset 1)
-      c.registers(4).peekInt() should be(0x000000e1)
+      c.registers(4).peekInt() should be(0x000000e1L)
       // Check memory read at address 0x80000002L
       c.memReadAddr.peekInt() should be(0x80000002L)
       c.memReadData.peekInt() should be(0xcdL)
       c.clock.step(1 + memReadLatency) // lb (offset 2)
-      c.registers(5).peekInt() should be(0x000000cd)
+      c.registers(5).peekInt() should be(0x000000cdL)
       // Check memory read at address 0x80000003L
       c.memReadAddr.peekInt() should be(0x80000003L)
       c.memReadData.peekInt() should be(0xabL)
       c.clock.step(1 + memReadLatency) // lb (offset 3)
-      c.registers(6).peekInt() should be(0x000000ab)
+      c.registers(6).peekInt() should be(0x000000abL)
       // Check loaded data
       c.clock.step(5) // Paddding
     }

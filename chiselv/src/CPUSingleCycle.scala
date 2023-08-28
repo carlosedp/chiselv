@@ -27,7 +27,7 @@ class CPUSingleCycle(
   // Instantiate and initialize the Register Bank
   val registerBank = Module(new RegisterBank(bitWidth))
   registerBank.io.regPort.writeEnable := false.B
-  registerBank.io.regPort.regwr_data  := 0.S
+  registerBank.io.regPort.regwr_data  := 0.U
   registerBank.io.regPort.stall       := stall
 
   // Instantiate and initialize the Program Counter
@@ -100,21 +100,21 @@ class CPUSingleCycle(
   // ALU Operations
   when(decoder.io.DecoderPort.toALU) {
     ALU.io.ALUPort.inst := decoder.io.DecoderPort.inst
-    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
+    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1
     ALU.io.ALUPort.b := Mux(
       decoder.io.DecoderPort.use_imm,
       decoder.io.DecoderPort.imm.asUInt,
-      registerBank.io.regPort.rs2.asUInt,
+      registerBank.io.regPort.rs2,
     )
 
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x.asSInt
+    registerBank.io.regPort.regwr_data  := ALU.io.ALUPort.x
   }
 
   // Branch Operations
   when(decoder.io.DecoderPort.branch) {
-    ALU.io.ALUPort.a := registerBank.io.regPort.rs1.asUInt
-    ALU.io.ALUPort.b := registerBank.io.regPort.rs2.asUInt
+    ALU.io.ALUPort.a := registerBank.io.regPort.rs1
+    ALU.io.ALUPort.b := registerBank.io.regPort.rs2
     switch(decoder.io.DecoderPort.inst) {
       is(BEQ)(ALU.io.ALUPort.inst  := EQ)
       is(BNE)(ALU.io.ALUPort.inst  := NEQ)
@@ -138,7 +138,7 @@ class CPUSingleCycle(
     ALU.io.ALUPort.inst                := ADD
     ALU.io.ALUPort.a                   := PC.io.pcPort.PC
     ALU.io.ALUPort.b                   := 4.U
-    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt
+    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x
 
     PC.io.pcPort.writeEnable := true.B
     when(decoder.io.DecoderPort.inst === JAL) {
@@ -149,7 +149,7 @@ class CPUSingleCycle(
     when(decoder.io.DecoderPort.inst === JALR) {
       // Set PC to jump address
       PC.io.pcPort.dataIn := Cat(
-        (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm).asUInt(31, 1),
+        (registerBank.io.regPort.rs1 + decoder.io.DecoderPort.imm.asUInt)(31, 1),
         0.U,
       )
     }
@@ -158,7 +158,7 @@ class CPUSingleCycle(
   // LUI
   when(decoder.io.DecoderPort.inst === LUI) {
     registerBank.io.regPort.writeEnable := true.B
-    registerBank.io.regPort.regwr_data  := decoder.io.DecoderPort.imm
+    registerBank.io.regPort.regwr_data  := decoder.io.DecoderPort.imm.asUInt
   }
 
   // AUIPC
@@ -168,14 +168,14 @@ class CPUSingleCycle(
     ALU.io.ALUPort.a                    := PC.io.pcPort.PC
     ALU.io.ALUPort.b :=
       decoder.io.DecoderPort.imm.asUInt
-    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x.asSInt
+    registerBank.io.regPort.regwr_data := ALU.io.ALUPort.x
   }
 
   // Loads & Stores
   when(decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store) {
     // Use the ALU to get the resulting address
     ALU.io.ALUPort.inst := ADD
-    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1.asUInt
+    ALU.io.ALUPort.a    := registerBank.io.regPort.rs1
     ALU.io.ALUPort.b    := decoder.io.DecoderPort.imm.asUInt
 
     memoryIOManager.io.MemoryIOPort.writeAddr := ALU.io.ALUPort.x
@@ -184,12 +184,12 @@ class CPUSingleCycle(
 
   when(decoder.io.DecoderPort.is_load) {
     val dataSize = WireDefault(0.U(2.W)) // Data size, 1 = byte, 2 = halfword, 3 = word
-    val dataOut  = WireDefault(0.S(32.W))
+    val dataOut  = WireDefault(0.U(32.W))
 
     // Load Word
     when(decoder.io.DecoderPort.inst === LW) {
       dataSize := 3.U
-      dataOut  := memoryIOManager.io.MemoryIOPort.readData.asSInt
+      dataOut  := memoryIOManager.io.MemoryIOPort.readData
     }
     // Load Halfword
     when(decoder.io.DecoderPort.inst === LH) {
@@ -197,12 +197,12 @@ class CPUSingleCycle(
       dataOut := Cat(
         Fill(16, memoryIOManager.io.MemoryIOPort.readData(15)),
         memoryIOManager.io.MemoryIOPort.readData(15, 0),
-      ).asSInt
+      )
     }
     // Load Halfword Unsigned
     when(decoder.io.DecoderPort.inst === LHU) {
       dataSize := 2.U
-      dataOut  := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0)).asSInt
+      dataOut  := Cat(Fill(16, 0.U), memoryIOManager.io.MemoryIOPort.readData(15, 0))
     }
     // Load Byte
     when(decoder.io.DecoderPort.inst === LB) {
@@ -210,12 +210,12 @@ class CPUSingleCycle(
       dataOut := Cat(
         Fill(24, memoryIOManager.io.MemoryIOPort.readData(7)),
         memoryIOManager.io.MemoryIOPort.readData(7, 0),
-      ).asSInt
+      )
     }
     // Load Byte Unsigned
     when(decoder.io.DecoderPort.inst === LBU) {
       dataSize := 1.U
-      dataOut  := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0)).asSInt
+      dataOut  := Cat(Fill(24, 0.U), memoryIOManager.io.MemoryIOPort.readData(7, 0))
     }
     memoryIOManager.io.MemoryIOPort.readRequest := decoder.io.DecoderPort.is_load
     memoryIOManager.io.MemoryIOPort.dataSize    := dataSize
@@ -233,17 +233,17 @@ class CPUSingleCycle(
 
     // Store Word
     when(decoder.io.DecoderPort.inst === SW) {
-      dataOut  := registerBank.io.regPort.rs2.asUInt
+      dataOut  := registerBank.io.regPort.rs2
       dataSize := 3.U
     }
     // Store Halfword
     when(decoder.io.DecoderPort.inst === SH) {
-      dataOut  := Cat(Fill(16, 0.U), registerBank.io.regPort.rs2(15, 0).asUInt)
+      dataOut  := Cat(Fill(16, 0.U), registerBank.io.regPort.rs2(15, 0))
       dataSize := 2.U
     }
     // Store Byte
     when(decoder.io.DecoderPort.inst === SB) {
-      dataOut  := Cat(Fill(24, 0.U), registerBank.io.regPort.rs2(7, 0).asUInt)
+      dataOut  := Cat(Fill(24, 0.U), registerBank.io.regPort.rs2(7, 0))
       dataSize := 1.U
     }
     memoryIOManager.io.MemoryIOPort.dataSize  := dataSize
