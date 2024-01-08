@@ -34,6 +34,7 @@ int main(void)
   header();
   // Print the banner
   printf(logocv);
+  printf("This demo prints back to the console all typed characters when hit <enter>.\n");
   printf("> ");
   char data[128];
   while (1)

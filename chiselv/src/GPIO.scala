@@ -59,28 +59,28 @@ class GPIOInOut(numGPIO: Int) extends BlackBox with HasBlackBoxInline {
   })
   setInline(
     "GPIOInOut.v",
-    s"""// This module is inspired by Lucas Teske's Riscow digital port
-       |// https://github.com/racerxdl/riskow/blob/main/devices/digital_port.v
-       |//
-       |module GPIOInOut #(parameter NUMGPIO=$numGPIO) (
-       |  inout   [NUMGPIO-1:0] dataIO,
-       |  input   [NUMGPIO-1:0] dataIn,
-       |  output  [NUMGPIO-1:0] dataOut,
-       |  input   [NUMGPIO-1:0] dir);
-       |
-       |  generate
-       |    genvar idx;
-       |    for(idx = 0; idx < NUMGPIO; idx = idx+1) begin: register
-       |      `ifdef SIMULATION
-       |      assign dataIO[idx] = dir[idx] ? dataIn[idx] : 1'b0;
-       |      `else
-       |      assign dataIO [idx]= dir[idx] ? dataIn[idx] : 1'bZ;
-       |      `endif
-       |     end
-       |  endgenerate
-       |  assign dataOut = dataIO;
-       |
-       |endmodule
-       |""".stripMargin,
+    s"""|// This module is inspired by Lucas Teske's Riscow digital port
+        |// https://github.com/racerxdl/riskow/blob/main/devices/digital_port.v
+        |//
+        |module GPIOInOut (
+        |  inout   [${numGPIO - 1}:0] dataIO,
+        |  input   [${numGPIO - 1}:0] dataIn,
+        |  output  [${numGPIO - 1}:0] dataOut,
+        |  input   [${numGPIO - 1}:0] dir);
+        |
+        |  generate
+        |    genvar idx;
+        |    for(idx = 0; idx < $numGPIO; idx = idx+1) begin: register
+        |      `ifdef SIMULATION
+        |      assign dataIO[idx] = dir[idx] ? dataIn[idx] : 1'b0;
+        |      `else
+        |      assign dataIO [idx]= dir[idx] ? dataIn[idx] : 1'bZ;
+        |      `endif
+        |     end
+        |  endgenerate
+        |  assign dataOut = dataIO;
+        |
+        |endmodule
+        |""".stripMargin,
   )
 }

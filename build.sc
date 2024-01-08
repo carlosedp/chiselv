@@ -6,12 +6,12 @@ import $ivy.`com.carlosedp::mill-aliases::0.4.1`
 import com.carlosedp.aliases._
 
 object versions {
-  val scala          = "2.13.10"
-  val chisel         = "5.0.0"
-  val chiseltest     = "5.0.1"
-  val scalatest      = "3.2.16"
+  val scala          = "2.13.12"
+  val chisel         = "5.1.0"
+  val chiseltest     = "5.0.2"
+  val scalatest      = "3.2.17"
   val riscvassembler = "1.9.1"
-  val mainargs       = "0.5.1"
+  val mainargs       = "0.5.4"
 }
 
 trait BaseProject extends ScalaModule with ScalafixModule with ScalafmtModule {

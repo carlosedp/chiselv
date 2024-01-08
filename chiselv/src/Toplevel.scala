@@ -73,6 +73,10 @@ object Toplevel {
         "--lower-memories",
         // Avoids "unexpected TOK_AUTOMATIC" errors in Yosys. Ref. https://github.com/llvm/circt/issues/4751
         "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+        // Splits the generated Verilog into multiple files
+        "--split-verilog",
+        // Generates the Verilog files in the specified directory
+        "-o=./generated",
       ),
     )
 
