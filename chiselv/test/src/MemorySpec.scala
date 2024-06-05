@@ -7,7 +7,6 @@ import flatspec._
 import matchers._
 
 class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "DataMemory"
 
   it should "write and read from address" in {
     test(new DualPortRAM(32, 1 * 1024)).withAnnotations(

@@ -12,7 +12,6 @@ class TimerWrapper(bitWidth: Int = 32, cpuFrequency: Int) extends Timer(bitWidth
   val obs_counter = expose(counter)
 }
 class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "Timer"
 
   val cpuFrequency = 25000000
   def defaultDut =

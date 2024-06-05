@@ -7,7 +7,6 @@ import flatspec._
 import matchers._
 
 class ProgramCounterSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "ProgramCounter"
 
   it should "initialize to 0" in {
     test(new ProgramCounter) { c =>

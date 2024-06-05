@@ -19,8 +19,6 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       BigInt(scala.util.Random.nextInt())
     )
 
-  behavior of "ALU"
-
   it should "ADD" in {
     testCycle(ADD)
   }

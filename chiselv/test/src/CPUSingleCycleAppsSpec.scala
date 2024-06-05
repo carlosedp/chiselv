@@ -26,8 +26,6 @@ class CPUSingleCycleWrapperApps(memoryFile: String) extends SOC(
 }
 
 class CPUSingleCycleAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "CPUSingleCycleApps"
-
   val writeLatency = 2
   val readLatency  = 1
 

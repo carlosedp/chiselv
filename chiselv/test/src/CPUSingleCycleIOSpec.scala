@@ -62,8 +62,6 @@ class CPUSingleCycleIOSpec
       )
   }
 
-  behavior of "GPIO"
-
   it should "write to GPIO0" in {
     val prog = """
     lui x1, 0x30001

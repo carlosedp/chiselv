@@ -13,8 +13,6 @@ import matchers._
  */
 
 class UartSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "Uart"
-
   val rxOverclock = 16
   val fpgaClock   = 15000000
   val baudRate    = 115200

@@ -32,8 +32,6 @@ class SOCWrapperDemo(
 }
 
 class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "CPUSOCDemoSpec"
-
   val cpuFrequency          = 10000
   val bitWidth              = 32
   val instructionMemorySize = 64 * 1024
@@ -62,6 +60,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
         )
       )
 
+  behavior of "GPIODemo"
   it should "lit a LED connected to GPIO from gcc program" in {
     val filename = "./gcc/simpleLED/main.mem"
     defaultDut(filename) { c =>
@@ -80,7 +79,7 @@ class CPUDemoAppsSpec extends AnyFlatSpec with ChiselScalatestTester with should
     }
   }
 
-  behavior of "UARTHello"
+  behavior of "UARTDemo"
   it should "print to UART0 from gcc program" in {
     val filename     = "./gcc/helloUART/main-rom.mem"
     val filename_ram = "./gcc/helloUART/main-ram.mem"

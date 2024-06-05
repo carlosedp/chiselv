@@ -9,7 +9,6 @@ import flatspec._
 import matchers._
 
 class RegisterBankSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matchers {
-  behavior of "RegisterBank"
 
   it should "have x0 equal to 0" in {
     test(new RegisterBank) { c =>

@@ -58,8 +58,6 @@ class CPUSingleCycleInstructionSpec
       )
   }
 
-  behavior of "CPUSingleCycleInstruction"
-
   it should "validate ADD/ADDI instructions" in {
     val prog = """
     addi x1, x1, 1
