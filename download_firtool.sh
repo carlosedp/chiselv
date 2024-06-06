@@ -2,7 +2,8 @@
 
 # Check latest Firtool version
 
-FIRTOOL_VERSION=$(curl -sL https://api.github.com/repos/llvm/circt/releases/latest | grep tag_name | cut -d '"' -f 4)
+# FIRTOOL_VERSION=$(curl -sL https://api.github.com/repos/llvm/circt/releases/latest | grep tag_name | cut -d '"' -f 4)
+FIRTOOL_VERSION=firtool-1.75.0
 
 OS=$(uname -s)
 
