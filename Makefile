@@ -1,8 +1,7 @@
 # Source and target files/directories
 project = chiselv
 scala_files = $(wildcard $(project)/src/*.scala) $(wildcard $(project)/resources/*.scala) $(wildcard $(project)/test/src/*.scala)
-generated_files = generated
-rvfi_files = generated_rvfi
+generated_files = generated/$(wildcard *.sv) $(wildcard *.v)
 export PATH := $(PWD):$(PATH)
 
 # Toolchains and tools
@@ -25,17 +24,16 @@ PLLFREQ ?= 50000000
 BOARDPARAMS=--board ${BOARD} --cpufreq ${PLLFREQ}
 # Check if generating for a different board/pll
 $(if $(findstring $(shell cat .genboard 2>/dev/null),$(BOARDPARAMS)),,$(shell echo ${BOARDPARAMS} > .genboard))
-# CHISELPARAMS = --target:fpga --emission-options=disableMemRandomization,disableRegisterRandomization
-CHISELPARAMS = --split-verilog --target-dir $(generated_files)
+CHISELPARAMS = --target-dir generated --split-verilog
 
 # Targets
 all: chisel gcc
 
 chisel: $(generated_files) ## Generates Verilog code from Chisel sources (output to ./generated)
 $(generated_files): $(scala_files) build.sc Makefile .genboard firtool
-	@rm -rf $@
 	@test "$(BOARD)" != "bypass" || (printf "Generating design with bypass PLL (for simulation). If required, set BOARD and PLLFREQ variables to one of the supported boards: " ; test -f chiselv.core && cat chiselv.core|grep "\-board"|cut -d '-' -f 3 | grep -v bypass | sed s/board\ //g |tr -s ' \n' ','| sed 's/,$$/\n/'; echo "Eg. make chisel BOARD=ulx3s PLLFREQ=15000000"; echo)
 	$(MILL) $(project).run $(BOARDPARAMS) $(CHISELPARAMS)
+	@echo "Generated files in $(generated_files)"
 
 firtool:
 	@./download_firtool.sh
@@ -43,20 +41,19 @@ firtool:
 check: test
 .PHONY: test
 test:## Run Chisel tests
-	$(MILL) $(project).test
+	$(MILL) Alias/run test
 
 .PHONY: lint
 lint: ## Formats code using scalafmt and scalafix
-	$(MILL) lint
+	$(MILL) Alias/run lint
 
 .PHONY: deps
 deps: ## Check for library version updates
-	$(MILL) deps
+	$(MILL) Alias/run deps
 
 rvfi: $(rvfi_files) ## Generates Verilog code for RISC-V Formal tests
 $(rvfi_files):  $(scala_files) build.sc Makefile
-	@rm -rf $@
-	$(MILL) $(project)_rvfi.run -td $@ $(CHISELPARAMS)
+	$(MILL) $(project)_rvfi.run $(CHISELPARAMS)
 
 # This section defines the Verilator simulation and demo application to be used
 # Below, I use -DENABLE_INITIAL_MEM_ to enable initial memory load on firtool from progload.mem and progload-RAM.mem

@@ -6,12 +6,12 @@ import $ivy.`com.carlosedp::mill-aliases::0.4.1`
 import com.carlosedp.aliases._
 
 object versions {
-  val scala          = "2.13.12"
-  val chisel         = "5.1.0"
-  val chiseltest     = "5.0.2"
-  val scalatest      = "3.2.17"
+  val scala          = "2.13.14"
+  val chisel         = "6.4.0"
+  val chiseltest     = "6.0.0"
+  val scalatest      = "3.2.18"
   val riscvassembler = "1.9.1"
-  val mainargs       = "0.5.4"
+  val mainargs       = "0.7.0"
 }
 
 trait BaseProject extends ScalaModule with ScalafixModule with ScalafmtModule {
@@ -64,5 +64,5 @@ object MyAliases extends Aliases {
   def fmt      = alias("mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources")
   def checkfmt = alias("mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources")
   def deps     = alias("mill.scalalib.Dependency/showUpdates")
-  def testall  = alias("__.test")
+  def test     = alias("__.test")
 }

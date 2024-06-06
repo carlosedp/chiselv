@@ -3,6 +3,7 @@ package chiselv
 import chisel3._
 import chisel3.util.{is, switch}
 import circt.stage.ChiselStage
+import mainargs.{Leftover, ParserForMethods, arg, main}
 
 // Chisel Bundle implementation of RISC-V Formal Interface (RVFI)
 class RVFIPort extends Bundle {
@@ -15,11 +16,11 @@ class RVFIPort extends Bundle {
   val ixl       = Output(UInt(2.W))
   val mode      = Output(UInt(2.W))
   val rs1_addr  = Output(UInt(5.W))
-  val rs1_rdata = Output(SInt(32.W))
+  val rs1_rdata = Output(UInt(32.W))
   val rs2_addr  = Output(UInt(5.W))
-  val rs2_rdata = Output(SInt(32.W))
+  val rs2_rdata = Output(UInt(32.W))
   val rd_addr   = Output(UInt(5.W))
-  val rd_wdata  = Output(SInt(32.W))
+  val rd_wdata  = Output(UInt(32.W))
   val pc_rdata  = Output(UInt(32.W))
   val pc_wdata  = Output(UInt(32.W))
   val mem_addr  = Output(UInt(32.W))
@@ -151,12 +152,29 @@ class RVFI(
   CPU.io.dataMemPort.readData := io.dmem_rdata
 }
 
-object RVFI extends App {
-  // Generate Verilog
+object RVFI {
+  @main
+  def run(@arg(short = 'c', doc = "Chisel arguments") chiselArgs: Leftover[String]) =
+    // Generate SystemVerilog
+    ChiselStage.emitSystemVerilogFile(
+      new RVFI,
+      chiselArgs.value.toArray,
+      Array(
+        // Removes debug information from the generated Verilog
+        "--strip-debug-info",
+        // Disables reg and memory randomization on initialization
+        "--disable-all-randomization",
+        // Creates memories with write masks in a single reg. Ref. https://github.com/llvm/circt/pull/4275
+        "--lower-memories",
+        // Avoids "unexpected TOK_AUTOMATIC" errors in Yosys. Ref. https://github.com/llvm/circt/issues/4751
+        "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+        // Splits the generated Verilog into multiple files
+        // "--split-verilog",
+        // Generates the Verilog files in the specified directory
+        "-o=./generated/Toplevel_RVFI.sv",
+      ),
+    )
 
-  ChiselStage.emitSystemVerilogFile(
-    new RVFI,
-    args,
-    Array("--disable-all-randomization", "--strip-debug-info", "-lower-memories"),
-  )
+  def main(args: Array[String]): Unit =
+    ParserForMethods(this).runOrExit(args.toIndexedSeq)
 }
