@@ -64,14 +64,18 @@ The standard build process uses locally installed tools like Java (for Chisel ge
 
 ### Fusesoc build and generation
 
-<details>
-  <summary>Installing FuseSOC</summary>
-
-To install Fusesoc (requires Python3 and pip3):
+To install Fusesoc (requires Python3 and pip):
 
 ```sh
-pip3 install --upgrade --user fusesoc
+pip install --upgrade fusesoc
 ```
+
+**Workaround that allows building for Xilinx A7 FPGAs with open-source tooling**
+
+> After installing fusesoc, replace Edalize (one of it's components) with the one from my repository which contains a workaround that allows passing defines to Yosys, the synthesis tool
+> `pip uninstall edalize`
+> `pip install pip install git+https://github.com/carlosedp/edalize.git@symbiflow_defines`
+> This happens because a recent change in Chisel/Firtool required the `ENABLE_INITIAL_MEM_=True` define to initialize the memories with code from a file (readmemh).
 
 Check if it's working:
 
@@ -82,11 +86,7 @@ $ fusesoc --version
 
 If the terminal reports an error about the command not being found check that the directory `~/.local/bin` is in your command search path (`export PATH=~/.local/bin:$PATH`).
 
-</details>
-
 Fusesoc allows multiple boards from different vendors to be supported by the project. It uses chisel-generator to generate Verilog from Scala sources and calls the correct board EDA backend to create it's project files.
-
-Make sure you have all requirements listed in the section above installed.
 
 For example, to generate the programming files for the **ULX3s** board based on Lattice ECP5:
 
@@ -98,7 +98,7 @@ fusesoc library add chiselv https://github.com/carlosedp/chiselv
 fusesoc library add fg https://github.com/fusesoc/fusesoc-generators
 
 # Download the command wrapper
-wget https://gist.github.com/carlosedp/c0e29d55e48309a48961f2e3939acfe9/raw/bfeb1cfe2e188c1d5ced0b09aabc9902fdfda6aa/runme.py
+wget https://gist.github.com/carlosedp/c0e29d55e48309a48961f2e3939acfe9/raw/463951d3c826c8c9ffdb0173d52a74968d0ae6f7/runme.py
 chmod +x runme.py
 
 # Run fusesoc with the wrapper as an environment var
