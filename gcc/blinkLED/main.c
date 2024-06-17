@@ -1,4 +1,4 @@
-#include "../lib/io.h"
+#include "io.h"
 
 int main()
 {

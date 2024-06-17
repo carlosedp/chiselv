@@ -8,8 +8,9 @@ HEXDATA       := $(SOURCES:%.c=%.hex)
 MEMDATA       := $(SOURCES:%.c=%.mem)
 ASM           := $(SOURCES:%.c=%.s)
 
+DOCKERORPODMAN = $(shell command -v podman 2> /dev/null || echo docker)
 DOCKERARGS = run --rm -v $(PWD):/src -w /src
-DOCKERIMG  = docker $(DOCKERARGS) carlosedp/crossbuild-riscv64
+DOCKERIMG  = $(DOCKERORPODMAN) $(DOCKERARGS) carlosedp/crossbuild-riscv64
 
 CFLAGS=-mabi=ilp32 -march=rv32i -Os
 LDFLAGS=-T riscv.ld -m elf32lriscv -O binary -Map=main.map

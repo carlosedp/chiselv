@@ -11,110 +11,51 @@ Linker script and memory map
                 0x0000000000002000                __heap_size = 0x2000
                 0x0000000000008000                __stack_size = 0x8000
 
-.text           0x0000000000000000      0x924
+.text           0x0000000000000000      0x184
  *(.boot)
  .boot          0x0000000000000000       0x94 ../lib/crt.s.o
                 0x0000000000000000                _boot
  *(.text)
- .text          0x0000000000000094        0x0 ./main.o
- .text          0x0000000000000094       0xf0 ../lib/io.o
-                0x0000000000000094                pinMode
-                0x00000000000000c4                digitalRead
-                0x00000000000000e0                digitalWrite
-                0x0000000000000110                getTimer
-                0x000000000000011c                resetTimer
-                0x0000000000000128                sleep
-                0x0000000000000148                setDirection
-                0x0000000000000154                readDirection
-                0x0000000000000160                setGPIO
-                0x000000000000016c                readGPIO
-                0x0000000000000178                setTimer
- .text          0x0000000000000184      0x688 ../lib/stdio.o
-                0x0000000000000184                gets
-                0x000000000000025c                putstr
-                0x000000000000029c                puts
-                0x00000000000002b8                putdx
-                0x00000000000003b0                putx
-                0x00000000000003b8                putd
-                0x00000000000003c0                printf
-                0x00000000000004bc                strncmp
-                0x00000000000004f0                strcmp
-                0x00000000000004f8                strlen
-                0x0000000000000518                memcpy
-                0x000000000000053c                memset
-                0x0000000000000558                strtok
-                0x00000000000005f8                atoi
-                0x000000000000064c                xtoi
-                0x000000000000068c                __umulsi3
-                0x00000000000006c0                __mulsi3
-                0x0000000000000710                __udiv_umod_si3
-                0x0000000000000768                __udivsi3
-                0x0000000000000770                __umodsi3
-                0x0000000000000778                __div_mod_si3
-                0x00000000000007fc                __divsi3
-                0x0000000000000804                __modsi3
- .text          0x000000000000080c      0x118 ../lib/uart.o
-                0x000000000000080c                uart_reg_read
-                0x000000000000081c                uart_reg_write
-                0x000000000000082c                uart_rx_empty
-                0x000000000000083c                uart_tx_full
-                0x0000000000000850                uart_read
-                0x0000000000000860                uart_write
-                0x000000000000086c                uart_divisor
-                0x000000000000088c                uart_init
-                0x00000000000008bc                getchar
-                0x00000000000008d8                putchar
- .text          0x0000000000000924        0x0 ../lib/crt.s.o
+ .text          0x0000000000000094       0xf0 ./main.o
+                0x0000000000000094                setDirection
+                0x00000000000000a0                readDirection
+                0x00000000000000ac                setGPIO
+                0x00000000000000b8                readGPIO
+                0x00000000000000c4                setTimer
+                0x00000000000000d0                pinMode
+                0x0000000000000100                digitalRead
+                0x000000000000011c                digitalWrite
+                0x000000000000014c                getTimer
+                0x0000000000000158                resetTimer
+                0x0000000000000164                sleep
+ .text          0x0000000000000184        0x0 ../lib/crt.s.o
 
-.text.startup   0x0000000000000924       0xf0
- .text.startup  0x0000000000000924       0xf0 ./main.o
-                0x0000000000000924                main
+.text.startup   0x0000000000000184       0xf8
+ .text.startup  0x0000000000000184       0xf8 ./main.o
+                0x0000000000000184                main
 
-.data           0x0000000080000000       0x60
+.data           0x0000000080000000        0x0
  *(.rodata*)
- .rodata.str1.4
-                0x0000000080000000       0x19 ../lib/stdio.o
- *fill*         0x0000000080000019        0x3 
- .rodata        0x000000008000001c       0x40 ../lib/stdio.o
  *(.*data*)
- .data          0x000000008000005c        0x0 ./main.o
- .data          0x000000008000005c        0x0 ../lib/io.o
- .data          0x000000008000005c        0x0 ../lib/stdio.o
- .data          0x000000008000005c        0x0 ../lib/uart.o
- .data          0x000000008000005c        0x0 ../lib/crt.s.o
+ .data          0x0000000080000000        0x0 ./main.o
+ .data          0x0000000080000000        0x0 ../lib/crt.s.o
  *(.sbss)
- .sbss          0x000000008000005c        0x4 ../lib/stdio.o
  *(.bss)
- .bss           0x0000000080000060        0x0 ./main.o
- .bss           0x0000000080000060        0x0 ../lib/io.o
- .bss           0x0000000080000060        0x0 ../lib/stdio.o
- .bss           0x0000000080000060        0x0 ../lib/uart.o
- .bss           0x0000000080000060        0x0 ../lib/crt.s.o
+ .bss           0x0000000080000000        0x0 ./main.o
+ .bss           0x0000000080000000        0x0 ../lib/crt.s.o
  *(.rela*)
  *(COMMON)
-                0x0000000080000060                _heap = .
+                0x0000000080000000                _heap = .
                 0x0000000080010000                PROVIDE (_sstack = (ORIGIN (RAM) + LENGTH (RAM)))
 LOAD ./main.o
-LOAD ../lib/io.o
-LOAD ../lib/stdio.o
-LOAD ../lib/uart.o
 LOAD ../lib/crt.s.o
 OUTPUT(main.elf elf32-littleriscv)
 
 .comment        0x0000000000000000       0x2c
  .comment       0x0000000000000000       0x2c ./main.o
                                          0x2d (size before relaxing)
- .comment       0x000000000000002c       0x2d ../lib/io.o
- .comment       0x000000000000002c       0x2d ../lib/stdio.o
- .comment       0x000000000000002c       0x2d ../lib/uart.o
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
                 0x0000000000000000        0x0 ./main.o
- .note.GNU-stack
-                0x0000000000000000        0x0 ../lib/io.o
- .note.GNU-stack
-                0x0000000000000000        0x0 ../lib/stdio.o
- .note.GNU-stack
-                0x0000000000000000        0x0 ../lib/uart.o

@@ -4,17 +4,16 @@ OBJECTS       := $(SOURCES:%.c=%.o)
 ASM_OBJECTS   := $(ASM_SOURCES:%.s=%.s.o)
 ASM           := $(SOURCES:%.c=%.s)
 
-
+DOCKERORPODMAN = $(shell command -v podman 2> /dev/null || echo docker)
 USEDOCKER = 1
 CURDIR = $(shell pwd)
 DOCKERARGS = run --rm -v $(PWD)/..:/src -w /src/$(shell basename $(CURDIR))
-DOCKERIMG  = docker $(DOCKERARGS) docker.io/carlosedp/crossbuild-riscv64:latest
+DOCKERIMG  = $(DOCKERORPODMAN) $(DOCKERARGS) docker.io/carlosedp/crossbuild-riscv64:latest
 
-CFLAGS=-Wall -mabi=ilp32 -march=rv32i -ffreestanding -fcommon -Os
+CFLAGS=-Wall -mabi=ilp32 -march=rv32i -ffreestanding -fcommon -Os -I../lib
 LDFLAGS=-T ../lib/riscv.ld -m elf32lriscv -O binary -Map=main.map
 
-# PREFIX=riscv64-linux-
-PREFIX=riscv64-linux
+PREFIX=riscv64-linux-gnu
 
 ifeq ($(USEDOCKER), 1)
 	OC=$(DOCKERIMG) $(PREFIX)-objcopy
@@ -50,19 +49,13 @@ main.dump: main.elf
 	@$(OD) -d -t -r $< > $@
 
 main.hex: main.elf
-	@echo "Building $@ for http://tice.sea.eseo.fr/riscv/"
-	@echo "Building $< -> $@"
+	@echo "Building $< -> $@ for http://tice.sea.eseo.fr/riscv/"
 	@$(OC) -O ihex $< $@ --only-section .text\*
 
-main-rom.mem: main.elf  ## Readmemh 32bit memory file
+main-%.mem: main.elf  ## Readmemh 32bit memory files (rom or ram)
 	@echo "Building $< -> $@"
-	@$(OC) -O binary $< $(@:%-rom.mem=%.bin) --only-section .text*
-	@$(HD) -ve '1/4 "%08x\n"' $(@:%-rom.mem=%.bin) > $@
-
-main-ram.mem: main.elf  ## Readmemh 32bit memory file
-	@echo "Building $< -> $@"
-	@$(OC) -O binary $< $(@:%-ram.mem=%.bin) --only-section .*data*
-	@$(HD) -ve '1/4 "%08x\n"' $(@:%-ram.mem=%.bin) > $@
+	$(OC) -O binary $< $(@:main-%.mem=main-%.bin) --only-section $(if $(filter %rom.mem,$@),.text*,.*data*)
+	$(HD) -ve '1/4 "%08x\n"' $(@:main-%.mem=main-%.bin) > $@
 
 %.s: %.c
 	@echo "Building $< -> $@"
