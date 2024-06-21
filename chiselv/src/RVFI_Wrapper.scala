@@ -69,32 +69,32 @@ class RVFICPUWrapper(
   }
   rvfi.valid := rvfi_valid
   rvfi.order := rvfi_order
-  rvfi.insn  := decoder.io.DecoderPort.op
+  rvfi.insn  := decoder.io.op
 
-  rvfi.rs1_addr  := registerBank.io.regPort.rs1_addr
-  rvfi.rs1_rdata := registerBank.io.regPort.rs1
-  rvfi.rs2_addr  := registerBank.io.regPort.rs2_addr
-  rvfi.rs2_rdata := registerBank.io.regPort.rs2
-  rvfi.rd_addr   := registerBank.io.regPort.regwr_addr
-  rvfi.rd_wdata  := registerBank.io.regPort.regwr_data
+  rvfi.rs1_addr  := registerBank.io.rs1_addr
+  rvfi.rs1_rdata := registerBank.io.rs1
+  rvfi.rs2_addr  := registerBank.io.rs2_addr
+  rvfi.rs2_rdata := registerBank.io.rs2
+  rvfi.rd_addr   := registerBank.io.regwr_addr
+  rvfi.rd_wdata  := registerBank.io.regwr_data
 
-  rvfi.pc_rdata := PC.io.pcPort.PC
+  rvfi.pc_rdata := PC.io.PC
   rvfi.pc_wdata := Mux(
-    PC.io.pcPort.writeAdd,
-    (PC.io.pcPort.PC.asSInt + PC.io.pcPort.dataIn.asSInt).asUInt,
-    PC.io.pcPort.PC4,
+    PC.io.writeAdd,
+    (PC.io.PC.asSInt + PC.io.dataIn.asSInt).asUInt,
+    PC.io.PC4,
   )
 
-  rvfi.mem_addr  := Mux(decoder.io.DecoderPort.is_load || decoder.io.DecoderPort.is_store, ALU.io.ALUPort.x, 0.U)
-  rvfi.mem_rdata := Mux(decoder.io.DecoderPort.is_load, memoryIOManager.io.DataMemPort.readData, 0.U)
-  rvfi.mem_rmask := Mux(decoder.io.DecoderPort.is_load, rvfi_mem_size_mask, 0.U)
+  rvfi.mem_addr  := Mux(decoder.io.is_load || decoder.io.is_store, ALU.io.x, 0.U)
+  rvfi.mem_rdata := Mux(decoder.io.is_load, memoryIOManager.io.DataMemPort.readData, 0.U)
+  rvfi.mem_rmask := Mux(decoder.io.is_load, rvfi_mem_size_mask, 0.U)
 
-  rvfi.mem_wdata := Mux(decoder.io.DecoderPort.is_store, memoryIOManager.io.DataMemPort.writeData, 0.U)
-  rvfi.mem_wmask := Mux(decoder.io.DecoderPort.is_store, rvfi_mem_size_mask, 0.U)
+  rvfi.mem_wdata := Mux(decoder.io.is_store, memoryIOManager.io.DataMemPort.writeData, 0.U)
+  rvfi.mem_wmask := Mux(decoder.io.is_store, rvfi_mem_size_mask, 0.U)
 
   rvfi.mode := rvfi_mode
   rvfi.trap := false.B
-  when(decoder.io.DecoderPort.inst === Instruction.ERR_INST) {
+  when(decoder.io.inst === Instruction.ERR_INST) {
     rvfi.trap := true.B
   }
 

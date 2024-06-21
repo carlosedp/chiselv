@@ -25,10 +25,10 @@ class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Match
   it should "read timer after 1ms" in {
     defaultDut { c =>
       c.clock.setTimeout(0)
-      c.io.timerPort.dataOut.peekInt() should be(0)
+      c.io.dataOut.peekInt() should be(0)
       c.obs_counter.peekInt() should be(0)
       c.clock.step(ms)
-      c.io.timerPort.dataOut.peekInt() should be(1)
+      c.io.dataOut.peekInt() should be(1)
       c.obs_counter.peekInt() should be(1)
     }
   }
@@ -37,15 +37,15 @@ class TimerSpec extends AnyFlatSpec with ChiselScalatestTester with should.Match
       c.clock.setTimeout(0)
       c.clock.step(3 * ms)
       c.obs_counter.peekInt() should be(3)
-      c.io.timerPort.dataOut.peekInt() should be(3)
-      c.io.timerPort.writeEnable.poke(true)
-      c.io.timerPort.dataIn.poke(0)
+      c.io.dataOut.peekInt() should be(3)
+      c.io.writeEnable.poke(true)
+      c.io.dataIn.poke(0)
       c.clock.step()
-      c.io.timerPort.writeEnable.poke(false)
+      c.io.writeEnable.poke(false)
       c.obs_counter.peekInt() should be(0)
       c.obs_counter.peekInt() should be(0)
       c.clock.step(ms)
-      c.io.timerPort.dataOut.peekInt() should be(1)
+      c.io.dataOut.peekInt() should be(1)
       c.obs_counter.peekInt() should be(1)
     }
   }

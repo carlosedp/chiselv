@@ -20,32 +20,30 @@ class DualPortRAM(
     debugMsg:   Boolean = false,
   ) extends Module {
   val words = sizeBytes / bitWidth
-  val io = IO(new Bundle {
-    val dualPort = new MemoryPortDual(bitWidth, sizeBytes)
-  })
+  val io    = IO(new MemoryPortDual(bitWidth, sizeBytes))
 
   if (debugMsg) {
     println(s"Dual-port Memory Parameters:")
     println(s"  Words: $words")
     println(s"  Size: " + words * bitWidth + " bytes")
     println(s"  Bit width: $bitWidth bit")
-    println(s"  Addr Width: " + io.dualPort.readAddress.getWidth + " bit")
+    println(s"  Addr Width: " + io.readAddress.getWidth + " bit")
   }
 
   val mem = SyncReadMem(words, UInt(bitWidth.W))
 
   // Divide memory address by 4 to get the word due to pc+4 addressing
-  val readAddress  = io.dualPort.readAddress >> 2
-  val writeAddress = io.dualPort.writeAddress >> 2
+  val readAddress  = io.readAddress >> 2
+  val writeAddress = io.writeAddress >> 2
 
   if (memoryFile.trim().nonEmpty) {
     if (debugMsg) println(s"  Load memory file: " + memoryFile)
     loadMemoryFromFileInline(mem, memoryFile)
   }
 
-  io.dualPort.readData := mem.read(readAddress)
+  io.readData := mem.read(readAddress)
 
-  when(io.dualPort.writeEnable === true.B) {
-    mem.write(writeAddress, io.dualPort.writeData)
+  when(io.writeEnable === true.B) {
+    mem.write(writeAddress, io.writeData)
   }
 }

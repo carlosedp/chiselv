@@ -21,13 +21,11 @@ class DecoderPort(bitWidth: Int = 32) extends Bundle {
 }
 
 class Decoder(bitWidth: Int = 32) extends Module {
-  val io = IO(new Bundle {
-    val DecoderPort = new DecoderPort(bitWidth)
-  })
+  val io = IO(new DecoderPort(bitWidth))
 
   val signals =
     ListLookup(
-      io.DecoderPort.op,
+      io.op,
       // format: off
       List(                                                  IN_ERR, ERR_INST, false.B,  false.B, false.B,  false.B,  false.B,  false.B), // Default values
       Array(
@@ -93,46 +91,46 @@ class Decoder(bitWidth: Int = 32) extends Module {
       )
     ) // format: on
 
-  io.DecoderPort.rd       := 0.U
-  io.DecoderPort.rs1      := 0.U
-  io.DecoderPort.rs2      := 0.U
-  io.DecoderPort.imm      := 0.S
-  io.DecoderPort.inst     := signals(1)
-  io.DecoderPort.toALU    := signals(2)
-  io.DecoderPort.branch   := signals(3)
-  io.DecoderPort.use_imm  := signals(4)
-  io.DecoderPort.jump     := signals(5)
-  io.DecoderPort.is_load  := signals(6)
-  io.DecoderPort.is_store := signals(7)
+  io.rd       := 0.U
+  io.rs1      := 0.U
+  io.rs2      := 0.U
+  io.imm      := 0.S
+  io.inst     := signals(1)
+  io.toALU    := signals(2)
+  io.branch   := signals(3)
+  io.use_imm  := signals(4)
+  io.jump     := signals(5)
+  io.is_load  := signals(6)
+  io.is_store := signals(7)
 
   switch(signals(0)) {
     is(INST_R) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
+      io.rd  := io.op(11, 7)
+      io.rs1 := io.op(19, 15)
+      io.rs2 := io.op(24, 20)
     }
     is(INST_I) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.imm := ImmGenerator(INST_I, io.DecoderPort.op)
+      io.rd  := io.op(11, 7)
+      io.rs1 := io.op(19, 15)
+      io.imm := ImmGenerator(INST_I, io.op)
     }
     is(INST_S) {
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
-      io.DecoderPort.imm := ImmGenerator(INST_S, io.DecoderPort.op)
+      io.rs1 := io.op(19, 15)
+      io.rs2 := io.op(24, 20)
+      io.imm := ImmGenerator(INST_S, io.op)
     }
     is(INST_B) {
-      io.DecoderPort.rs1 := io.DecoderPort.op(19, 15)
-      io.DecoderPort.rs2 := io.DecoderPort.op(24, 20)
-      io.DecoderPort.imm := ImmGenerator(INST_B, io.DecoderPort.op)
+      io.rs1 := io.op(19, 15)
+      io.rs2 := io.op(24, 20)
+      io.imm := ImmGenerator(INST_B, io.op)
     }
     is(INST_U) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.imm := ImmGenerator(INST_U, io.DecoderPort.op)
+      io.rd  := io.op(11, 7)
+      io.imm := ImmGenerator(INST_U, io.op)
     }
     is(INST_J) {
-      io.DecoderPort.rd  := io.DecoderPort.op(11, 7)
-      io.DecoderPort.imm := ImmGenerator(INST_J, io.DecoderPort.op)
+      io.rd  := io.op(11, 7)
+      io.imm := ImmGenerator(INST_J, io.op)
     }
   }
 

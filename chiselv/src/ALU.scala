@@ -11,12 +11,10 @@ class ALUPort(bitWidth: Int = 32) extends Bundle {
   val x    = Output(UInt(bitWidth.W))
 }
 class ALU(bitWidth: Int = 32) extends Module {
-  val io = IO(new Bundle {
-    val ALUPort = new ALUPort(bitWidth)
-  })
+  val io = IO(new ALUPort(bitWidth))
 
-  val a   = io.ALUPort.a
-  val b   = io.ALUPort.b
+  val a   = io.a
+  val b   = io.b
   val out = WireDefault(0.U(bitWidth.W))
 
   // For RV32I the shift amount is 5 bits, for RV64I is 6 bits
@@ -24,17 +22,17 @@ class ALU(bitWidth: Int = 32) extends Module {
 
   // Use the correct ALU operation on Immediate instructions
   val op = MuxCase(
-    io.ALUPort.inst,
+    io.inst,
     Seq(
-      (io.ALUPort.inst === ADDI)  -> ADD,
-      (io.ALUPort.inst === SRAI)  -> SRA,
-      (io.ALUPort.inst === SRLI)  -> SRL,
-      (io.ALUPort.inst === SLLI)  -> SLL,
-      (io.ALUPort.inst === ANDI)  -> AND,
-      (io.ALUPort.inst === ORI)   -> OR,
-      (io.ALUPort.inst === XORI)  -> XOR,
-      (io.ALUPort.inst === SLTI)  -> SLT,
-      (io.ALUPort.inst === SLTIU) -> SLTU,
+      (io.inst === ADDI)  -> ADD,
+      (io.inst === SRAI)  -> SRA,
+      (io.inst === SRLI)  -> SRL,
+      (io.inst === SLLI)  -> SLL,
+      (io.inst === ANDI)  -> AND,
+      (io.inst === ORI)   -> OR,
+      (io.inst === XORI)  -> XOR,
+      (io.inst === SLTI)  -> SLT,
+      (io.inst === SLTIU) -> SLTU,
     ),
   )
 
@@ -60,5 +58,5 @@ class ALU(bitWidth: Int = 32) extends Module {
     is(GTEU)(out := Mux(a >= b, 1.U, 0.U))
   }
 
-  io.ALUPort.x := out
+  io.x := out
 }

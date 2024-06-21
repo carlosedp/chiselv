@@ -14,23 +14,23 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
         WriteVcdAnnotation
       )
     ) { c =>
-      c.io.dualPort.writeEnable.poke(true)
-      c.io.dualPort.writeAddress.poke(1)
-      c.io.dualPort.writeData.poke(1234)
+      c.io.writeEnable.poke(true)
+      c.io.writeAddress.poke(1)
+      c.io.writeData.poke(1234)
       c.clock.step(1)
-      c.io.dualPort.readAddress.poke(1)
+      c.io.readAddress.poke(1)
       c.clock.step(2)
-      c.io.dualPort.readData.peekInt() should be(1234)
+      c.io.readData.peekInt() should be(1234)
     }
   }
   it should "not allow write to address" in {
     test(new DualPortRAM(32, 1 * 1024)) { c =>
-      c.io.dualPort.writeAddress.poke(0x00000010)
-      c.io.dualPort.readAddress.poke(0x00000010)
+      c.io.writeAddress.poke(0x00000010)
+      c.io.readAddress.poke(0x00000010)
       c.clock.step()
-      c.io.dualPort.writeData.poke(1234)
+      c.io.writeData.poke(1234)
       c.clock.step()
-      c.io.dualPort.readData.peekInt() should be(0)
+      c.io.readData.peekInt() should be(0)
     }
   }
 
@@ -41,14 +41,14 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
       val values        = Seq(0, 1, 0x0000_cafeL, 0xbaad_cafeL, 0xffff_ffffL)
       addresses.foreach { address =>
         values.foreach { value =>
-          c.io.dualPort.writeEnable.poke(true)
-          c.io.dualPort.writeAddress.poke(addressOffset + address)
-          c.io.dualPort.readAddress.poke(addressOffset + address)
-          c.io.dualPort.writeData.poke(value)
+          c.io.writeEnable.poke(true)
+          c.io.writeAddress.poke(addressOffset + address)
+          c.io.readAddress.poke(addressOffset + address)
+          c.io.writeData.poke(value)
           c.clock.step(1)
-          c.io.dualPort.readAddress.poke(addressOffset + address)
+          c.io.readAddress.poke(addressOffset + address)
           c.clock.step(1)
-          c.io.dualPort.readData.peekInt() should be(value)
+          c.io.readData.peekInt() should be(value)
         }
       }
       c.clock.step(10)
@@ -63,20 +63,20 @@ class MemorySpec extends AnyFlatSpec with ChiselScalatestTester with should.Matc
     os.remove(file)
     os.write(file, "00010203\r\n08090A0B\r\nDEADBEEF\r\n07060504\r\n")
     test(new InstructionMemory(32, 16 * 1024, filename)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      c.io.memPort.readAddr.poke(0)
+      c.io.readAddr.poke(0)
       c.clock.step()
-      c.io.memPort.readData.peekInt() should be(0x00010203L)
-      c.io.memPort.readAddr.poke(4)
+      c.io.readData.peekInt() should be(0x00010203L)
+      c.io.readAddr.poke(4)
       c.clock.step()
-      c.io.memPort.readData.peekInt() should be(0x08090a0bL)
-      c.io.memPort.readAddr.poke(8)
+      c.io.readData.peekInt() should be(0x08090a0bL)
+      c.io.readAddr.poke(8)
       c.clock.step()
-      c.io.memPort.readData.peekInt() should be(0xdeadbeefL)
-      c.io.memPort.readAddr.poke(12)
+      c.io.readData.peekInt() should be(0xdeadbeefL)
+      c.io.readAddr.poke(12)
       c.clock.step()
       c.clock.step()
-      c.io.memPort.readData.peekInt() should be(0x07060504L)
-      c.io.memPort.readAddr.poke(1)
+      c.io.readData.peekInt() should be(0x07060504L)
+      c.io.readAddr.poke(1)
       c.clock.step()
     }
     os.remove.all(file)

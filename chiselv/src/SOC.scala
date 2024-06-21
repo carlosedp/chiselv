@@ -25,16 +25,16 @@ class SOC(
 
   // Instantiate and initialize the Instruction memory
   val instructionMemory = Module(new InstructionMemory(bitWidth, instructionMemorySize, memoryFile))
-  instructionMemory.io.memPort.readAddr := 0.U
+  instructionMemory.io.readAddr := 0.U
 
   // Instantiate and initialize the Data memory
   val dataMemory = Module(new DualPortRAM(bitWidth, dataMemorySize, ramFile))
-  dataMemory.io.dualPort.writeEnable  := false.B
-  dataMemory.io.dualPort.writeData    := 0.U
-  dataMemory.io.dualPort.readAddress  := 0.U
-  dataMemory.io.dualPort.writeAddress := 0.U
-  dataMemory.io.dualPort.dataSize     := 0.U
-  dataMemory.io.dualPort.writeMask    := 0.U
+  dataMemory.io.writeEnable  := false.B
+  dataMemory.io.writeData    := 0.U
+  dataMemory.io.readAddress  := 0.U
+  dataMemory.io.writeAddress := 0.U
+  dataMemory.io.dataSize     := 0.U
+  dataMemory.io.writeMask    := 0.U
 
   // Instantiate and connect the UART
   val fifoLength  = 128
@@ -51,10 +51,10 @@ class SOC(
   )
 
   // Connect the core to the devices
-  core.io.instructionMemPort <> instructionMemory.io.memPort
-  core.io.dataMemPort <> dataMemory.io.dualPort
+  core.io.instructionMemPort <> instructionMemory.io
+  core.io.dataMemPort <> dataMemory.io
   core.io.UART0Port <> UART0.io.dataPort
-  core.io.SysconPort <> syscon.io.SysconPort
+  core.io.SysconPort <> syscon.io
   if (numGPIO > 0) {
     core.io.GPIO0External <> io.GPIO0External
   }

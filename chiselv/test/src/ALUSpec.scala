@@ -93,11 +93,11 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       dut: ALU,
     ) = {
     // print(s"Inputs: $i $op $j | Test result should be ${aluHelper(i, j, op)} | ")
-    dut.io.ALUPort.inst.poke(op)
-    dut.io.ALUPort.a.poke(i.to32Bit)
-    dut.io.ALUPort.b.poke(j.to32Bit)
+    dut.io.inst.poke(op)
+    dut.io.a.poke(i.to32Bit)
+    dut.io.b.poke(j.to32Bit)
     dut.clock.step()
-    dut.io.ALUPort.x.peekInt() should be(out)
+    dut.io.x.peekInt() should be(out)
   }
   def testCycle(
       op: Type

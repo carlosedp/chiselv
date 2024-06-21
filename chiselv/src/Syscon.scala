@@ -16,13 +16,11 @@ class Syscon(
     romSize:   Int,
     ramSize:   Int,
   ) extends Module {
-  val io = IO(new Bundle {
-    val SysconPort = new SysconPort(bitWidth)
-  })
+  val io = IO(new SysconPort(bitWidth))
 
   val dataOut = WireDefault(0.U(bitWidth.W))
 
-  switch(io.SysconPort.Address) {
+  switch(io.Address) {
     is(0x0L.U)(dataOut := 0xbaad_cafeL.U)
     // Clock frequency - (0x0000_1008)
     is(0x8L.U)(dataOut := clockFreq.asUInt)
@@ -44,5 +42,5 @@ class Syscon(
     is(0x34L.U)(dataOut := ramSize.asUInt)
   }
 
-  io.SysconPort.DataOut := dataOut
+  io.DataOut := dataOut
 }
