@@ -1,7 +1,7 @@
 package chiselv
 
 import chisel3._
-import chisel3.util.{MuxCase, is, switch}
+import chisel3.util.{is, switch}
 import chiselv.Instruction._
 
 class ALUPort(bitWidth: Int = 32) extends Bundle {
@@ -11,51 +11,32 @@ class ALUPort(bitWidth: Int = 32) extends Bundle {
   val x    = Output(UInt(bitWidth.W))
 }
 class ALU(bitWidth: Int = 32) extends Module {
-  val io = IO(new ALUPort(bitWidth))
-
-  val a   = io.a
-  val b   = io.b
+  val io  = IO(new ALUPort(bitWidth))
   val out = WireDefault(0.U(bitWidth.W))
 
   // For RV32I the shift amount is 5 bits, for RV64I is 6 bits
-  val shamt = if (bitWidth == 32) b(4, 0).asUInt else b(5, 0).asUInt
+  val shamt = (if (bitWidth == 32) 5 else if (bitWidth == 64) 6 else 0) - 1
 
-  // Use the correct ALU operation on Immediate instructions
-  val op = MuxCase(
-    io.inst,
-    Seq(
-      (io.inst === ADDI)  -> ADD,
-      (io.inst === SRAI)  -> SRA,
-      (io.inst === SRLI)  -> SRL,
-      (io.inst === SLLI)  -> SLL,
-      (io.inst === ANDI)  -> AND,
-      (io.inst === ORI)   -> OR,
-      (io.inst === XORI)  -> XOR,
-      (io.inst === SLTI)  -> SLT,
-      (io.inst === SLTIU) -> SLTU,
-    ),
-  )
-
-  switch(op) {
+  switch(io.inst) {
     // Arithmetic
-    is(ADD)(out := a + b)
-    is(SUB)(out := a - b)
+    is(ADD, ADDI)(out := io.a + io.b)
+    is(SUB)(out       := io.a - io.b)
     // Shifts
-    is(SRA)(out := (a.asSInt >> shamt).asUInt) // Signed
-    is(SRL)(out := a >> shamt)
-    is(SLL)(out := a << shamt)
+    is(SRA, SRAI)(out := (io.a.asSInt >> io.b(shamt, 0)).asUInt) // Signed
+    is(SRL, SRLI)(out := io.a >> io.b(shamt, 0))
+    is(SLL, SLLI)(out := io.a << io.b(shamt, 0))
     // Logical
-    is(AND)(out := a & b)
-    is(OR)(out  := a | b)
-    is(XOR)(out := a ^ b)
+    is(AND, ANDI)(out := io.a & io.b)
+    is(OR, ORI)(out   := io.a | io.b)
+    is(XOR, XORI)(out := io.a ^ io.b)
     // Compare
-    is(SLT)(out  := Mux(a.asSInt < b.asSInt, 1.U, 0.U)) // Signed
-    is(SLTU)(out := Mux(a < b, 1.U, 0.U))
+    is(SLT, SLTI)(out   := Mux(io.a.asSInt < io.b.asSInt, 1.U, 0.U)) // Signed
+    is(SLTU, SLTIU)(out := Mux(io.a < io.b, 1.U, 0.U))
     // Auxiliary
-    is(EQ)(out   := Mux(a === b, 1.U, 0.U))
-    is(NEQ)(out  := Mux(a =/= b, 1.U, 0.U))
-    is(GTE)(out  := Mux(a.asSInt >= b.asSInt, 1.U, 0.U))
-    is(GTEU)(out := Mux(a >= b, 1.U, 0.U))
+    is(EQ)(out   := Mux(io.a === io.b, 1.U, 0.U))
+    is(NEQ)(out  := Mux(io.a =/= io.b, 1.U, 0.U))
+    is(GTE)(out  := Mux(io.a.asSInt >= io.b.asSInt, 1.U, 0.U))
+    is(GTEU)(out := Mux(io.a >= io.b, 1.U, 0.U))
   }
 
   io.x := out

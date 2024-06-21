@@ -22,32 +22,59 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
   it should "ADD" in {
     testCycle(ADD)
   }
+  it should "ADDI" in {
+    testCycle(ADDI)
+  }
   it should "SUB" in {
     testCycle(SUB)
   }
   it should "AND" in {
     testCycle(AND)
   }
+  it should "ANDI" in {
+    testCycle(ANDI)
+  }
   it should "OR" in {
     testCycle(OR)
+  }
+  it should "ORI" in {
+    testCycle(ORI)
   }
   it should "XOR" in {
     testCycle(XOR)
   }
+  it should "XORI" in {
+    testCycle(XORI)
+  }
   it should "SRA" in {
     testCycle(SRA)
+  }
+  it should "SRAI" in {
+    testCycle(SRAI)
   }
   it should "SRL" in {
     testCycle(SRL)
   }
+  it should "SRLI" in {
+    testCycle(SRLI)
+  }
   it should "SLL" in {
     testCycle(SLL)
+  }
+  it should "SLLI" in {
+    testCycle(SLLI)
   }
   it should "SLT" in {
     testCycle(SLT)
   }
+  it should "SLTI" in {
+    testCycle(SLTI)
+  }
   it should "SLTU" in {
     testCycle(SLTU)
+  }
+  it should "SLTIU" in {
+    testCycle(SLTIU)
   }
   it should "EQ" in {
     testCycle(EQ)
@@ -68,21 +95,21 @@ class ALUSpec extends AnyFlatSpec with ChiselScalatestTester with should.Matcher
       op: Type,
     ): BigInt =
     op match {
-      case ADD  => (a + b).to32Bit
-      case SUB  => a - b
-      case AND  => a & b
-      case OR   => a | b
-      case XOR  => a ^ b
-      case SRA  => a.toInt >> (b.toInt & 0x1f)
-      case SRL  => a.toInt >>> b.toInt
-      case SLL  => a.toInt << b.toInt
-      case SLT  => if (a.toInt < b.toInt) 1 else 0
-      case SLTU => if (a.to32Bit < b.to32Bit) 1 else 0
-      case EQ   => if (a.to32Bit == b.to32Bit) 1 else 0
-      case NEQ  => if (a.to32Bit != b.to32Bit) 1 else 0
-      case GTE  => if (a.toInt >= b.toInt) 1 else 0
-      case GTEU => if (a.to32Bit >= b.to32Bit) 1 else 0
-      case _    => 0 // Never happens
+      case ADD | ADDI   => (a + b).to32Bit
+      case SUB          => a - b
+      case AND | ANDI   => a & b
+      case OR | ORI     => a | b
+      case XOR | XORI   => a ^ b
+      case SRA | SRAI   => a.toInt >> (b.toInt & 0x1f)
+      case SRL | SRLI   => a.toInt >>> b.toInt
+      case SLL | SLLI   => a.toInt << b.toInt
+      case SLT | SLTI   => if (a.toInt < b.toInt) 1 else 0
+      case SLTU | SLTIU => if (a.to32Bit < b.to32Bit) 1 else 0
+      case EQ           => if (a.to32Bit == b.to32Bit) 1 else 0
+      case NEQ          => if (a.to32Bit != b.to32Bit) 1 else 0
+      case GTE          => if (a.toInt >= b.toInt) 1 else 0
+      case GTEU         => if (a.to32Bit >= b.to32Bit) 1 else 0
+      case _            => 0 // Never happens
     }
 
   def testDut(
