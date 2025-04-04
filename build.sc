@@ -1,13 +1,13 @@
 import mill._, mill.scalalib._, mill.scalalib.publish._
 import scalafmt._
-import $ivy.`com.goyeau::mill-scalafix::0.3.1`
+import $ivy.`com.goyeau::mill-scalafix::0.4.1`
 import com.goyeau.mill.scalafix.ScalafixModule
-import $ivy.`com.carlosedp::mill-aliases::0.4.1`
+import $ivy.`com.carlosedp::mill-aliases::0.6.0`
 import com.carlosedp.aliases._
 
 object versions {
-  val scala          = "2.13.14"
-  val chisel         = "6.4.0"
+  val scala          = "2.13.16"
+  val chisel         = "6.7.0"
   val chiseltest     = "6.0.0"
   val scalatest      = "3.2.18"
   val riscvassembler = "1.9.1"
